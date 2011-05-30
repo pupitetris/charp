@@ -1,0 +1,20 @@
+BEGIN TRANSACTION;
+      SET CONSTRAINTS ALL DEFERRED;
+
+      -- password is ``blah''
+      INSERT INTO account(account_id, username, passwd, status)
+      	     VALUES (DEFAULT, 'testuser', '6f1ed002ab5595859014ebf0951522d9', 'ACTIVE');
+
+CREATE OR REPLACE FUNCTION rp_anon_get_random_bytes(_start character varying, _end character varying)
+  RETURNS TABLE(random text) AS
+$BODY$
+BEGIN
+	random := _start || encode(gen_random_bytes(32), 'hex') || _end;
+	RETURN NEXT;
+END
+$BODY$
+  LANGUAGE plpgsql VOLATILE;
+ALTER FUNCTION rp_anon_get_random_bytes(character varying, character varying) OWNER TO postgres;
+
+
+COMMIT TRANSACTION;

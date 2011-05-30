@@ -1,0 +1,327 @@
+#!/usr/bin/perl
+
+use CHARP;
+
+# FIXME: ver si estas cosas jalan:
+$CGI::POST_MAX = 4096;
+$CGI::DISABLE_UPLOADS = 1;
+
+sub request_challenge {
+    my $fcgi = shift;
+    my $ctx = shift;
+
+    if ($fcgi->request_method () ne 'POST') {
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:NOTPOST' });
+	return;
+    }
+
+    my $req_anon = $fcgi->param ('anon');
+    my $req_login = $fcgi->param ('login');
+    my $req_res = $fcgi->param ('res');
+    my $req_params = $fcgi->param ('params');
+
+    if (defined $req_anon) {
+	$req_login = '!anonymous';
+    } 
+
+    my $ip_addr = $fcgi->remote_addr ();
+
+    if ($req_login eq '!anonymous') {
+	$req_res = 'anon_' . $req_res;
+
+	my $func_sth = $ctx->{'func_sth'};
+	my $rv = $func_sth->execute ($req_res);
+	if (!defined $rv) {
+	    CHARP::error_execute_send ($fcgi, '(' . $func_sth->state . ")" . $DBI::errstr, $ctx->{'err_sth'}, $req_login, $ip_addr, $req_res);
+	    return;
+	}
+	my $rh = ${$func_sth->fetchall_arrayref ({})}[0];
+
+	return request_reply_do ($fcgi, $ctx, $req_login, 
+				 {'fname' => $req_res, 'fparams' => $rh->{'fparams'}, 'req_params' => $req_params});
+    }
+
+    if (!defined $req_res || !defined $req_params || !defined $req_login) {
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:REQPARAM' });
+	return;
+    }
+    
+    my $chal_sth = $ctx->{'chal_sth'};
+    my $rv = $chal_sth->execute ($req_login, $ip_addr, $req_res, $req_params);
+
+    if (!defined $rv) {
+	CHARP::error_execute_send ($fcgi, '(' . $chal_sth->state . ')' . $DBI::errstr, $ctx->{'err_sth'}, $req_login, $ip_addr, $req_res);
+	return;
+    }
+
+    my $res = ${$chal_sth->fetchall_arrayref ({})}[0];
+
+    CHARP::json_send ($fcgi, $res);
+
+    return;
+}
+
+%SQL_TYPES = (
+    'UID' => SQL_INTEGER,
+    'INT' => SQL_INTEGER,
+    'STR' => SQL_VARCHAR,
+    'BOOL' => SQL_BOOLEAN,
+    'DATE' => SQL_DATE,
+    'INTARR'  => { 'pg_type' => PG_INT4ARRAY },
+    'STRARR'  => { 'pg_type' => PG_VARCHARARRAY },
+    'BOOLARR' => { 'pg_type' => PG_BOOLARRAY }
+);
+
+sub request_reply_file {
+    my $fcgi = shift;
+    my $fname = shift; # function name
+    my $sth = shift;
+    my $fd;
+
+    my $res = $sth->fetchrow_hashref (NAME_lc);
+    $sth->fetchrow_hashref (NAME_lc); # Avoid 'still Active' warning, exhaust response buffer.
+
+    if (! exists $res->{'filename'}) {
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => '$fname: Parámetro `filename` faltante.' });
+	return;
+    }
+    if (! exists $res->{'mimetype'}) {
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => '$fname: Parámetro `mimetype` faltante.' });
+	return;
+    }
+
+    my %headers = (-type => $res->{'mimetype'});
+
+    if (-e $res->{'filename'}) {
+	if (! sysopen ($fd, $res->{'filename'}, 0)) {
+	    CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => "$fname: Error al abrir `$res->{'filename'}` ($!)." });
+	    return;
+	}
+
+	my @stat = stat ($fd);
+	$headers{'-Content_Length'} = $stat[7];
+	print $fcgi->header (%headers);
+
+	my $buf;
+	while (sysread ($fd, $buf, 4000)) {
+	    print $buf;
+	}
+
+	close ($fd);
+    } else {
+	if (! open ($fd, $res->{'filename'})) {
+	    CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => "$fname: Error al abrir `$res->{'filename'}` ($!)." });
+	    return;
+	}
+	
+	print $fcgi->header (%headers);
+
+	# Slurp!
+	my $tmp = $/;
+	undef $/;
+	print <$fd>;
+	$/ = $tmp;
+	
+	close ($fd);
+    }
+
+    return;
+}
+
+sub request_reply {
+    my $fcgi = shift;
+    my $ctx = shift;
+
+    my $req_login = $fcgi->param ('login');
+    my $req_chal = $fcgi->param ('chal');
+    my $req_hash = $fcgi->param ('hash');
+
+    if (!defined $req_login || !defined $req_chal || !defined $req_hash) {
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:REQPARAM' });
+	return;
+    }
+
+    my $ip_addr = $fcgi->remote_addr ();
+    my $chk_sth = $ctx->{'chk_sth'};
+    my $rv = $chk_sth->execute ($req_login, $ip_addr, $req_chal, $req_hash);
+
+    if (!defined $rv) {
+	CHARP::error_execute_send ($fcgi, '(' . $chk_sth->state . ')' . $DBI::errstr, $ctx->{'err_sth'}, $req_login, $ip_addr, 'REQUEST_CHECK');
+	return;
+    }
+
+    my $req = ${$chk_sth->fetchall_arrayref ({})}[0];
+    
+    return request_reply_do ($fcgi, $ctx, $req_login, $req);
+}
+
+sub request_reply_do {
+    my $fcgi = shift;
+    my $ctx = shift;
+    
+    my $req_login = shift;
+    my $req = shift;
+
+    my $fname = $req->{'fname'};
+    my $fparams = $req->{'fparams'};
+    my $req_params = $req->{'req_params'};
+    my $req_user_id = $req->{'user_id'};
+
+    my @fparams_arr = split (',', substr ($fparams, 1, -1));
+    my $num_fparams = scalar (@fparams_arr);
+
+    my $req_params_arr = eval { CHARP::json_decode ($req_params); };
+    if ($@ ne '') {
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:BADPARAM', 'msg' => $@, 'parms' => [ $fname, $req_params ]});
+	return;
+    }
+
+    my $placeholders = '?,' x $num_fparams;
+    chop $placeholders;
+
+    $num_fparams-- if $fparams_arr[0] eq 'UID';
+    if (scalar (@$req_params_arr) != $num_fparams) {
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:NUMPARAM', 'parms' => [ $fname, scalar (@fparams_arr), scalar (@$req_params_arr) ]});
+	return;
+    }
+
+    my $sth = $ctx->{'dbh'}->prepare_cached ("SELECT * FROM rp_$fname ($placeholders)",
+					     { 'pg_server_prepare' => 1 });
+    if (!defined $sth) {
+	CHARP::dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
+	return;
+    }
+
+    my $i = 1;
+    my $count = 0;
+    foreach my $type (@fparams_arr) {
+	my $val;
+	if ($type eq 'UID') {
+	    $val = $req_user_id;
+	} else {
+	    last if scalar (@$req_params_arr) == 0;
+	    $val = shift (@$req_params_arr);
+	    $val = undef if $val eq '';
+	    if ($type eq 'BOOLARR' && ref $val eq 'ARRAY') {
+		my @arr = map { ($_)? 1: 0 } @$val;
+		$val = \@arr;
+	    }
+	    $count ++;
+	}
+
+	eval { $sth->bind_param ($i, $val, $TYPES{$type}); };
+	if ($@ ne '') {
+	    CHARP::error_send ($fcgi, { 'err' => 'CGI:BINDPARAM', 'msg' => $@, 'parms' => [ $fname, $count, $val, $req_params ]});
+	    return;
+	}
+	$i++;
+    }
+
+    my $rv = $sth->execute ();
+
+    if (!defined $rv) {
+	CHARP::error_execute_send ($fcgi, '(' . $sth->state . ')' . $DBI::errstr, $ctx->{'err_sth'}, $req_login, $ip_addr, $fname);
+	return;
+    }
+
+    if ($fname =~ /^file_/ || $fname =~ /^anon_file_/) {
+	return request_reply_file ($fcgi, $fname, $sth);
+    }
+
+    my @fields;
+    my $names = $sth->{NAME_lc_hash};
+    foreach my $name (keys %$names) {
+	$fields[$names->{$name}] = $name;
+    }
+
+    CHARP::json_print_headers ($fcgi);
+
+    print '{"fields":["' . 
+	join ('","', @fields) .
+	'"],"data":' .
+	CHARP::json_encode ($sth->fetchall_arrayref ()) .
+	'}';
+
+    return;
+}
+
+sub request_main {
+    my $fcgi = shift;
+    my $ctx = shift;
+
+    if ($fcgi->url('-absolute' => 1) eq '/request') {
+	return request_challenge ($fcgi, $ctx);
+    }
+
+    if ($fcgi->url('-absolute' => 1) eq '/reply') {
+	return request_reply ($fcgi, $ctx);
+    }
+
+    CHARP::error_send ($fcgi, { 'err' => 'CGI:PATHUNK' });
+    return;
+}
+
+sub main {
+    my $dbh = CHARP::connect ();
+    return if !defined $dbh;
+
+    my $err_sth = $dbh->prepare ('SELECT charp_log_error (?, ?, ?, ?, ?, ?)', 
+				 { 'pg_server_prepare' => 1 });
+    if (!defined $err_sth) {
+	dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
+	return;
+    }
+
+    $err_sth->bind_param (1, undef, SQL_VARCHAR); # type
+    $err_sth->bind_param (2, undef, SQL_VARCHAR); # login
+    $err_sth->bind_param (3, undef, { 'pg_type' => PG_INET }); # ip_addr
+    $err_sth->bind_param (4, undef, SQL_VARCHAR); # resource
+    $err_sth->bind_param (5, undef, SQL_VARCHAR); # msg
+    $err_sth->bind_param (6, undef, { 'pg_type' => PG_VARCHARARRAY }); # params
+
+    my $chal_sth = $dbh->prepare ('SELECT charp_request_create (?, ?, ?, ?) AS chal', 
+			     { 'pg_server_prepare' => 1 });
+    if (!defined $chal_sth) {
+	CHARP::dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
+	return;
+    }
+
+    $chal_sth->bind_param (1, undef, SQL_VARCHAR); # login
+    $chal_sth->bind_param (2, undef, { 'pg_type' => PG_INET }); # ip_addr
+    $chal_sth->bind_param (3, undef, SQL_VARCHAR); # resource
+    $chal_sth->bind_param (4, undef, SQL_VARCHAR); # params
+
+    my $chk_sth = $dbh->prepare ('SELECT * FROM charp_request_check (?, ?, ?, ?)', 
+				  { 'pg_server_prepare' => 1 });
+    if (!defined $chk_sth) {
+	CHARP::dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
+	return;
+    }
+
+    $chk_sth->bind_param (1, undef, SQL_VARCHAR); # login
+    $chk_sth->bind_param (2, undef, { 'pg_type' => PG_INET }); # ip_addr
+    $chk_sth->bind_param (3, undef, SQL_VARCHAR); # chal
+    $chk_sth->bind_param (4, undef, SQL_VARCHAR); # hash
+
+    my $func_sth = $dbh->prepare ('SELECT charp_function_params (?) AS fparams', 
+				  { 'pg_server_prepare' => 1 });
+    if (!defined $func_sth) {
+	CHARP::dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
+	return;
+    }
+
+    $func_sth->bind_param (1, undef, SQL_VARCHAR); # fname
+
+    # Loop mientras lleguen peticiones
+    CHARP::dispatch (\&request_main, 
+		    { 
+			'dbh'	   => $dbh, 
+			'chal_sth' => $chal_sth,
+			'chk_sth'  => $chk_sth,
+			'func_sth' => $func_sth,
+			'err_sth'  => $err_sth
+		    });
+    $dbh->disconnect ();
+}
+
+main ();

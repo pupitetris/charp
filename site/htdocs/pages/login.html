@@ -1,0 +1,33 @@
+<div class="login-form">
+  <form>
+    <table>
+      <tr>
+	<th><label for="login-username">Usuario</label></th>
+	<td><input id="login-username" name="username" type="text" value="testuser" autocorrect="off" autocapitalize="off" /></td>
+      </tr>
+      <tr>
+	<th><label for="login-passwd">Contraseña</label></th>
+	<td><input id="login-passwd" name="passwd" class="entry" type="password" value="blah" /></td>
+      </tr>
+    </table>
+    <button id="login-button" type="submit">Iniciar sesión</button>
+    <div><br /><br />
+      <button id="save-button" type="button">Guardar Credenciales</button>
+    </div>
+    <div>
+      <button id="load-button" type="button">Cargar Credenciales</button>
+    </div>
+    <div>
+      <button id="del-button" type="button">Eliminar Credenciales</button>
+    </div>
+  </form>
+  <div><br /><br />
+    <label for="file-filename">Nombre de imagen PNG (ruta local):</label>
+    <input id="file-filename" type="text" value="/tmp/top.png" />
+    <button id="file-button" type="button">Bajar</button>
+  </div>
+  <img id="file-img" src="" />
+  <div><br /><br />
+    <button id="anon-button" type="button">Request anónimo.</button>
+  </div>
+</div>
