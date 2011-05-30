@@ -1,4 +1,12 @@
 #!/usr/bin/perl
+# This file is part of the CHARP project.
+#
+# Copyright © 2011
+#   Free Software Foundation Europe, e.V.,
+#   Talstrasse 110, 40217 Dsseldorf, Germany
+#
+# Licensed under the EUPL V.1.1. See the file LICENSE.txt for copying conditions.
+
 # Correcciones para usar tipos nativos de SQL y otras cosillas.
 #1. Exportar sql en architect
 #2. Guardar el sql en un archivo
@@ -59,5 +67,15 @@ for ($n = 0; $l = <>; $n++) {
 foreach $type (sort keys %types) {
     unshift @buff, $types{$type};
 }
+
+print '-- This file is part of the CHARP project.
+--
+-- Copyright © 2011
+--   Free Software Foundation Europe, e.V.,
+--   Talstrasse 110, 40217 Dsseldorf, Germany
+--
+-- Licensed under the EUPL V.1.1. See the file LICENSE.txt for copying conditions.
+
+';
 
 print @buff;

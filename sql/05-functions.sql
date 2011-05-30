@@ -1,3 +1,12 @@
+-- This file is part of the CHARP project.
+--
+-- Copyright © 2011
+--   Free Software Foundation Europe, e.V.,
+--   Talstrasse 110, 40217 Dsseldorf, Germany
+--
+-- Licensed under the EUPL V.1.1. See the file LICENSE.txt for copying conditions.
+
+
 CREATE OR REPLACE FUNCTION charp_log_error(_code character varying, _username character varying, _ip_addr INET, _res character varying, _msg character varying, _params character varying[])
   RETURNS void AS
 $BODY$
