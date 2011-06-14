@@ -15,7 +15,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.0 r9654"
-   sodipodi:docname="esquema stack.svg"
+   sodipodi:docname="stack_diagram.svg"
    inkscape:export-filename="stack_diagram.png"
    inkscape:export-xdpi="90"
    inkscape:export-ydpi="90">
@@ -187,9 +187,9 @@
      inkscape:pageshadow="2"
      inkscape:zoom="1.0401905"
      inkscape:cx="372.04724"
-     inkscape:cy="526.18109"
+     inkscape:cy="868.29054"
      inkscape:document-units="px"
-     inkscape:current-layer="svg2"
+     inkscape:current-layer="g3188"
      showgrid="false"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -204,9 +204,9 @@
      inkscape:object-paths="true"
      inkscape:snap-intersection-paths="true"
      inkscape:snap-smooth-nodes="true"
-     inkscape:window-width="1200"
-     inkscape:window-height="1898"
-     inkscape:window-x="158"
+     inkscape:window-width="1366"
+     inkscape:window-height="706"
+     inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1" />
   <metadata
@@ -217,7 +217,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -354,7 +354,7 @@
          sodipodi:role="line"
          id="tspan3805"
          x="290.77869"
-         y="211.32719">XMLHttpRequest</tspan></text>
+         y="211.32719">XMLHttpRequest (CHARP.js)</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:12px;font-style:normal;font-weight:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
@@ -406,7 +406,7 @@
          sodipodi:role="line"
          id="tspan4681"
          x="431.5835"
-         y="534.32813">mod_perl</tspan></text>
+         y="534.32813">FastCGI</tspan></text>
     <path
        sodipodi:nodetypes="cc"
        inkscape:connector-curvature="0"
@@ -459,7 +459,7 @@
          sodipodi:role="line"
          id="tspan4763"
          x="391.84958"
-         y="581.17908">request.pl</tspan></text>
+         y="581.17908">request</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:12px;font-style:normal;font-weight:normal;text-align:center;line-height:125%;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;font-family:Sans"
@@ -470,7 +470,7 @@
          sodipodi:role="line"
          id="tspan4771"
          x="472.54379"
-         y="581.20544">reply.pl</tspan></text>
+         y="581.20544">reply</tspan></text>
     <rect
        y="698.98932"
        x="242.05844"
