@@ -14,8 +14,19 @@ BASEDIR="$CHARPDIR"
 export LANG="en_US.utf8"
 export LC_ALL="en_US.utf8"
 
+if [ "$1" = "-db" ]; then
+    DB=$2
+    shift 2
+fi
+
 if [ "$1" = "-td" ]; then
     TESTDATA=1
+    shift
+fi
+
+if [ "$1" = "-nocat" ]; then
+    NOCAT=1
+    shift
 fi
 
 if [ -z "$BASEDIR" ]; then
@@ -48,10 +59,12 @@ if [ -e "$SQL_EXPORT" ]; then
     $BASEDIR/scripts/fix-sql.pl < "$SQL_EXPORT" > $BASEDIR/sql/04-tables.sql
 fi
 
-$BASEDIR/scripts/kill-fcgi.sh
+[ -z "$IS_CYGWIN" ] || $BASEDIR/scripts/kill-fcgi.sh
 
 # Checamos si podemos inicializar la base de datos antes de proceder con todos los scripts de 
 # sql para que no fallen.
+
+[ -z "$DB" ] || PGDATABASE=$DB
 
 psql -d postgres -c "DROP DATABASE IF EXISTS $PGDATABASE"
 
@@ -72,7 +85,7 @@ psql -f 03-types.sql
 psql -f 04-tables.sql 2>&1 | grep -v 'NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index'
 #psql -f 04-tables-constraints.sql 2>&1 | grep -v 'NOTICE:  constraint'
 psql -f 05-functions.sql
-#sed 's#%dir%#'"$DIR"'#g' 06-catalogs.sql | psql
+#[ -z "$NOCAT" ] && sed 's#%dir%#'"$DIR"'#g' 06-catalogs.sql | psql
 #psql -f 09-data.sql
 #[ -z "$TESTDATA" ] || sed 's#%dir%#'"$DIR"'#g' 98-testdata.sql | psql
 psql -f 99-test.sql
