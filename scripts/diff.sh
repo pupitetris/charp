@@ -3,7 +3,7 @@
 # Mensajes por stderr, script resultante de la comparación por stdout
 # por ejemplo: ./diff.sh 2>/dev/null | tee update.sql | less
 
-BASEDIR="$BITADIR"
+BASEDIR="$CHARPDIR"
 
 export LANG="en_US.utf8"
 export LC_ALL="en_US.utf8"
