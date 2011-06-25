@@ -82,10 +82,11 @@ sed "s/%db%/$PGDATABASE/g$add_cmd" 01-database.sql | psql -d postgres
 
 psql -f 02-pgcrypto.sql
 psql -f 03-types.sql
-psql -f 04-tables.sql 2>&1 | grep -v 'NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index'
-#psql -f 04-tables-constraints.sql 2>&1 | grep -v 'NOTICE:  constraint'
+psql -f 04-tables.sql 2>&1 | grep -v 'NOTICE:  CREATE TABLE / PRIMARY KEY \(will create implicit index\|crear. el .ndice impl.cito\)'
+#psql -f 04-tables-constraints.sql 2>&1 | grep -v 'NOTICE:  \(constraint\|no existe la restricci.n\)'
 psql -f 05-functions.sql
 #[ -z "$NOCAT" ] && sed 's#%dir%#'"$DIR"'#g' 06-catalogs.sql | psql
+#psql -f 07-views.sql 2>&1 | grep -v 'NOTICE:  \(view\|la vista\)'
 #psql -f 09-data.sql
 #[ -z "$TESTDATA" ] || sed 's#%dir%#'"$DIR"'#g' 98-testdata.sql | psql
 psql -f 99-test.sql
