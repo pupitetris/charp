@@ -63,7 +63,9 @@ if (!defined $s2 || ref $s2 ne 'HASH') {
     print $@ . "\n";
     print $res->content . "\n";
     exit 5;
-} elsif ($s2->{'error'}) {
+}
+
+if ($s2->{'error'}) {
     print "Error reportado en reply\n";
     print $res->content . "\n";
     exit 6;
