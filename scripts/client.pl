@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+use Digest::MD5 qw(md5_hex);
 use Digest::SHA qw(sha256_hex);
 use LWP::UserAgent;
 use JSON::XS;
@@ -44,7 +45,7 @@ if ($s->{'error'}) {
 }
 
 $chal = $s->{'chal'};
-$hash = sha256_hex ($LOGIN, $chal, $PASSWD);
+$hash = sha256_hex ($LOGIN, $chal, md5_hex ($PASSWD));
 
 $rep = HTTP::Request->new (POST => 'http://www.myproject.local/reply');
 $rep->content ('login=' . $LOGIN . '&chal=' . $chal . '&hash=' . $hash);
