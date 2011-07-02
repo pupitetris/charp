@@ -7,6 +7,16 @@ PREFIX=CHARP
 # (Uncomment and set accordingly if you are using Power Architect)
 #SQL_EXPORT="$HOME/Documents/charp.sql"
 
+# You may want to set this to a locale suitable to your country.
+# This is for Spanish/Mexico, UTF-8 (CHARP uses UTF-8 all around,
+# it is not recommended to switch to a diferent charset)
+DB_LOCALE=es_MX.utf8
+
+# Locales under Windows have a different nomeclature and Postgres
+# is system-dependent for locale specification. Set this accordingly
+# if you are using Windows.
+# DB_LOCALE_WIN="Spanish, Mexico"
+
 # *** No further editing needed after this line. ***
 
 CONF_DATABASE=${PREFIX}_PGDATABASE
