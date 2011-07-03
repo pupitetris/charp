@@ -7,9 +7,15 @@
 #
 # Licensed under the EUPL V.1.1. See the file LICENSE.txt for copying conditions.
 
-# Comandos para inicializar la BD
+# Commands to initialize the database
 
-BASEDIR=$CHARPDIR
+# Set the value of this variable to the name of the variable that points
+# to the project's code base.
+BASEDIR_VAR=CHARPDIR
+
+# *** No further editing needed after this line. ***
+
+BASEDIR=${!BASEDIR_VAR}
 
 export LANG="en_US.utf8"
 export LC_ALL="en_US.utf8"
@@ -30,63 +36,77 @@ if [ "$1" = "-nocat" ]; then
 fi
 
 if [ -z "$BASEDIR" ]; then
-    echo 'La variable BASEDIR no está definida.' >&2
+    echo '$BASEDIR_VAR is not defined.' >&2
     exit 1
 fi
 
 if [ ! -d "$BASEDIR" ]; then
-    echo "El valor de \$BASEDIR ($BASEDIR) no apunta a un directorio." >&2
+    echo "The value of \$$BASEDIR_VAR ($BASEDIR) does not point to a directory." >&2
     exit 3
 fi
 
 source "$BASEDIR/conf/config.sh"
 
-# Directorio donde se encuentra el SQL (para catálogos).
+# Directory where the project's SQL is found.
+SQLDIR="$BASEDIR/sql"
+cd $SQLDIR
+
+# Under Cygwin, transform the directory to Windows notation, 
+# since that's what the Windows-native Postgres requires for COPYs.
+# Also set the Windows-specific locale and make sure permissions are right
+# and kill any cgi-fcgi scripts so the database can be dropped.
 if [ $(uname -o) = 'Cygwin' ]; then
-    # En cygwin, transformar a notación Windows, ya que Postgres es instalado como programa nativo.
-    DIR=$(sed 's#/cygdrive/\(\w\+\)/#\1:/#' <<< "$BASEDIR/sql")
     IS_CYGWIN=1
+    SQLDIR=$(sed 's#/cygdrive/\(\w\+\)/#\1:/#' <<< "$SQLDIR")
+    DB_LOCALE=$DB_LOCALE_WIN
 
-    chmod -f 644 "$BASEDIR/sql/catalogs/"*.csv
-    chmod -f 644 "$BASEDIR/sql/datos_prueba/"*.csv
-else
-    DIR="$BASEDIR/sql"
+    chmod -f 644 catalogs/*.csv
+    chmod -f 644 datos_prueba/*.csv
+
+    $BASEDIR/scripts/kill-fcgi.sh
 fi
-
-cd $DIR
 
 if [ -e "$SQL_EXPORT" ]; then
-    $BASEDIR/scripts/fix-sql.pl < "$SQL_EXPORT" > $BASEDIR/sql/04-tables.sql
+    $BASEDIR/scripts/fix-sql.pl < "$SQL_EXPORT" > 04-tables.sql
 fi
 
-[ -z "$IS_CYGWIN" ] || $BASEDIR/scripts/kill-fcgi.sh
-
-# Checamos si podemos inicializar la base de datos antes de proceder con todos los scripts de 
-# sql para que no fallen.
+# Check if we can initialize the database before proceeding with the
+# rest of the SQL scripts so they don't fail.
 
 [ -z "$DB" ] || PGDATABASE=$DB
 
-psql -d postgres -c "DROP DATABASE IF EXISTS $PGDATABASE"
+psql -d postgres -U postgres -c "DROP DATABASE IF EXISTS $PGDATABASE"
 
-if psql -c "SELECT procpid, application_name, client_addr FROM pg_stat_activity WHERE current_query NOT LIKE '% pg_stat_activity %';" 2>/dev/null; then
-    echo 'No se pudo borrar la base de datos, algún cliente sigue conectado.' >&2
+if psql -U postgres -c "SELECT procpid, application_name, client_addr FROM pg_stat_activity WHERE current_query NOT LIKE '% pg_stat_activity %';" 2>/dev/null; then
+    echo 'The database couldn''t be deleted, a client is still connected.' >&2
     exit 2
 fi
 
-if [ ! -z "$IS_CYGWIN" ]; then
-    # El sistema de locale de Postgres es dependiente del SO: usar 'Spanish, Mexico' para Windows.
-    add_cmd=';s/es_MX.utf8/Spanish, Mexico/g'
-fi
+# This obscure function runs psql with our own set of configuration variables
+# and filters out unwanted psql NOTICEs.
+function psql_filter {
+    {
+	psql \
+	    -v conf_db=$PGDATABASE \
+	    -v conf_user=$PGUSER \
+	    -v conf_locale_q="'$DB_LOCALE'" \
+	    -v conf_sqldir_q="'$SQLDIR'" \
+	    "$@" 2>&1 >&3 3>&- | grep -v ''\
+'NOTICE:  CREATE TABLE / PRIMARY KEY \(will create implicit index\|crear. el .ndice impl.cito\)\|'\
+'NOTICE:  \(constraint\|no existe la restricci.n\)\|'\
+'NOTICE:  \(view\|la vista\)' >&2 3>&-
+    } 3>&1
+}
 
-sed "s/%db%/$PGDATABASE/g$add_cmd" 01-database.sql | psql -d postgres
-
-psql -f 02-pgcrypto.sql
-psql -f 03-types.sql
-psql -f 04-tables.sql 2>&1 | grep -v 'NOTICE:  CREATE TABLE / PRIMARY KEY \(will create implicit index\|crear. el .ndice impl.cito\)'
-#psql -f 04-tables-constraints.sql 2>&1 | grep -v 'NOTICE:  \(constraint\|no existe la restricci.n\)'
-psql -f 05-functions.sql
-#[ -z "$NOCAT" ] && sed 's#%dir%#'"$DIR"'#g' 06-catalogs.sql | psql
-#psql -f 07-views.sql 2>&1 | grep -v 'NOTICE:  \(view\|la vista\)'
-#psql -f 09-data.sql
-#[ -z "$TESTDATA" ] || sed 's#%dir%#'"$DIR"'#g' 98-testdata.sql | psql
-psql -f 99-test.sql
+# Finally run all of the SQL files.
+psql_filter -d postgres -U postgres -f 01-database.sql
+psql_filter -U postgres -f 02-pgcrypto.sql
+psql_filter -f 03-types.sql
+psql_filter -f 04-tables.sql
+[ -e 04-tables-constraints.sql ] && psql_filter -f 04-tables-constraints.sql
+psql_filter -f 05-functions.sql
+[ -e 06-catalogs.sql ] && [ -z "$NOCAT" ] && psql_filter 06-catalogs.sql
+[ -e 07-views.sql ] && psql_filter -f 07-views.sql
+[ -e 09-data.sql ] && psql_filter -f 09-data.sql
+if [ -e 98-testdata.sql ]; then [ -z "$TESTDATA" ] || psql_filter -f 98-testdata.sql; fi
+[ -e 99-test.sql ] && psql_filter -f 99-test.sql
