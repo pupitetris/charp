@@ -51,7 +51,7 @@ BEGIN
 END
 $BODY$
   LANGUAGE plpgsql STABLE;
-ALTER FUNCTION charp_account_get_id_by_username_status(character varying, charp_account_status) OWNER TO postgres;
+ALTER FUNCTION charp_account_get_id_by_username_status(character varying, charp_account_status) OWNER TO :conf_user;
 COMMENT ON FUNCTION charp_account_get_id_by_username_status(character varying, charp_account_status) IS 'Obtiene el ID de una cuenta por username. Levanta una excepción si el username no existe.';
 
 
@@ -69,7 +69,7 @@ BEGIN
 END
 $BODY$
   LANGUAGE plpgsql STABLE;
-ALTER FUNCTION charp_rp_get_function_by_name(character varying) OWNER TO postgres;
+ALTER FUNCTION charp_rp_get_function_by_name(character varying) OWNER TO :conf_user;
 
 
 CREATE OR REPLACE FUNCTION charp_request_create(_username character varying, _ip_addr inet, _function_name character varying, _params character varying)
@@ -91,7 +91,7 @@ BEGIN
 END
 $BODY$
   LANGUAGE plpgsql VOLATILE;
-ALTER FUNCTION charp_request_create(character varying, inet, character varying, character varying) OWNER TO postgres;
+ALTER FUNCTION charp_request_create(character varying, inet, character varying, character varying) OWNER TO :conf_user;
 COMMENT ON FUNCTION charp_request_create(character varying, inet, character varying, character varying) IS 'Registra una petición y devuelve un desafío para ser contestado por el cliente.';
 
 
@@ -123,7 +123,7 @@ BEGIN
 END
 $BODY$
   LANGUAGE plpgsql IMMUTABLE;
-ALTER FUNCTION charp_get_function_params(_proargtypes oidvector) OWNER TO postgres;
+ALTER FUNCTION charp_get_function_params(_proargtypes oidvector) OWNER TO :conf_user;
 COMMENT ON FUNCTION charp_get_function_params(_proargtypes oidvector) IS 'Convierte el arreglo de parámetros que requiere una función de oids a charp_param_type.';
 
 
@@ -138,7 +138,7 @@ BEGIN
 END
 $BODY$
   LANGUAGE plpgsql VOLATILE;
-ALTER FUNCTION charp_function_params(character varying) OWNER TO postgres;
+ALTER FUNCTION charp_function_params(character varying) OWNER TO :conf_user;
 COMMENT ON FUNCTION charp_function_params(character varying) IS 'Devuelve los tipos de parámetros de entrada que requiere un store procedure de la base.';
 
 
@@ -180,7 +180,7 @@ BEGIN
 END
 $BODY$
   LANGUAGE plpgsql VOLATILE;
-ALTER FUNCTION charp_request_check(character varying, inet, character varying, character varying) OWNER TO postgres;
+ALTER FUNCTION charp_request_check(character varying, inet, character varying, character varying) OWNER TO :conf_user;
 COMMENT ON FUNCTION charp_request_check(character varying, inet, character varying, character varying) IS 'Checa que haya una petición registrada con los datos aportados y compara la firma(hash) con una computada por el server, y devuelve datos necesarios para hacer la ejecución.';
 
 
@@ -193,7 +193,7 @@ BEGIN
 END
 $BODY$
   LANGUAGE plpgsql IMMUTABLE;
-ALTER FUNCTION rp_user_auth() OWNER TO postgres;
+ALTER FUNCTION rp_user_auth() OWNER TO :conf_user;
 COMMENT ON FUNCTION rp_user_auth() IS 'Devuelve trivialmente TRUE, ya que si el usuario se autentificó, es que los pasos anteriores ocurrieron sin problema y las credenciales son auténticas.';
 
 
@@ -207,5 +207,5 @@ BEGIN
 END
 $BODY$
   LANGUAGE plpgsql IMMUTABLE;
-ALTER FUNCTION rp_file_image_test(_filename varchar) OWNER TO postgres;
+ALTER FUNCTION rp_file_image_test(_filename varchar) OWNER TO :conf_user;
 COMMENT ON FUNCTION rp_file_image_test(_filename varchar) IS 'Devuelve trivialmente la ruta solicitada con tipo MIME para PNG, a ver si se despliega.';

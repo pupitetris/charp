@@ -6,11 +6,13 @@
 --
 -- Licensed under the EUPL V.1.1. See the file LICENSE.txt for copying conditions.
 
--- Tipos de dato para CHARP.
+-- CHARP data types.
+
+-- Allows charp_function_params to automatically detect when a Remote Procedure requests the user's ID
 CREATE DOMAIN charp_user_id AS integer;
 
 CREATE TYPE charp_param_type AS ENUM (
-	'UID', -- Será reemplazado por el id del usuario en request.pl.
+	'UID', -- Will be replaced by the ID of the user in request.pl so the client can't fake it.
 	'INT',
 	'STR',
 	'BOOL',

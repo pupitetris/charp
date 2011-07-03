@@ -14,7 +14,6 @@ BEGIN
 END
 $BODY$
   LANGUAGE plpgsql VOLATILE;
-ALTER FUNCTION rp_anon_get_random_bytes(character varying, character varying) OWNER TO postgres;
 
 
 COMMIT TRANSACTION;
