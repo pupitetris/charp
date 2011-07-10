@@ -1,26 +1,26 @@
 #!/bin/bash
-# Comandos para comparar cambios en la BD.
-# Mensajes por stderr, script resultante de la comparación por stdout
-# por ejemplo: ./diff.sh 2>/dev/null | tee update.sql | less
+# Commands to check changes on the DB structure.
+# Messages go through stderr, resulting script to stdout.
+# example: ./diff.sh 2>/dev/null | tee update.sql | less
 
-BASEDIR="$CHARPDIR"
+# Set the value of this variable to the name of the variable that points
+# to the project's code base.
+BASEDIR_VAR=CHARPDIR
+
+# *** No further editing needed after this line. ***
+
+BASEDIR=${!BASEDIR_VAR}
 
 export LANG="en_US.utf8"
 export LC_ALL="en_US.utf8"
 
-DO_CLEAN=0
-
-if [ "$1" = "-clean" ]; then
-    DO_CLEAN=1
-fi
-
 if [ -z "$BASEDIR" ]; then
-    echo 'La variable BASEDIR no está definida.' >&2
+    echo "$BASEDIR_VAR is not defined." >&2
     exit 1
 fi
 
 if [ ! -d "$BASEDIR" ]; then
-    echo "El valor de \$BASEDIR ($BASEDIR) no apunta a un directorio." >&2
+    echo "The value of \$$BASEDIR_VAR ($BASEDIR) does not point to a directory." >&2
     exit 3
 fi
 
