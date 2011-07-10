@@ -136,7 +136,7 @@ CHARP.prototype = {
     },
 
     requestSuccess: function (data, status, req, ctx) {
-	if (ctx.asAnon)
+	if (ctx && ctx.asAnon)
 	    return this.replySuccess (data, status, req, ctx);
 
 	if (req.status == 0 && req.responseText == "")
@@ -167,9 +167,11 @@ CHARP.prototype = {
 	    params: JSON.stringify (params)
 	};
 
-	if (this.login == '!anonymous')
+	if (this.login == '!anonymous') {
+	    if (!ctx) ctx = {};
 	    ctx.asAnon = true;
-	if (ctx.asAnon)
+	}
+	if (ctx && ctx.asAnon)
 	    data.anon = 1;
 
 	$.ajax ({
