@@ -36,7 +36,7 @@ if [ "$1" = "-nocat" ]; then
 fi
 
 if [ -z "$BASEDIR" ]; then
-    echo '$BASEDIR_VAR is not defined.' >&2
+    echo "$BASEDIR_VAR is not defined." >&2
     exit 1
 fi
 
