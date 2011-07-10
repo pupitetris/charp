@@ -10,14 +10,15 @@ use Data::Dumper;
 
 use URI::Escape;
 
-$LOGIN = uri_escape ($ARGV[0]);
-$PASSWD = uri_escape ($ARGV[1]);
-$FUNC = uri_escape ($ARGV[2]);
-$PARAMS = uri_escape ($ARGV[3]);
+$BASEURL = $ARGV[0];
+$LOGIN = uri_escape ($ARGV[1]);
+$PASSWD = uri_escape ($ARGV[2]);
+$FUNC = uri_escape ($ARGV[3]);
+$PARAMS = uri_escape ($ARGV[4]);
 
 $ua = LWP::UserAgent->new;
 
-$req = HTTP::Request->new (POST => 'http://www.myproject.local/request');
+$req = HTTP::Request->new (POST => "${BASEURL}/request");
 $req->content ("login=$LOGIN&res=$FUNC&params=$PARAMS");
 
 $res = $ua->request ($req);
@@ -47,7 +48,7 @@ if ($s->{'error'}) {
 $chal = $s->{'chal'};
 $hash = sha256_hex ($LOGIN, $chal, md5_hex ($PASSWD));
 
-$rep = HTTP::Request->new (POST => 'http://www.myproject.local/reply');
+$rep = HTTP::Request->new (POST => "${BASEURL}/reply");
 $rep->content ('login=' . $LOGIN . '&chal=' . $chal . '&hash=' . $hash);
 
 $res = $ua->request ($rep);

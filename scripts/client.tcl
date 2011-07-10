@@ -4,12 +4,11 @@ package require http
 package require json
 package require json::write
 
-set LOGIN [lindex $argv 0]
-set PASSWD [lindex $argv 1]
-set FUNC [lindex $argv 2]
-set PARAMS [lindex $argv 3]
-
-set BASEURL http://www.myproject.local
+set BASEURL [lindex $argv 0]
+set LOGIN [lindex $argv 1]
+set PASSWD [lindex $argv 2]
+set FUNC [lindex $argv 3]
+set PARAMS [lindex $argv 4]
 
 set http_tok [http::geturl $BASEURL/request -query [http::formatQuery login $LOGIN res $FUNC params $PARAMS] -keepalive 1]
 upvar #0 $http_tok res
