@@ -28,10 +28,6 @@ source "$BASEDIR/conf/config.sh"
 
 cd $BASEDIR/scripts || exit
 
-if [ $(uname -o) = 'Cygwin' ]; then
-    PGBINDIR="/cygdrive/d/Program Files/PostgreSQL/9.0/bin/"
-fi
-
 NEWDB=${PGDATABASE}_new_$RANDOM
     
 (

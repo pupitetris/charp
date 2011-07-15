@@ -47,19 +47,11 @@ fi
 
 source "$BASEDIR/conf/config.sh"
 
-# Directory where the project's SQL is found.
-SQLDIR="$BASEDIR/sql"
 cd $SQLDIR
 
-# Under Cygwin, transform the directory to Windows notation, 
-# since that's what the Windows-native Postgres requires for COPYs.
-# Also set the Windows-specific locale and make sure permissions are right
+# Under Cygwin, set the Windows-specific locale and make sure permissions are right
 # and kill any cgi-fcgi scripts so the database can be dropped.
-if [ $(uname -o) = 'Cygwin' ]; then
-    IS_CYGWIN=1
-    SQLDIR=$(sed 's#/cygdrive/\(\w\+\)/#\1:/#' <<< "$SQLDIR")
-    DB_LOCALE=$DB_LOCALE_WIN
-
+if [ $IS_CYGWIN = 1 ]; then
     chmod -f 644 catalogs/*.csv
     chmod -f 644 datos_prueba/*.csv
 
@@ -81,22 +73,6 @@ if psql -U postgres -c "SELECT procpid, application_name, client_addr FROM pg_st
     echo 'The database couldn''t be deleted, a client is still connected.' >&2
     exit 2
 fi
-
-# This obscure function runs psql with our own set of configuration variables
-# and filters out unwanted psql NOTICEs.
-function psql_filter {
-    {
-	psql \
-	    -v conf_db=$PGDATABASE \
-	    -v conf_user=$PGUSER \
-	    -v conf_locale_q="'$DB_LOCALE'" \
-	    -v conf_sqldir_q="'$SQLDIR'" \
-	    "$@" 2>&1 >&3 3>&- | grep -v ''\
-'NOTICE:  CREATE TABLE / PRIMARY KEY \(will create implicit index\|crear. el .ndice impl.cito\)\|'\
-'NOTICE:  \(constraint\|no existe la restricci.n\)\|'\
-'NOTICE:  \(view\|la vista\)' >&2 3>&-
-    } 3>&1
-}
 
 # Finally run all of the SQL files.
 psql_filter -d postgres -U postgres -f 01-database.sql
