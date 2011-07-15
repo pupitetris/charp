@@ -195,17 +195,3 @@ $BODY$
   LANGUAGE plpgsql IMMUTABLE;
 ALTER FUNCTION rp_user_auth() OWNER TO :conf_user;
 COMMENT ON FUNCTION rp_user_auth() IS 'Devuelve trivialmente TRUE, ya que si el usuario se autentificó, es que los pasos anteriores ocurrieron sin problema y las credenciales son auténticas.';
-
-
-CREATE OR REPLACE FUNCTION rp_file_image_test(_filename varchar)
-  RETURNS TABLE(mimetype text, filename text) AS
-$BODY$
-BEGIN
-	mimetype := 'image/png';
-	filename := _filename;
-	RETURN NEXT;
-END
-$BODY$
-  LANGUAGE plpgsql IMMUTABLE;
-ALTER FUNCTION rp_file_image_test(_filename varchar) OWNER TO :conf_user;
-COMMENT ON FUNCTION rp_file_image_test(_filename varchar) IS 'Devuelve trivialmente la ruta solicitada con tipo MIME para PNG, a ver si se despliega.';

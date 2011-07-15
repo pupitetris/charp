@@ -16,4 +16,16 @@ $BODY$
   LANGUAGE plpgsql VOLATILE;
 
 
+CREATE OR REPLACE FUNCTION rp_file_image_test(_filename varchar)
+  RETURNS TABLE(mimetype text, filename text) AS
+$BODY$
+BEGIN
+	mimetype := 'image/png';
+	filename := _filename;
+	RETURN NEXT;
+END
+$BODY$
+  LANGUAGE plpgsql IMMUTABLE;
+
+
 COMMIT TRANSACTION;
