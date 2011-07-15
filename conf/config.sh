@@ -9,7 +9,7 @@ PREFIX=CHARP
 
 # You may want to set this to a locale suitable to your country.
 # This is for Spanish/Mexico, UTF-8 (CHARP uses UTF-8 all around,
-# it is not recommended to switch to a diferent charset)
+# it is not recommended to switch to a diferent encoding).
 DB_LOCALE=es_MX.utf8
 
 # Locales under Windows have a different nomeclature and Postgres
