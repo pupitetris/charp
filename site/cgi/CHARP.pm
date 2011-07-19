@@ -56,7 +56,7 @@ $ERROR_SEV_EXIT = 5;
     'SQL:USERPARAMPERM'	 => { 'code' =>	       14, 'sev' => $ERROR_SEV_PERM,		'desc' => 'El usuario %s no tiene permiso de realizar esta operación.' },
     'SQL:USERPERM'	 => { 'code' =>	       15, 'sev' => $ERROR_SEV_PERM,		'desc' => 'Su cuenta no tiene los permisos necesarios para realizar esta operación.' },
     'SQL:MAILFAIL'	 => { 'code' =>	       17, 'sev' => $ERROR_SEV_USER,		'desc' => 'Hubo un error al intentar enviar un mensaje de correo a <%s>. Por favor, revise que la dirección esté bien escrita.' },
-    'SQL:DATADUP'	 => { 'code' =>        20, 'sev' => $ERROR_SEV_EXIT,		'desc' => 'Los datos no pudieron ser insertados por duplicidad.' },
+    'SQL:DATADUP'	 => { 'code' =>        20, 'sev' => $ERROR_SEV_USER,		'desc' => 'Los datos no pudieron ser insertados por duplicidad.' },
     'SQL:EXIT'		 => { 'code' =>        18, 'sev' => $ERROR_SEV_EXIT,		'desc' => '%s' }
 );
 
