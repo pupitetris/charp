@@ -206,6 +206,7 @@
 	    window.onbeforeunload = function () { return 'Por favor confirme que desea cerrar la aplicación.' };
 
 	// This should be defined by you, it's your entry point.
-	APP.main ();
+	if (APP.main)
+	    APP.main ();
     });
 }) ();
