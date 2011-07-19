@@ -35,7 +35,7 @@
 	return node;
     }
 
-    var mod = function (proc, area, cb, params) {
+    var mod = function (proc, area, params, cb) {
 	if (!params)
 	    params = [];
 	var path = [area, proc].concat (params);
