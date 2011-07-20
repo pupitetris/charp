@@ -186,12 +186,12 @@ CHARP.prototype = {
 	});
     },
 
-    credentialsSet: function (login, passwd_md5) {
+    credentialsSet: function (login, passwd_hash) {
 	this.login = login;
-	this.passwd = passwd_md5;
+	this.passwd = passwd_hash;
     },
 
-    credentialsSave: function (expiration) {
+    credentialsSave: function () {
 	localStorage.setItem ('charp_login', this.login);
 	localStorage.setItem ('charp_passwd', this.passwd);
     },
@@ -199,6 +199,7 @@ CHARP.prototype = {
     credentialsLoad: function () {
 	this.login = localStorage.getItem ('charp_login');
 	this.passwd = localStorage.getItem ('charp_passwd');
+	return this.login;
     },
     
     credentialsDelete: function () {
@@ -206,8 +207,8 @@ CHARP.prototype = {
 	localStorage.removeItem ('charp_passwd');
    },
     
-    init: function (login, passwd_md5) {
-	this.credentialsSet (login, passwd_md5);
+    init: function (login, passwd_hash) {
+	this.credentialsSet (login, passwd_hash);
 	return this;
     }
 };
