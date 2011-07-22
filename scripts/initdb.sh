@@ -81,8 +81,8 @@ psql_filter -f 03-types.sql
 psql_filter -f 04-tables.sql
 [ -e 04-tables-constraints.sql ] && psql_filter -f 04-tables-constraints.sql
 psql_filter -U postgres -f 05-functions.sql
-[ -e 06-catalogs.sql ] && [ -z "$NOCAT" ] && psql_filter -f 06-catalogs.sql
+[ -e 06-catalogs.sql ] && [ -z "$NOCAT" ] && psql_filter -U postgres -f 06-catalogs.sql
 [ -e 07-views.sql ] && psql_filter -f 07-views.sql
-[ -e 09-data.sql ] && psql_filter -f 09-data.sql
-if [ -e 98-testdata.sql ]; then [ -z "$TESTDATA" ] || psql_filter -f 98-testdata.sql; fi
+[ -e 09-data.sql ] && psql_filter -U postgres -f 09-data.sql
+if [ -e 98-testdata.sql ]; then [ -z "$TESTDATA" ] || psql_filter -U postgres -f 98-testdata.sql; fi
 [ -e 99-test.sql ] && psql_filter -f 99-test.sql
