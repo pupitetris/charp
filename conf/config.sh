@@ -63,7 +63,7 @@ function psql_filter {
 	    -v conf_db=${!CONF_DATABASE} \
 	    -v conf_user=${!CONF_USER} \
 	    -v conf_locale_q="'$DB_LOCALE'" \
-	    -v conf_sqldir_q="'$SQLDIR'" \
+	    -v conf_sqldir_q1="'$SQLDIR" \
 	    "$@" 2>&1 >&3 3>&- | grep -v ''\
 'NOTICE:  CREATE TABLE / PRIMARY KEY \(will create implicit index\|crear. el .ndice impl.cito\)\|'\
 'NOTICE:  \(constraint\|no existe la restricci.n\)\|'\
