@@ -85,4 +85,4 @@ psql_filter -U postgres -f 05-functions.sql
 [ -e 07-views.sql ] && psql_filter -f 07-views.sql
 [ -e 09-data.sql ] && psql_filter -U postgres -f 09-data.sql
 if [ -e 98-testdata.sql ]; then [ -z "$TESTDATA" ] || psql_filter -U postgres -f 98-testdata.sql; fi
-[ -e 99-test.sql ] && psql_filter -f 99-test.sql
+if [ -e 99-test.sql ]; then [ -z "$TESTDATA" ] || psql_filter -U postgres -f 99-test.sql; fi
