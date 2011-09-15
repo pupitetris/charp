@@ -51,7 +51,7 @@ cd $SQLDIR
 
 # Under Cygwin, set the Windows-specific locale and make sure permissions are right
 # and kill any cgi-fcgi scripts so the database can be dropped.
-if [ $IS_CYGWIN = 1 ]; then
+if [ ! -z "$IS_CYGWIN" ]; then
     chmod -f 644 catalogs/*.csv
     chmod -f 644 datos_prueba/*.csv
 
@@ -65,24 +65,28 @@ fi
 # Check if we can initialize the database before proceeding with the
 # rest of the SQL scripts so they don't fail.
 
-[ -z "$DB" ] || PGDATABASE=$DB
+if [ ! -z "$DB" ]; then
+    CONF_DATABASE=DB
+    export PGDATABASE=$DB
+fi
 
-psql -d postgres -U postgres -c "DROP DATABASE IF EXISTS $PGDATABASE"
+psql -d postgres -U $PGSUPERUSER -c "DROP DATABASE IF EXISTS $PGDATABASE"
 
-if psql -U postgres -c "SELECT procpid, application_name, client_addr FROM pg_stat_activity WHERE current_query NOT LIKE '% pg_stat_activity %';" 2>/dev/null; then
+if psql -U $PGSUPERUSER -c "SELECT procpid, application_name, client_addr FROM pg_stat_activity WHERE current_query NOT LIKE '% pg_stat_activity %';" 2>/dev/null; then
     echo 'The database couldn''t be deleted, a client is still connected.' >&2
     exit 2
 fi
 
 # Finally run all of the SQL files.
-psql_filter -d postgres -U postgres -f 01-database.sql
-psql_filter -U postgres -f 02-pgcrypto.sql
+psql_filter -d postgres -U $PGSUPERUSER -f 01-database.sql
+psql_filter -U $PGSUPERUSER -f 02-pgcrypto.sql
+psql_filter -f 02-charp.sql
 psql_filter -f 03-types.sql
 psql_filter -f 04-tables.sql
 [ -e 04-tables-constraints.sql ] && psql_filter -f 04-tables-constraints.sql
-psql_filter -U postgres -f 05-functions.sql
-[ -e 06-catalogs.sql ] && [ -z "$NOCAT" ] && psql_filter -U postgres -f 06-catalogs.sql
+psql_filter -U $PGSUPERUSER -f 05-functions.sql
+[ -e 06-catalogs.sql ] && [ -z "$NOCAT" ] && psql_filter -U $PGSUPERUSER -f 06-catalogs.sql
 [ -e 07-views.sql ] && psql_filter -f 07-views.sql
-[ -e 09-data.sql ] && psql_filter -U postgres -f 09-data.sql
-if [ -e 98-testdata.sql ]; then [ -z "$TESTDATA" ] || psql_filter -U postgres -f 98-testdata.sql; fi
-if [ -e 99-test.sql ]; then [ -z "$TESTDATA" ] || psql_filter -U postgres -f 99-test.sql; fi
+[ -e 09-data.sql ] && psql_filter -U $PGSUPERUSER -f 09-data.sql
+if [ -e 98-testdata.sql ]; then [ -z "$TESTDATA" ] || psql_filter -U $PGSUPERUSER -f 98-testdata.sql; fi
+if [ -e 99-test.sql ]; then [ -z "$TESTDATA" ] || psql_filter -U $PGSUPERUSER -f 99-test.sql; fi
