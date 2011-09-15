@@ -7,16 +7,23 @@
 // Licensed under the EUPL V.1.1. See the file LICENSE.txt for copying conditions.
 
 (function () {
-    function msgDialogAppendP (parent, text, className) {
+    function msgDialogAppendP (parent, contents, className) {
+	if (contents && typeof contents.selector != 'undefined') {
+	    contents.addClass (className);
+	    if (parent)
+		parent.append (contents);
+	    return contents;
+	}
+	
 	var p = $('<p />');
 	if (className)
 	    p.addClass (className);
 
-	if (text) {
-	    if (text.indexOf ('<>') == 0)
-		p.html (text.substr (2));
+	if (contents) {
+	    if (contents.indexOf ('<>') == 0)
+		p.html (contents.substr (2));
 	    else
-		p.text (text);
+		p.text (contents);
 	}
 
 	if (parent)
@@ -168,6 +175,7 @@
 	    });
 
 	    div.dialog (dialogOpts);
+	    return div;
 	},
 
 	msgDialogClose: function (div) {
