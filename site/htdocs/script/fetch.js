@@ -35,7 +35,7 @@
 	return node;
     }
 
-    var mod = function (proc, area, params, cb) {
+    var mod = function (proc, area, params, asAnon, cb) {
 	if (!params)
 	    params = [];
 	var path = [area, proc].concat (params);
@@ -43,7 +43,7 @@
 	if (data)
 	    cb (data);
 	else
-	    APP.charp.request (proc, params, { success: fetch_success, cb: cb, path: path });
+	    APP.charp.request (proc, params, { success: fetch_success, cb: cb, path: path, asAnon: asAnon });
     };
 
     mod.init = function () {
