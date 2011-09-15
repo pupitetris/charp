@@ -22,6 +22,9 @@ DB_LOCALE=es_MX.utf8
 # Otherwise, leave it commented.
 #PGBINDIR="/cygdrive/c/Program Files/PostgreSQL/9.0/bin/"
 
+# This is usually correct:
+PGSUPERUSER=postgres
+
 # *** No further editing needed after this line. ***
 
 CONF_DATABASE=${PREFIX}_PGDATABASE
