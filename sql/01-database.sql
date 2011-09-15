@@ -10,7 +10,7 @@
 
 \set conf_user_q '''' :conf_user ''''
 -- Extract user's password.
-\set conf_passwd_q '''' `grep $PGUSER $HOME/.pgpass | cut -f5- -d:` ''''
+\set conf_passwd_q '''' `[ -e $HOME/.pgpass ] && grep $PGUSER $HOME/.pgpass | cut -f5- -d:` ''''
 -- Create user if it doesn't exist.
 \set QUIET on
 CREATE FUNCTION charp_create_user(_username text, _passwd text)
@@ -53,4 +53,4 @@ CREATE DATABASE :conf_db
 \c :conf_db
 
 -- This may be required.
--- CREATE LANGUAGE plpythonu;
+--CREATE LANGUAGE plpythonu;
