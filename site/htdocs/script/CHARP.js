@@ -42,20 +42,20 @@ CHARP.prototype = {
 	if (ctx && ctx.error && !ctx.error (err, ctx, this))
 	    return;
 
-	APP.msgDialog ({ icon: (err.sev < 3)? 'error': 'warning',
-			 desc: err.desc,
-			 msg: err.msg,
-			 sev: this.ERROR_SEV_MSG[err.sev],
-			 title: 'Error ' + err.key + '(' + err.code + ')',
-			 opts: {
-			     resizable: true,
-			     height: 'auto',
-			     minHeight: 250,
-			     maxHeight: 400,
-			     width: 500,
-			     minWidth: 500,
-			     maxWidth: 800
-			 } });
+	return APP.msgDialog ({ icon: (err.sev < 3)? 'error': 'warning',
+				desc: err.desc,
+				msg: err.msg,
+				sev: this.ERROR_SEV_MSG[err.sev],
+				title: 'Error ' + err.key + '(' + err.code + ')',
+				opts: {
+				    resizable: true,
+				    height: 'auto',
+				    minHeight: 250,
+				    maxHeight: 400,
+				    width: 500,
+				    minWidth: 500,
+				    maxWidth: 800
+				} });
     },
 
     handleAjaxStatus: function (req, status, ctx) {
