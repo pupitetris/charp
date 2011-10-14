@@ -39,7 +39,7 @@ CHARP.prototype = {
     },
 
     handleError: function (err, ctx) {
-	if (ctx && ctx.error && !ctx.error (err, ctx, this))
+	if (ctx.error && !ctx.error (err, ctx, this))
 	    return;
 
 	return APP.msgDialog ({ icon: (err.sev < 3)? 'error': 'warning',
@@ -84,7 +84,7 @@ CHARP.prototype = {
 		return this.handleError (this.ERRORS['AJAX:JSON'], ctx);
 	    if (data.error)
 		return this.handleError (data.error, ctx);
-	    if (ctx && ctx.success) {
+	    if (ctx.success) {
 		if (!ctx.asArray && data.fields && data.data) {
 		    data.res = [];
 		    for (var i = 0, d; d = data.data[i]; i++) {
@@ -102,7 +102,7 @@ CHARP.prototype = {
     },
 
     replyComplete: function (req, status, ctx) {
-	if (ctx && ctx.complete)
+	if (ctx.complete)
 	    ctx.complete (status, ctx, req);
 
 	this.handleAjaxStatus (req, status, ctx);
@@ -136,7 +136,7 @@ CHARP.prototype = {
     },
 
     requestSuccess: function (data, status, req, ctx) {
-	if (ctx && ctx.asAnon)
+	if (ctx.asAnon)
 	    return this.replySuccess (data, status, req, ctx);
 
 	if (req.status == 0 && req.responseText == "")
@@ -150,7 +150,7 @@ CHARP.prototype = {
     },
     
     requestComplete: function (req, status, ctx) {
-	if (ctx && ctx.req_complete)
+	if (ctx.req_complete)
 	    ctx.req_complete (status, ctx, req);
 
 	this.handleAjaxStatus (req, status, ctx);
@@ -158,8 +158,11 @@ CHARP.prototype = {
 
     request: function (resource, params, ctx) {
 	var charp = this;
-	if (typeof ctx == 'function')
-	    ctx.success = ctx;
+
+	if (!ctx)
+	    ctx = {};
+	else if (typeof ctx == 'function')
+	    ctx = {success: ctx};
 
 	var data = {
 	    login: this.login,
@@ -167,11 +170,10 @@ CHARP.prototype = {
 	    params: JSON.stringify (params)
 	};
 
-	if (this.login == '!anonymous') {
-	    if (!ctx) ctx = {};
+	if (this.login == '!anonymous')
 	    ctx.asAnon = true;
-	}
-	if (ctx && ctx.asAnon)
+
+	if (ctx.asAnon)
 	    data.anon = 1;
 
 	$.ajax ({
