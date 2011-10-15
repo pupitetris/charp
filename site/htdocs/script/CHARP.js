@@ -85,15 +85,19 @@ CHARP.prototype = {
 	    if (data.error)
 		return this.handleError (data.error, ctx);
 	    if (ctx.success) {
-		if (!ctx.asArray && data.fields && data.data) {
-		    data.res = [];
-		    for (var i = 0, d; d = data.data[i]; i++) {
-			var o = {};
-			for (var j = 0, f; f = data.fields[j]; j++)
-			    o[f] = d[j];
-			data.res.push (o);
+		if (data.fields && data.data) {
+		    if (data.fields.length == 1 && data.fields[0] == 'rp_' + ctx.reqData.res)
+			data = data.data[0][0];
+		    else if (!ctx.asArray) {
+			data.res = [];
+			for (var i = 0, d; d = data.data[i]; i++) {
+			    var o = {};
+			    for (var j = 0, f; f = data.fields[j]; j++)
+				o[f] = d[j];
+			    data.res.push (o);
+			}
+			data = data.res;
 		    }
-		    data = data.res;
 		}
 		return ctx.success (data, ctx, this, req);
 	    }
@@ -175,6 +179,8 @@ CHARP.prototype = {
 
 	if (ctx.asAnon)
 	    data.anon = 1;
+
+	ctx.reqData = data;
 
 	$.ajax ({
 	    type: 'POST',
