@@ -228,13 +228,10 @@ COMMENT ON FUNCTION charp_request_check(character varying, inet, character varyi
 
 
 CREATE OR REPLACE FUNCTION rp_user_auth()
-  RETURNS TABLE(success boolean) AS
+  RETURNS boolean AS
 $BODY$
-BEGIN
-	success := TRUE;
-	RETURN NEXT;
-END
+	SELECT TRUE;
 $BODY$
-  LANGUAGE plpgsql IMMUTABLE;
+  LANGUAGE sql IMMUTABLE;
 ALTER FUNCTION rp_user_auth() OWNER TO :conf_user;
 COMMENT ON FUNCTION rp_user_auth() IS 'Devuelve trivialmente TRUE, ya que si el usuario se autentificó, es que los pasos anteriores ocurrieron sin problema y las credenciales son auténticas.';
