@@ -63,7 +63,7 @@
 	var fileButton = $('#file-button');
 
 	function login_success (data, ctx, charp, req) {
-	    if (data && data[0].success) {
+	    if (data) {
 		alert ('Autentificación exitosa.');
 		APP.buttonBusy (loginButton, false);
 	    }
