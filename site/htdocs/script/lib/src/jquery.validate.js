@@ -583,6 +583,7 @@ $.extend($.validator, {
 				message = jQuery.format(message.replace(theregex, '{$1}'), rule.parameters);
 			}
 			this.errorList.push({
+				rule: rule,
 				message: message,
 				element: element
 			});
