@@ -2,7 +2,7 @@ BEGIN TRANSACTION;
       SET CONSTRAINTS ALL DEFERRED;
 
       -- password is ``blah''
-      INSERT INTO account(account_id, username, passwd, status)
+      INSERT INTO account(persona_id, username, passwd, status)
       	     VALUES (DEFAULT, 'testuser', '6f1ed002ab5595859014ebf0951522d9', 'ACTIVE');
 
 CREATE OR REPLACE FUNCTION rp_anon_get_random_bytes(_start character varying, _end character varying)
