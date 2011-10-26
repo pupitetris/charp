@@ -39,7 +39,7 @@ CHARP.prototype = {
     },
 
     handleError: function (err, ctx) {
-	if (ctx.error && !ctx.error (err, ctx, this))
+	if (ctx && ctx.error && !ctx.error (err, ctx, this))
 	    return;
 
 	return APP.msgDialog ({ icon: (err.sev < 3)? 'error': 'warning',
