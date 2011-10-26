@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<architect-project version="1.0" appversion="1.0.5">
+<architect-project version="1.0" appversion="1.0.6">
  <project-name>CHARP</project-name>
  <print-settings printerName="NPI2D47AF (HP Color LaserJet CP2025n)" numCopies="1" zoom="0.43" pageNumbersPrinted="true" orientation="0" paperWidth="612.0" paperHeight="792.0" leftBorder="50.00314960629921" rightBorder="50.003149606299225" topBorder="50.00314960629921" bottomBorder="50.00314960629917" />
  <project-data-sources>
@@ -34,7 +34,7 @@
     <column id="COL4" populated="true" UUID="64a2cca3-f814-4194-b9d5-bb630911154c" autoIncrement="false" defaultValue="" name="request_id" nullable="0" physicalName="request_id" precision="64" primaryKeySeq="0" referenceCount="1" scale="0" sourceDataTypeName="UserDefinedSQLType" type="12" userDefinedTypeUUID="831ac2d4-0e65-47ec-a0b7-62b7f6b8760a" >
      <remarks></remarks>
     </column>
-    <column id="COL5" populated="true" UUID="30fa0243-ba49-4a9b-8751-cd2a713c836d" autoIncrement="false" defaultValue="" name="account_id" nullable="0" physicalName="account_id" precision="0" referenceCount="1" scale="0" sourceDataTypeName="UserDefinedSQLType" type="4" userDefinedTypeUUID="63b011c7-c81f-4c75-8271-632b3c87f727" >
+    <column id="COL5" populated="true" UUID="30fa0243-ba49-4a9b-8751-cd2a713c836d" autoIncrement="false" defaultValue="" name="persona_id" nullable="0" physicalName="persona_id" precision="0" referenceCount="1" scale="0" sourceDataTypeName="UserDefinedSQLType" type="4" userDefinedTypeUUID="63b011c7-c81f-4c75-8271-632b3c87f727" >
      <remarks></remarks>
     </column>
     <column id="COL6" populated="true" UUID="308d7c84-a72b-4fa3-bd62-c823766ae52a" autoIncrement="false" defaultValue="" name="timestamp" nullable="0" physicalName="timestamp" precision="0" referenceCount="1" scale="0" sourceDataTypeName="UserDefinedSQLType" type="93" userDefinedTypeUUID="6497d8de-0e00-40d6-a42e-e2adca83be64" >
@@ -101,7 +101,7 @@
   <table id="TAB23" populated="true" UUID="183f444a-b781-44bf-a631-d4fb86af7405" name="account" objectType="TABLE" physicalName="account" >
    <remarks></remarks>
    <folder id="FOLTAB231" populated="true" name="Columns" physicalName="Columns" type="1">
-    <column id="COL24" populated="true" UUID="200afec4-9303-4233-8534-aa937b54efbc" autoIncrement="true" defaultValue="" name="account_id" nullable="0" physicalName="account_id" precision="0" primaryKeySeq="0" referenceCount="1" scale="0" sourceDataTypeName="UserDefinedSQLType" type="4" userDefinedTypeUUID="63b011c7-c81f-4c75-8271-632b3c87f727" >
+    <column id="COL24" populated="true" UUID="200afec4-9303-4233-8534-aa937b54efbc" autoIncrement="true" defaultValue="" name="persona_id" nullable="0" physicalName="persona_id" precision="0" primaryKeySeq="0" referenceCount="1" scale="0" sourceDataTypeName="UserDefinedSQLType" type="4" userDefinedTypeUUID="63b011c7-c81f-4c75-8271-632b3c87f727" >
      <remarks></remarks>
     </column>
     <column id="COL25" populated="true" UUID="ca317fc7-1579-4f59-bad4-01c6d2ad1a46" autoIncrement="false" defaultValue="" name="username" nullable="0" physicalName="username" precision="20" referenceCount="1" scale="0" sourceDataTypeName="UserDefinedSQLType" type="12" userDefinedTypeUUID="831ac2d4-0e65-47ec-a0b7-62b7f6b8760a" >
@@ -120,7 +120,7 @@
     </folder>
     <folder id="FOLTAB234" populated="true" name="Indices" physicalName="Indices" type="4">
     <index id="IDX28" populated="true" UUID="f8d63230-fcd3-4de7-a305-ad32e92a2b82" clustered="false" name="account_pk" physicalName="account_pk" primaryKeyIndex="true" unique="false" >
-     <index-column id="IDC29" populated="true" UUID="2577847f-d93e-42d7-aa42-c520fdccd83a" ascendingOrDescending="UNSPECIFIED" column-ref="COL24" name="account_id" physicalName="account_id" />
+     <index-column id="IDC29" populated="true" UUID="2577847f-d93e-42d7-aa42-c520fdccd83a" ascendingOrDescending="UNSPECIFIED" column-ref="COL24" name="persona_id" physicalName="persona_id" />
     </index>
     <index id="IDX30" populated="true" UUID="229e7fed-ec1a-4795-976f-56b0ed3a4b13" clustered="false" name="account_idx" physicalName="account_idx" primaryKeyIndex="false" unique="true" >
      <index-column id="IDC31" populated="true" UUID="4cd939e9-4d83-49f7-aafa-9bb397d0e3b3" ascendingOrDescending="UNSPECIFIED" column-ref="COL25" name="username" physicalName="username" />
@@ -133,7 +133,7 @@
    </relationship>
   </relationships>
  </target-database>
- <ddl-generator type="ca.sqlpower.architect.ddl.PostgresDDLGenerator" allow-connection="false" target-schema="public"> </ddl-generator>
+ <ddl-generator type="ca.sqlpower.architect.ddl.PostgresDDLGenerator" allow-connection="true" target-schema="public"> </ddl-generator>
  <liquibase-settings useSeparateChangeSets="false" generateId="false" idStart="1"/>
  <create-kettle-job-settings filePath="test" jobName="Export" schemaName="" kettleJoinType="0" savingToFile="true" />
  <play-pen zoom="1.0" viewportX="0" viewportY="0" relationship-style="rectilinear" names-displayLogicalNames="true" showPrimaryTag="true" showForeignTag="true" showAlternateTag="true" columnVisibility="ALL" relationshipLabelVisibility="true">

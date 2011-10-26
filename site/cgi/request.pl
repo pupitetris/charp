@@ -40,7 +40,7 @@ sub request_challenge {
 	my $func_sth = $ctx->{'func_sth'};
 	my $rv = $func_sth->execute ($req_res);
 	if (!defined $rv) {
-	    CHARP::error_execute_send ($fcgi, '(' . $func_sth->state . ")" . $DBI::errstr, $ctx->{'err_sth'}, $req_login, $ip_addr, $req_res);
+	    CHARP::error_execute_send ($fcgi, $func_sth, $req_login, $ip_addr, $req_res);
 	    return;
 	}
 	my $rh = ${$func_sth->fetchall_arrayref ({})}[0];
@@ -58,7 +58,7 @@ sub request_challenge {
     my $rv = $chal_sth->execute ($req_login, $ip_addr, $req_res, $req_params);
 
     if (!defined $rv) {
-	CHARP::error_execute_send ($fcgi, '(' . $chal_sth->state . ')' . $DBI::errstr, $ctx->{'err_sth'}, $req_login, $ip_addr, $req_res);
+	CHARP::error_execute_send ($fcgi, $chal_sth, $req_login, $ip_addr, $req_res);
 	return;
     }
 
@@ -154,7 +154,7 @@ sub request_reply {
     my $rv = $chk_sth->execute ($req_login, $ip_addr, $req_chal, $req_hash);
 
     if (!defined $rv) {
-	CHARP::error_execute_send ($fcgi, '(' . $chk_sth->state . ')' . $DBI::errstr, $ctx->{'err_sth'}, $req_login, $ip_addr, 'REQUEST_CHECK');
+	CHARP::error_execute_send ($fcgi, $chk_sth, $req_login, $ip_addr, 'REQUEST_CHECK');
 	return;
     }
 
@@ -228,7 +228,7 @@ sub request_reply_do {
     my $rv = $sth->execute ();
 
     if (!defined $rv) {
-	CHARP::error_execute_send ($fcgi, '(' . $sth->state . ')' . $DBI::errstr, $ctx->{'err_sth'}, $req_login, $ip_addr, $fname);
+	CHARP::error_execute_send ($fcgi, $sth, $req_login, $ip_addr, $fname);
 	return;
     }
 
@@ -273,62 +273,10 @@ sub main {
     my $dbh = CHARP::connect ();
     return if !defined $dbh;
 
-    my $err_sth = $dbh->prepare ('SELECT charp_log_error (?, ?, ?, ?, ?, ?)', 
-				 { 'pg_server_prepare' => 1 });
-    if (!defined $err_sth) {
-	dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
-	return;
-    }
-
-    $err_sth->bind_param (1, undef, SQL_VARCHAR); # type
-    $err_sth->bind_param (2, undef, SQL_VARCHAR); # login
-    $err_sth->bind_param (3, undef, { 'pg_type' => PG_INET }); # ip_addr
-    $err_sth->bind_param (4, undef, SQL_VARCHAR); # resource
-    $err_sth->bind_param (5, undef, SQL_VARCHAR); # msg
-    $err_sth->bind_param (6, undef, { 'pg_type' => PG_VARCHARARRAY }); # params
-
-    my $chal_sth = $dbh->prepare ('SELECT charp_request_create (?, ?, ?, ?) AS chal', 
-			     { 'pg_server_prepare' => 1 });
-    if (!defined $chal_sth) {
-	CHARP::dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
-	return;
-    }
-
-    $chal_sth->bind_param (1, undef, SQL_VARCHAR); # login
-    $chal_sth->bind_param (2, undef, { 'pg_type' => PG_INET }); # ip_addr
-    $chal_sth->bind_param (3, undef, SQL_VARCHAR); # resource
-    $chal_sth->bind_param (4, undef, SQL_VARCHAR); # params
-
-    my $chk_sth = $dbh->prepare ('SELECT * FROM charp_request_check (?, ?, ?, ?)', 
-				  { 'pg_server_prepare' => 1 });
-    if (!defined $chk_sth) {
-	CHARP::dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
-	return;
-    }
-
-    $chk_sth->bind_param (1, undef, SQL_VARCHAR); # login
-    $chk_sth->bind_param (2, undef, { 'pg_type' => PG_INET }); # ip_addr
-    $chk_sth->bind_param (3, undef, SQL_VARCHAR); # chal
-    $chk_sth->bind_param (4, undef, SQL_VARCHAR); # hash
-
-    my $func_sth = $dbh->prepare ('SELECT charp_function_params (?) AS fparams', 
-				  { 'pg_server_prepare' => 1 });
-    if (!defined $func_sth) {
-	CHARP::dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
-	return;
-    }
-
-    $func_sth->bind_param (1, undef, SQL_VARCHAR); # fname
+    my $ctx = CHARP::init ($dbh);
 
     # Loop mientras lleguen peticiones
-    CHARP::dispatch (\&request_main, 
-		    { 
-			'dbh'	   => $dbh, 
-			'chal_sth' => $chal_sth,
-			'chk_sth'  => $chk_sth,
-			'func_sth' => $func_sth,
-			'err_sth'  => $err_sth
-		    });
+    CHARP::dispatch (\&request_main, $ctx);
     $dbh->disconnect ();
 }
 
