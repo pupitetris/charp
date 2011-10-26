@@ -126,7 +126,7 @@
 	    if (opts.desc)
 		msgDialogAppendP (div, opts.desc, 'desc');
 	    if (opts.msg)
-		msgDialogAppendP (div, opts.msg, 'msg' + (APP.DEVEL? ' msg-mono': ''));
+		msgDialogAppendP (div, opts.msg, 'msg');
 	    if (opts.sev)
 		msgDialogAppendP (div, opts.sev, 'error-sev');
 
