@@ -57,19 +57,26 @@ $BODY$
 LANGUAGE plpgsql VOLATILE;
 
 
-CREATE OR REPLACE FUNCTION charp_raise(_code charp_error_code, VARIADIC _args text[] DEFAULT ARRAY[]::text[])
+CREATE OR REPLACE FUNCTION charp_raise(_code text, VARIADIC _args text[] DEFAULT ARRAY[]::text[])
   RETURNS void AS
 $BODY$
 DECLARE
 	_i integer;
+	_code_t charp_error_code;
 BEGIN
+	IF substring(_code FROM 1 FOR 1) = '-' THEN
+	   _code_t := substring(_code FROM 2);
+	ELSE
+	   _code_t := _code;
+	END IF;
+
 	IF array_length(_args, 1) IS NOT NULL THEN
 	   FOR _i IN 1 .. array_length(_args, 1) LOOP
 	       _args[_i] := quote_literal(_args[_i]);
 	   END LOOP;
 	END IF;
 
-	RAISE EXCEPTION '|>%|{%}|', _code::text, array_to_string(_args, ',');
+	RAISE EXCEPTION '|>%|{%}|', _code, array_to_string(_args, ',');
 END;
 $BODY$
 LANGUAGE plpgsql VOLATILE;
