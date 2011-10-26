@@ -39,12 +39,16 @@ CHARP.prototype = {
     },
 
     handleError: function (err, ctx) {
-	if (ctx && ctx.error && !ctx.error (err, ctx, this))
-	    return;
+	if (ctx) {
+	    if (!err.ctx)
+		err.ctx = ctx;
+	    if (ctx.error && !ctx.error (err, ctx, this))
+		return;
+	}
 
 	return APP.msgDialog ({ icon: (err.sev < 3)? 'error': 'warning',
 				desc: err.desc,
-				msg: err.msg,
+				msg: '<><pre>' + err.ctx.reqData.res + ': ' + err.statestr + ' (' + err.state + ')<br />' + err.msg + '</pre>',
 				sev: this.ERROR_SEV_MSG[err.sev],
 				title: 'Error ' + err.key + '(' + err.code + ')',
 				opts: {
