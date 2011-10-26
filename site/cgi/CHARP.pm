@@ -6,10 +6,10 @@
 #
 # Licensed under the EUPL V.1.1. See the file LICENSE.txt for copying conditions.
 
+package CHARP;
+
 use DBI qw(:sql_types);
 use DBD::Pg qw(:pg_types);
-
-package CHARP;
 
 use Encode qw(encode decode);
 use CGI::Fast qw(:cgi);
@@ -68,6 +68,81 @@ foreach my $key (keys %ERRORS) {
     $err->{'key'} = $key;
 }
 
+%CHARP::pg_errcodes = ();
+open (my $efd, 'errcodes.txt') || die "Can't open errcodes.txt file.";
+while (my $l = <$efd>) {
+    chomp $l;
+    $l =~ s/^\s*//;
+    next if $l =~ /^#/;
+    next if $l =~ /^$/;
+    next if $l =~ /^Section/;
+    if ($l =~ /(^[0-9A-Z]{5})\s+([EWS])\s+(\w+)\s+(\w+)/) {
+	$CHARP::pg_errcodes{$1} = $4;
+    }
+}
+
+sub init {
+    my $dbh = shift;
+
+    my $err_sth = $dbh->prepare ('SELECT charp_log_error (?, ?, ?, ?, ?, ?)', 
+				 { 'pg_server_prepare' => 1 });
+    if (!defined $err_sth) {
+	dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
+	return;
+    }
+
+    $err_sth->bind_param (1, undef, SQL_VARCHAR); # type
+    $err_sth->bind_param (2, undef, SQL_VARCHAR); # login
+    $err_sth->bind_param (3, undef, { 'pg_type' => PG_INET }); # ip_addr
+    $err_sth->bind_param (4, undef, SQL_VARCHAR); # resource
+    $err_sth->bind_param (5, undef, SQL_VARCHAR); # msg
+    $err_sth->bind_param (6, undef, { 'pg_type' => PG_VARCHARARRAY }); # params
+
+    my $chal_sth = $dbh->prepare ('SELECT charp_request_create (?, ?, ?, ?) AS chal', 
+				  { 'pg_server_prepare' => 1 });
+    if (!defined $chal_sth) {
+	dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
+	return;
+    }
+
+    $chal_sth->bind_param (1, undef, SQL_VARCHAR); # login
+    $chal_sth->bind_param (2, undef, { 'pg_type' => PG_INET }); # ip_addr
+    $chal_sth->bind_param (3, undef, SQL_VARCHAR); # resource
+    $chal_sth->bind_param (4, undef, SQL_VARCHAR); # params
+
+    my $chk_sth = $dbh->prepare ('SELECT * FROM charp_request_check (?, ?, ?, ?)', 
+				 { 'pg_server_prepare' => 1 });
+    if (!defined $chk_sth) {
+	dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
+	return;
+    }
+
+    $chk_sth->bind_param (1, undef, SQL_VARCHAR); # login
+    $chk_sth->bind_param (2, undef, { 'pg_type' => PG_INET }); # ip_addr
+    $chk_sth->bind_param (3, undef, SQL_VARCHAR); # chal
+    $chk_sth->bind_param (4, undef, SQL_VARCHAR); # hash
+
+    my $func_sth = $dbh->prepare ('SELECT charp_function_params (?) AS fparams', 
+				  { 'pg_server_prepare' => 1 });
+    if (!defined $func_sth) {
+	dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
+	return;
+    }
+
+    $func_sth->bind_param (1, undef, SQL_VARCHAR); # fname
+
+    my $ctx = { 
+	'dbh'	   => $dbh, 
+	'chal_sth' => $chal_sth,
+	'chk_sth'  => $chk_sth,
+	'func_sth' => $func_sth,
+	'err_sth'  => $err_sth
+    };
+
+    $CHARP::ctx = $ctx;
+    return $ctx;
+}
+
 # Para pruebas, agregar ->pretty.
 $JSON = JSON::XS->new;
 
@@ -103,6 +178,8 @@ sub error_send {
     my $err_key = $ctx->{'err'};
     my $msg = $ctx->{'msg'};
     my $parms = $ctx->{'parms'};
+    my $state = $ctx->{'state'};
+    my $statestr = $ctx->{'statestr'};
     $parms = undef if defined $parms && scalar (@$parms) < 0;
 
     my %err = %{$ERRORS{$err_key}};
@@ -111,6 +188,12 @@ sub error_send {
     }
     if (defined $msg) {
 	$err{'msg'} = $msg;
+    }
+    if (defined $state) {
+	$err{'state'} = $state;
+    }
+    if (defined $statestr) {
+	$err{'statestr'} = $statestr;
     }
 
     json_send ($fcgi, { 'error' => \%err });
@@ -136,27 +219,36 @@ sub parse_csv {
 }
 
 sub error_execute_send {
-    my ($fcgi, $errstr, $err_sth, $login, $ip_addr, $res) = @_;
+    my ($fcgi, $sth, $login, $ip_addr, $res) = @_;
 
-    my ($code, $msg, @parms);
-    my @fields = split ('\|', $errstr, 3);
-    if (substr ($fields[1], 0, 1) eq '>') { # Probablemente una excepción levantada por nosotros.
-	my $err_type = substr ($fields[1], 1);
+    my ($dolog, $err_type, $code, $msg, @parms, $parms_str);
+    my @fields = split ('\|', $sth->errstr, 3);
+    if (substr ($fields[1], 0, 1) eq '>') { # Probablemente una excepción levantada por nosotros (charp_raise).
+	if (substr ($fields[1], 1, 1) eq '-') {
+	    $err_type = substr ($fields[1], 2);
+	} else {
+	    $dolog = 1;
+	    $err_type = substr ($fields[1], 1);
+	}
 	$fields[2] =~ /^({('.*[^\\]\')})\|/;
-	my $parms_str = $1;
-	my $query = '';
+	$parms_str = $1;
 
 	$parms_str = "''" if $parms_str eq '';
 	@parms = parse_csv (substr ($parms_str, 1, -1));
 	$code = 'SQL:' . $err_type;
 	$msg = substr ($fields[2], length ($parms_str) + 2);
-
-	$err_sth->execute ($err_type, $login, $ip_addr, $res, $msg, $parms_str);
     } else { # Error en el execute, no es una excepción nuestra.
-	$code = 'DBI:EXECUTE';
-	$msg = $errstr;
+	$err_type = 'EXECUTE';
+	$code = 'DBI:' . $err_type;
+	$msg = $sth->errstr;
+	$parms_str = '';
     }
-    error_send ($fcgi, { 'err' => $code, 'msg' => $msg, 'parms' => \@parms });
+    my $state = $sth->state;
+
+    if ($dolog) {
+	$CHARP::ctx->{'err_sth'}->execute ($err_type, $login, $ip_addr, $res, $msg, $parms_str);
+    }
+    error_send ($fcgi, { 'err' => $code, 'msg' => $msg, 'parms' => \@parms, 'state' => $state, 'statestr' => $CHARP::pg_errcodes{$state} });
 }
 
 sub dispatch_error {
