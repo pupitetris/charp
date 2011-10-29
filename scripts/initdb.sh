@@ -78,15 +78,15 @@ if psql -U $PGSUPERUSER -c "SELECT procpid, application_name, client_addr FROM p
 fi
 
 # Finally run all of the SQL files.
-psql_filter -d postgres -U $PGSUPERUSER -f 01-database.sql
-psql_filter -U $PGSUPERUSER -f 02-pgcrypto.sql
-psql_filter -f 02-charp.sql
-psql_filter -f 03-types.sql
-psql_filter -f 04-tables.sql
-[ -e 04-tables-constraints.sql ] && psql_filter -f 04-tables-constraints.sql
-psql_filter -U $PGSUPERUSER -f 05-functions.sql
-[ -e 06-catalogs.sql ] && [ -z "$NOCAT" ] && psql_filter -U $PGSUPERUSER -f 06-catalogs.sql
-[ -e 07-views.sql ] && psql_filter -f 07-views.sql
-[ -e 09-data.sql ] && psql_filter -U $PGSUPERUSER -f 09-data.sql
-if [ -e 98-testdata.sql ]; then [ -z "$TESTDATA" ] || psql_filter -U $PGSUPERUSER -f 98-testdata.sql; fi
-if [ -e 99-test.sql ]; then [ -z "$TESTDATA" ] || psql_filter -U $PGSUPERUSER -f 99-test.sql; fi
+psql_filter 01-database.sql -d postgres -U $PGSUPERUSER
+psql_filter 02-pgcrypto.sql -U $PGSUPERUSER
+psql_filter 02-charp.sql
+psql_filter 03-types.sql
+psql_filter 04-tables.sql
+[ -e 04-tables-constraints.sql ] && psql_filter 04-tables-constraints.sql
+psql_filter 05-functions.sql -U $PGSUPERUSER
+[ -e 06-catalogs.sql ] && [ -z "$NOCAT" ] && psql_filter 06-catalogs.sql -U $PGSUPERUSER
+[ -e 07-views.sql ] && psql_filter 07-views.sql
+[ -e 09-data.sql ] && psql_filter 09-data.sql -U $PGSUPERUSER
+if [ -e 98-testdata.sql ]; then [ -z "$TESTDATA" ] || psql_filter 98-testdata.sql -U $PGSUPERUSER; fi
+if [ -e 99-test.sql ]; then [ -z "$TESTDATA" ] || psql_filter 99-test.sql -U $PGSUPERUSER; fi

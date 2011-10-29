@@ -45,7 +45,8 @@ if [ ! -d "${!CONF_DIR}" ]; then
 fi
 
 BASEDIR="${!CONF_DIR}"
-TESTDIR="$BASEDIR/scripts/test"
+CONFIGDIR="$BASEDIR"/conf
+TESTDIR="$BASEDIR"/scripts/test
 
 # Directory where the project's SQL is found.
 SQLDIR="$BASEDIR/sql"
@@ -62,12 +63,15 @@ fi
 # and filters out unwanted psql NOTICEs.
 function psql_filter {
     {
-	psql \
-	    -v conf_db=${!CONF_DATABASE} \
-	    -v conf_user=${!CONF_USER} \
-	    -v conf_locale_q="'$DB_LOCALE'" \
-	    -v conf_sqldir_q1="'$SQLDIR" \
-	    "$@" 2>&1 >&3 3>&- | grep -v ''\
+	local sql_file=$1
+	shift
+	m4 -P "$CONFIGDIR"/config_init.m4 \
+	    -D CONF_USER=${!CONF_USER} \
+	    -D CONF_DATABASE=${!CONF_DATABASE} \
+	    -D CONF_LOCALE="$DB_LOCALE" \
+	    -D CONF_SQLDIR="$SQLDIR" \
+	    "$CONFIGDIR"/config.m4 "$CONFIGDIR"/config_end.m4 "$sql_file" | 
+	psql "$@" 2>&1 >&3 3>&- | grep -v ''\
 'NOTICE:  CREATE TABLE / PRIMARY KEY \(will create implicit index\|crear. el .ndice impl.cito\)\|'\
 'NOTICE:  \(constraint\|no existe la restricci.n\)\|'\
 'NOTICE:  \(view\|la vista\)' >&2 3>&-
