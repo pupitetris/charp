@@ -38,8 +38,10 @@
 
 	loadModule: function (name, cb, errCb) {
 	    if (APP[name]) {
-		if (!APP[name].initialized && APP[name].init)
+		if (!APP[name].initialized && APP[name].init) {
+		    APP[name].MOD_NAME = name;
 		    APP[name].init ();
+		}
 		if (APP[name].onLoad)
 		    APP[name].onLoad ();
 		if (cb) cb (APP[name]);
@@ -52,8 +54,10 @@
 		$.ajax ({ dataType: 'script',
 			     url: 'script/' + name + '.js' + add, 
 			     success: function () {
-				 if (APP[name] && APP[name].init)
+				 if (APP[name] && APP[name].init) {
+				     APP[name].MOD_NAME = name;
 				     APP[name].init ();
+				 }
 				 if (cb) cb (APP[name]);
 			     },
 			     error: (errCb)? errCb:
