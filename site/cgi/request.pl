@@ -175,6 +175,8 @@ sub request_reply_do {
     my $req_params = $req->{'req_params'};
     my $req_user_id = $req->{'user_id'};
 
+    my $ip_addr = $fcgi->remote_addr ();
+
     my @fparams_arr = split (',', substr ($fparams, 1, -1));
     my $num_fparams = scalar (@fparams_arr);
 
