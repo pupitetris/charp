@@ -42,7 +42,8 @@ NEWDB=${PGDATABASE}_new_$RANDOM
 )
 
 # http://apgdiff.startnet.biz/how_to_use_it.php
-java -jar bin/apgdiff.jar --ignore-start-with prod.sql new.sql > $NEWDB
+java -jar bin/apgdiff.jar --ignore-start-with prod.sql new.sql |
+     sed 's/^CREATE OR REPLACE FUNCTION \([^)]*)\)/DROP FUNCTION IF EXISTS \1;\n\nCREATE FUNCTION \1/' > $NEWDB
 
 rm -f prod.sql new.sql
 
