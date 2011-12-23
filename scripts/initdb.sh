@@ -70,9 +70,9 @@ if [ ! -z "$DB" ]; then
     export PGDATABASE=$DB
 fi
 
-psql -d postgres -U $PGSUPERUSER -c "DROP DATABASE IF EXISTS $PGDATABASE"
+psql -q -d postgres -U $PGSUPERUSER -c "DROP DATABASE IF EXISTS $PGDATABASE"
 
-if psql -U $PGSUPERUSER -c "SELECT procpid, application_name, client_addr FROM pg_stat_activity WHERE current_query NOT LIKE '% pg_stat_activity %';" 2>/dev/null; then
+if psql -q -U $PGSUPERUSER -c "SELECT procpid, application_name, client_addr FROM pg_stat_activity WHERE current_query NOT LIKE '% pg_stat_activity %';" 2>/dev/null; then
     echo 'The database couldn''t be deleted, a client is still connected.' >&2
     exit 2
 fi

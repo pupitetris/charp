@@ -11,7 +11,6 @@
 -- Extract user's password.
 \set passwd '''' `[ -e $HOME/.pgpass ] && grep $PGUSER $HOME/.pgpass | cut -f5- -d:` ''''
 -- Create user if it doesn't exist.
-\set QUIET on
 CREATE FUNCTION charp_create_user(_username text, _passwd text)
   RETURNS VOID AS
 $BODY$
@@ -34,7 +33,6 @@ SELECT charp_create_user('M4_DEFN(user)', :passwd);
 \o
 
 DROP FUNCTION charp_create_user(_username text, _passwd text);
-\set QUIET off
 
 -- End of user creation.
 
