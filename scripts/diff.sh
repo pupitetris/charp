@@ -38,12 +38,11 @@ NEWDB=${PGDATABASE}_new_$RANDOM
     "$PGBINDIR"pg_dump -s -f new.sql $NEWDB
     "$PGBINDIR"pg_dump -s -f prod.sql ${PGDATABASE}
     
-    psql -d postgres -c "DROP DATABASE $NEWDB"
+    psql -q -d postgres -c "DROP DATABASE $NEWDB"
 )
 
 # http://apgdiff.startnet.biz/how_to_use_it.php
-java -jar bin/apgdiff.jar --ignore-start-with prod.sql new.sql |
-     sed 's/^CREATE OR REPLACE FUNCTION \([^)]*)\)/DROP FUNCTION IF EXISTS \1;\n\nCREATE FUNCTION \1/' > $NEWDB
+java -jar bin/apgdiff.jar --ignore-start-with prod.sql new.sql > $NEWDB
 
 rm -f prod.sql new.sql
 
