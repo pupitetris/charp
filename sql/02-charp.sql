@@ -62,6 +62,7 @@ CREATE OR REPLACE FUNCTION charp_raise(_code text, VARIADIC _args text[] DEFAULT
 $BODY$
 DECLARE
 	_i integer;
+	_sqlcode text;
 	_code_t charp_error_code;
 BEGIN
 	IF substring(_code FROM 1 FOR 1) = '-' THEN
@@ -76,7 +77,23 @@ BEGIN
 	   END LOOP;
 	END IF;
 
-	RAISE EXCEPTION '|>%|{%}|', _code, array_to_string(_args, ',');
+	SELECT INTO _sqlcode
+	       CASE _code
+	       	    WHEN 'USERUNK'      THEN 'CH001'
+	       	    WHEN 'PROCUNK'      THEN 'CH002'
+	       	    WHEN 'REQUNK'       THEN 'CH003'
+		    WHEN 'REPFAIL'      THEN 'CH004'
+	       	    WHEN 'ASSERT'       THEN 'CH005'
+	       	    WHEN 'USERPARMPERM' THEN 'CH006'
+	       	    WHEN 'USERPERM'     THEN 'CH007'
+	       	    WHEN 'MAILFAIL'     THEN 'CH008'
+	       	    WHEN 'DATADUP'      THEN 'CH009'
+	       	    WHEN 'NOTFOUND'     THEN 'CH010'
+	       	    WHEN 'EXIT'         THEN 'CH011'
+		    ELSE 'CH000'
+	       END;
+
+	RAISE EXCEPTION '|>%|{%}|', _code, array_to_string(_args, ',') USING ERRCODE = _sqlcode;
 END;
 $BODY$
   LANGUAGE plpgsql VOLATILE;

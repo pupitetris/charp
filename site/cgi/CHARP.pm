@@ -192,9 +192,7 @@ sub error_send {
     if (defined $state) {
 	$err{'state'} = $state;
     }
-    if (defined $statestr) {
-	$err{'statestr'} = $statestr;
-    }
+    $err{'statestr'} = (defined $statestr)? $statestr: $err_key;
 
     json_send ($fcgi, { 'error' => \%err });
     return;
