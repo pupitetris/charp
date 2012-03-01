@@ -180,6 +180,8 @@ sub error_send {
     my $parms = $ctx->{'parms'};
     my $state = $ctx->{'state'};
     my $statestr = $ctx->{'statestr'};
+    my $objs = $ctx->{'objs'};
+
     $parms = undef if defined $parms && scalar (@$parms) < 0;
 
     my %err = %{$ERRORS{$err_key}};
@@ -193,6 +195,10 @@ sub error_send {
 	$err{'state'} = $state;
     }
     $err{'statestr'} = (defined $statestr)? $statestr: $err_key;
+
+    if (ref $objs eq 'ARRAY' && scalar (@$objs) > 0) {
+	$err{'objs'} = $objs;
+    }
 
     json_send ($fcgi, { 'error' => \%err });
     return;
@@ -219,7 +225,7 @@ sub parse_csv {
 sub error_execute_send {
     my ($fcgi, $sth, $login, $ip_addr, $res) = @_;
 
-    my ($dolog, $err_type, $code, $msg, @parms, $parms_str);
+    my ($dolog, $err_type, $code, $msg, @parms, $parms_str, $objs);
     my @fields = split ('\|', $sth->errstr, 3);
     if (substr ($fields[1], 0, 1) eq '>') { # Probablemente una excepción levantada por nosotros (charp_raise).
 	if (substr ($fields[1], 1, 1) eq '-') {
@@ -235,18 +241,30 @@ sub error_execute_send {
 	@parms = parse_csv (substr ($parms_str, 1, -1));
 	$code = 'SQL:' . $err_type;
 	$msg = substr ($fields[2], length ($parms_str) + 2);
+	$objs = [$msg =~ /'([^']+)'/g];
     } else { # Error en el execute, no es una excepción nuestra.
 	$err_type = 'EXECUTE';
 	$code = 'DBI:' . $err_type;
 	$msg = $sth->errstr;
 	$parms_str = '';
+
+	$msg =~ /^([^\n]+)/;
+	my $errstr = $1;
+	$objs = [$errstr =~ /"([^"]+)"/g];
     }
     my $state = $sth->state;
 
     if ($dolog) {
 	$CHARP::ctx->{'err_sth'}->execute ($err_type, $login, $ip_addr, $res, $msg, $parms_str);
     }
-    error_send ($fcgi, { 'err' => $code, 'msg' => $msg, 'parms' => \@parms, 'state' => $state, 'statestr' => $CHARP::pg_errcodes{$state} });
+
+    error_send ($fcgi, { 'err' => $code, 
+			 'msg' => $msg, 
+			 'parms' => \@parms, 
+			 'state' => $state, 
+			 'statestr' => $CHARP::pg_errcodes{$state}, 
+			 'objs' => $objs 
+		});
 }
 
 sub dispatch_error {
