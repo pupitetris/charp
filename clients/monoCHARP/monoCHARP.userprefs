@@ -1,19 +1,21 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="fastJSON/AssemblyInfo.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="translation/es.po">
     <Files>
-      <File FileName="CHARP.cs" Line="1" Column="14" />
-      <File FileName="JSON.cs" Line="4" Column="35" />
-      <File FileName="fastJSON/AssemblyInfo.cs" Line="1" Column="1" />
-      <File FileName="fastJSON/JSON.cs" Line="1" Column="1" />
+      <File FileName="CHARP.cs" Line="26" Column="18" />
+      <File FileName="JSON.cs" Line="17" Column="9" />
+      <File FileName="AssemblyInfo.cs" Line="1" Column="1" />
+      <File FileName="fastJSON/AssemblyInfo.cs" Line="12" Column="21" />
+      <File FileName="test/Main.cs" Line="11" Column="29" />
+      <File FileName="translation/es.po" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
           <Node name="fastJSON" expanded="True" selected="True" />
-          <Node name="monoCHARP" expanded="True">
-            <Node name="References" expanded="True" />
-          </Node>
+          <Node name="monoCHARP" expanded="True" />
+          <Node name="test" expanded="True" />
+          <Node name="translation" expanded="True" />
         </State>
       </Pad>
     </Pads>
