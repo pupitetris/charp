@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ItemType>TranslationProject</ItemType>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{305D885A-BBAC-4AB3-A5F8-FB01788F56FE}</ProjectGuid>
+    <relPath>locale</relPath>
+    <outputType>RelativeToOutput</outputType>
+    <packageName>monoCHARP</packageName>
+    <translations>
+      <translations>
+        <Translation isoCode="es" />
+      </translations>
+    </translations>
+    <projectInformations>
+      <projectInformations>
+        <TranslationProjectInformation projectName="fastJSON" isIncluded="false" />
+        <TranslationProjectInformation projectName="test" isIncluded="true" />
+      </projectInformations>
+    </projectInformations>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "monoCHARP", "monoCHARP.csproj", "{7DE14CEC-61E3-46F4-9CB3-C367DA555044}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fastJSON", "fastJSON\fastJSON.csproj", "{207E91B1-C9F8-4913-88E1-3549EF5F3273}"
+EndProject
+Project("{9344bdbb-3e7f-41fc-a0dd-8665d75ee146}") = "translation", "translation\translation.mdproj", "{305D885A-BBAC-4AB3-A5F8-FB01788F56FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "test\test.csproj", "{47A2B475-65D8-4CE9-84AD-EC8A068B09FC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{207E91B1-C9F8-4913-88E1-3549EF5F3273}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{207E91B1-C9F8-4913-88E1-3549EF5F3273}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{207E91B1-C9F8-4913-88E1-3549EF5F3273}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{207E91B1-C9F8-4913-88E1-3549EF5F3273}.Release|Any CPU.Build.0 = Release|Any CPU
+		{305D885A-BBAC-4AB3-A5F8-FB01788F56FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{305D885A-BBAC-4AB3-A5F8-FB01788F56FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{305D885A-BBAC-4AB3-A5F8-FB01788F56FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{305D885A-BBAC-4AB3-A5F8-FB01788F56FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47A2B475-65D8-4CE9-84AD-EC8A068B09FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47A2B475-65D8-4CE9-84AD-EC8A068B09FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47A2B475-65D8-4CE9-84AD-EC8A068B09FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47A2B475-65D8-4CE9-84AD-EC8A068B09FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7DE14CEC-61E3-46F4-9CB3-C367DA555044}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7DE14CEC-61E3-46F4-9CB3-C367DA555044}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7DE14CEC-61E3-46F4-9CB3-C367DA555044}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7DE14CEC-61E3-46F4-9CB3-C367DA555044}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = monoCHARP.csproj
+	EndGlobalSection
+EndGlobal

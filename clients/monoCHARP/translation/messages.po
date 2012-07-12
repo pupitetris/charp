@@ -1,0 +1,63 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: 2012-07-11 20:25:42-0500\n"
+"PO-Revision-Date: 2012-07-11 20:25:42-0500\n"
+"Last-Translator: arturo\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: MonoDevelop Gettext addin\n"
+
+#: ../CHARP.cs:2
+msgid ""
+"This is an internal system error. Please take note of the provided "
+"information in this message and call support so a solution can be worked on."
+msgstr ""
+
+#: ../CHARP.cs:2
+msgid ""
+"You are trying to access unauthorized data. If you require adequate access, "
+"call support."
+msgstr ""
+
+#: ../CHARP.cs:2
+msgid ""
+"This is a temporary error, please try again immediately or in a few minutes. "
+"If the error persists, call support."
+msgstr ""
+
+#: ../CHARP.cs:2
+msgid ""
+"The provided information is invalid, please ammend the data and try again."
+msgstr ""
+
+#: ../CHARP.cs:2
+msgid "This message is a result value provided by the application."
+msgstr ""
+
+#: ../CHARP.cs:2
+msgid "Impossible to contact the web service."
+msgstr ""
+
+#: ../CHARP.cs:2
+msgid "Verify that your network connection works and try again."
+msgstr ""
+
+#: ../CHARP.cs:2
+msgid "The web server replied with an error."
+msgstr ""
+
+#: ../CHARP.cs:2
+msgid "Data obtained from the web server are malformed."
+msgstr ""
+
+#: ../CHARP.cs:2
+msgid "An unknown error type has occurred."
+msgstr ""
+
+#: ../test/gtk-gui/MainWindow.cs:2
+msgid "MainWindow"
+msgstr ""
+
