@@ -4,16 +4,23 @@ namespace monoCHARP
 {
 	public class JSON
 	{
-		public JSON ()
+		private JSON ()
 		{
 		}
+
+		static JSON ()
+		{
+			// fastJSON.JSON.Instance.Parameters.UseExtensions = false;
+		}
 		
-/*		public static T read<T>(Stream stream) where T : class
-	    {
-	    }
-	
-	    public static void write<T>(this T value, Stream stream) where T : class
-	    {
-	    }*/
+		static public string encode (object obj)
+		{
+			return fastJSON.JSON.Instance.ToJSON (obj);
+		}
+
+		static public object decode (string jsonstr)
+		{
+			return fastJSON.JSON.Instance.Parse (jsonstr);
+		}
 	}
 }
