@@ -1,6 +1,7 @@
 using System;
+using System.Text; // for Encoding.UTF8
 
-namespace monoCHARP
+namespace monoCharp
 {
 	public class JSON
 	{
@@ -21,6 +22,11 @@ namespace monoCHARP
 		static public object decode (string jsonstr)
 		{
 			return fastJSON.JSON.Instance.Parse (jsonstr);
+		}
+
+		static public object decode (byte[] result)
+		{
+			return decode (Encoding.UTF8.GetString (result));
 		}
 	}
 }
