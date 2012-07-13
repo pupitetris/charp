@@ -1,12 +1,12 @@
 using System;
-using System.Text; // for Encoding.UTF8
 using System.Net; // for WebClient
+using System.Collections.Generic; // for Dictionary
 using System.Collections.Specialized; // for NameValueCollection
 using Mono.Unix; // for Catalog
 
-namespace monoCHARP
+namespace monoCharp
 {
-	public abstract class CHARP : WebClient
+	public abstract class Charp
 	{
 		public enum ERR_SEV {
 			INTERNAL = 1,
@@ -25,7 +25,7 @@ namespace monoCHARP
 			AJAX
 		}
 		
-		private struct charpError {
+		private struct CharpError {
 			public int code;
 			public ERR_SEV sev;
 			public string desc;
@@ -41,37 +41,38 @@ namespace monoCHARP
 			HTTP_SRVERR,
 			AJAX_JSON,
 			AJAX_UNK,
-			HTTP_CANCEL
+			HTTP_CANCEL,
+			DATA_BADMSG
 		}
 
-		private enum charpStatus {
-			IDLE,
-			REQUEST,
-			REPLY
-		}
-		
-		public delegate void charpCtxSuccess (object data, charpCtx ctx, CHARP charp, WebRequest req);
-		public delegate void charpCtxError (charpError err, charpCtx ctx, CHARP charp);
+		public delegate void CharpCtxSuccess (object data, UploadValuesCompletedEventArgs status, CharpCtx ctx);
+		public delegate void CharpCtxReqComplete (UploadValuesCompletedEventArgs status, CharpCtx ctx);
+		public delegate void CharpCtxError (CharpError err, CharpCtx ctx);
 
-		private struct charpCtx {
+		private struct CharpCtx {
+			// Set by you
+			public CharpCtxSuccess success;
+			public CharpCtxReqComplete req_complete;
+			public CharpCtxError error;
 			public bool asAnon = false;
+			public object obj; // your stuff here.
+
+			// Set by CHARP
 			public NameValueCollection reqData;
-			public charpCtxSuccess success;
-			public charpCtxError error;
-			public charpStatus status;
-			public object obj;
+			public Charp charp;
+			public WebClient wc;
 		}
 
 		static public string BASE_URL = null;
 		static private string[] ERR_SEV_MSG = null;
-		static private charpError[] ERRORS = null;
+		static private CharpError[] ERRORS = null;
 
 		public string baseUrl;
 		private string login;
 
-		static CHARP ()
+		static Charp ()
 		{
-			Catalog.Init ("monoCHARP", "./locale");
+			Catalog.Init ("monoCharp", "./locale");
 
 			if (ERR_SEV_MSG == null) { // This to avoid warning.
 				ERR_SEV_MSG = new string[] {
@@ -85,29 +86,31 @@ namespace monoCHARP
 			}
 			
 			if (ERRORS == null) { // This to avoid warning
-				ERRORS = new charpError[] {
-					new charpError { key = "HTTP:CONNECT", code = -1, sev = ERR_SEV.RETRY, lvl = ERR_LEVEL.HTTP,
+				ERRORS = new CharpError[] {
+					new CharpError { key = "HTTP:CONNECT", code = -1, sev = ERR_SEV.RETRY, lvl = ERR_LEVEL.HTTP,
 						desc = Catalog.GetString ("Impossible to contact the web service."), 
 						msg = Catalog.GetString ("Verify that your network connection works and try again.") },
-					new charpError { key = "HTTP:SRVERR", code = -2, sev = ERR_SEV.INTERNAL, lvl = ERR_LEVEL.HTTP,
+					new CharpError { key = "HTTP:SRVERR", code = -2, sev = ERR_SEV.INTERNAL, lvl = ERR_LEVEL.HTTP,
 						desc = Catalog.GetString ("The web server replied with an error."), msg = null },
-					new charpError { key = "AJAX:JSON", code = -3, sev = ERR_SEV.INTERNAL, lvl = ERR_LEVEL.AJAX,
+					new CharpError { key = "AJAX:JSON", code = -3, sev = ERR_SEV.INTERNAL, lvl = ERR_LEVEL.AJAX,
 						desc = Catalog.GetString ("D#ifata obtained from the web server are malformed."), msg = null },
-					new charpError { key = "AJAX:UNK", code = -4, sev = ERR_SEV.INTERNAL, lvl = ERR_LEVEL.AJAX,
+					new CharpError { key = "AJAX:UNK", code = -4, sev = ERR_SEV.INTERNAL, lvl = ERR_LEVEL.AJAX,
 						desc = Catalog.GetString ("An unknown error type has occurred."), msg = null },
-					new charpError { key = "HTTP:CANCEL", code = -5, sev = ERR_SEV.RETRY, lvl = ERR_LEVEL.HTTP,
+					new CharpError { key = "HTTP:CANCEL", code = -5, sev = ERR_SEV.RETRY, lvl = ERR_LEVEL.HTTP,
 						desc = Catalog.GetString ("The connection with the web service was cancelled."), 
 						msg = Catalog.GetString ("A web service operation was cancelled. Please verify that your network is in working order.") },
+					new CharpError { key = "DATA:BADMSG", code = -6, sev = ERR_SEV.INTERNAL, lvl = ERR_LEVEL.DATA,
+						desc = Catalog.GetString ("The JSON web service response is invalid."), msg = null }
 				};
 			}
 		}
 		
-		public CHARP ()
+		public Charp ()
 		{
 			init ();
 		}
 
-		public CHARP (string login, string passwdHash)
+		public Charp (string login, string passwdHash)
 		{
 			init ();
 		}
@@ -117,49 +120,104 @@ namespace monoCHARP
 			baseUrl = BASE_URL;
 		}
 
-		public abstract void handleError (charpError err, charpCtx ctx = null);
+		public abstract void handleError (CharpError err, CharpCtx ctx = null);
 
-		public void OnUploadValuesCompleted (UploadValuesCompletedEventArgs e) // equivalent of handleAjaxStatus
+		public void handleError (Dictionary<string, object> err, CharpCtx ctx = null)
 		{
-			base.OnUploadValuesCompleted (e);
+			CharpError cerr = new CharpError {
+				code = (int) err["code"],
+				sev = (int) err["sev"],
+				desc = (string) err["desc"],
+				msg = (string) err["msg"],
+				lvl = (int) err["lvl"],
+				key = (string) err["key"],
+				state = (int) err["state"],
+				statestr = (string) err["statestr"]
+			};
 
-			charpCtx ctx = e.UserState;
+			handleError (cerr, ctx);
+		}
 
-			if (e.Cancelled) {
-				handleError (ERRORS [ERR.HTTP_CANCEL], ctx);
+		private void replySuccess (Dictionary<string, object> data, UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		{
+
+		}
+
+		private void reply (string chal, CharpCtx ctx)
+		{
+
+		}
+
+		private void requestSuccess (UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		{
+			if (status.Result == null || status.Result.Length == 0) {
+				handleError (ERRORS [ERR.HTTP_CONNECT], ctx);
 				return;
 			}
 
-			if (e.Error != null) {
-				charpError err = ERRORS [ERR.HTTP_SRVERR];
-				err.msg = String.Format (Catalog.GetString ("HTTP error: {0} ()."), e.Error.Message);
+			Dictionary<string, object> data;
+			try {
+				data = JSON.decode (status.Result);
+			} catch (Exception e) {
+				CharpError err = ERRORS [ERR.AJAX_JSON];
+				err.msg = String.Format (Catalog.GetString ("JSON decode error: {0}"), e.Message);
 				handleError (err, ctx);
 				return;
 			}
-
-			switch (ctx.status) {
-			case charpStatus.IDLE:
-				throw new Exception("Invalid CHARP status IDLE");
-				break;
-			case charpStatus.REQUEST:
-
-				break;
-			case charpStatus.REPLY:
-				break;
+			
+			if (data.ContainsKey ("error")) {
+				handleError (data ["error"], ctx);
+				return;
 			}
+
+			if (ctx.asAnon) {
+				replySuccess (data, status, ctx);
+				return;
+			}
+
+			if (data.ContainsKey ("chal")) {
+				reply (data ["chal"], ctx);
+				return;
+			}
+
+			handleError (ERRORS [ERR.DATA_BADMSG], ctx);
 		}
 
-		public void request (string resource, string[] parms, charpCtx ctx = null)
+		// TODO: ver si podemos poner esta como private.
+		public static void requestCompleteH (object sender, UploadValuesCompletedEventArgs status)
+		{
+			CharpCtx ctx = status.UserState;
+			Charp charp = ctx.charp;
+			
+			if (status.Cancelled) {
+
+				charp.handleError (ERRORS [ERR.HTTP_CANCEL], ctx);
+
+			} else if (status.Error != null) {
+
+				CharpError err = ERRORS [ERR.HTTP_SRVERR];
+				err.msg = String.Format (Catalog.GetString ("HTTP error: {0}."), status.Error.Message);
+				charp.handleError (err, ctx);
+
+			} else {
+
+				charp.requestSuccess (status, ctx);
+
+			}
+
+			if (ctx.req_complete)
+				ctx.req_complete (status, ctx);
+		}
+
+		public void request (string resource, object[] parms, CharpCtx ctx = null)
 		{
 			if (ctx == null) {
-				ctx = new charpCtx ();
+				ctx = new CharpCtx ();
 			} 
 
 			if (login == "!anonymous") {
 				ctx.asAnon = true;
 			}
-
-			ctx.status = charpStatus.REQUEST;
 
 			NameValueCollection data = new NameValueCollection ();
 			data["login"] = login;
@@ -168,9 +226,10 @@ namespace monoCHARP
 			data["params"] = JSON.encode (parms);
 
 			ctx.reqData = data;
-
-			UploadValuesAsync (baseUrl, "POST", data, ctx);
+			ctx.charp = this;
+			ctx.wc = new WebClient ();
+			ctx.wc.UploadValuesCompleted += new UploadValuesCompletedEventHandler (requestCompleteH);
+			ctx.wc.UploadValuesAsync (baseUrl + "request", "POST", data, ctx);
 		}
 	}
 }
-
