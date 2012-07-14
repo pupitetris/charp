@@ -9,6 +9,8 @@ Project("{9344bdbb-3e7f-41fc-a0dd-8665d75ee146}") = "translation", "translation\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "test\test.csproj", "{47A2B475-65D8-4CE9-84AD-EC8A068B09FC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "monoCHARP-gtk", "monoCHARP-gtk\monoCHARP-gtk.csproj", "{B61CFDEB-4C4E-46BC-BEC6-8C3E71C0EA5A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{7DE14CEC-61E3-46F4-9CB3-C367DA555044}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7DE14CEC-61E3-46F4-9CB3-C367DA555044}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7DE14CEC-61E3-46F4-9CB3-C367DA555044}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B61CFDEB-4C4E-46BC-BEC6-8C3E71C0EA5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B61CFDEB-4C4E-46BC-BEC6-8C3E71C0EA5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B61CFDEB-4C4E-46BC-BEC6-8C3E71C0EA5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B61CFDEB-4C4E-46BC-BEC6-8C3E71C0EA5A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = monoCHARP.csproj
