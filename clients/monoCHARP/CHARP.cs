@@ -1,7 +1,10 @@
 using System;
 using System.Net; // for WebClient
+using System.Text; // for Encoding.UTF8
+using System.Collections; // for ArrayList
 using System.Collections.Generic; // for Dictionary
 using System.Collections.Specialized; // for NameValueCollection
+using System.Security.Cryptography; // for SHA256Managed
 using Mono.Unix; // for Catalog
 
 namespace monoCharp
@@ -14,7 +17,7 @@ namespace monoCharp
 			RETRY,
 			USER,
 			EXIT
-		};
+		}
 		
 		public enum ERR_LEVEL {
 			DATA = 1,
@@ -46,15 +49,19 @@ namespace monoCharp
 		}
 
 		public delegate void CharpCtxSuccess (object data, UploadValuesCompletedEventArgs status, CharpCtx ctx);
-		public delegate void CharpCtxReqComplete (UploadValuesCompletedEventArgs status, CharpCtx ctx);
+		public delegate void CharpCtxComplete (UploadValuesCompletedEventArgs status, CharpCtx ctx);
 		public delegate void CharpCtxError (CharpError err, CharpCtx ctx);
+		public delegate void CharpCtxReplyHandler (string base_url, NameValueCollection parms, CharpCtx ctx);
 
 		private struct CharpCtx {
 			// Set by you
 			public CharpCtxSuccess success;
-			public CharpCtxReqComplete req_complete;
+			public CharpCtxComplete complete;
+			public CharpCtxComplete req_complete;
 			public CharpCtxError error;
+			public CharpCtxReplyHandler reply_handler;
 			public bool asAnon = false;
+			public bool asArray = false;
 			public object obj; // your stuff here.
 
 			// Set by CHARP
@@ -66,12 +73,16 @@ namespace monoCharp
 		static public string BASE_URL = null;
 		static private string[] ERR_SEV_MSG = null;
 		static private CharpError[] ERRORS = null;
+		static private SHA256Managed sha;
 
 		public string baseUrl;
 		private string login;
+		private string passwd;
 
 		static Charp ()
 		{
+			sha = SHA256Managed.Create ();
+
 			Catalog.Init ("monoCharp", "./locale");
 
 			if (ERR_SEV_MSG == null) { // This to avoid warning.
@@ -138,38 +149,126 @@ namespace monoCharp
 			handleError (cerr, ctx);
 		}
 
-		private void replySuccess (Dictionary<string, object> data, UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		private Dictionary<string, object> handleResult (UploadValuesCompletedEventArgs status, CharpCtx ctx)
 		{
+			if (status.Cancelled) {
+				handleError (ERRORS [ERR.HTTP_CANCEL], ctx);
+				return null;
+			} 
 
-		}
-
-		private void reply (string chal, CharpCtx ctx)
-		{
-
-		}
-
-		private void requestSuccess (UploadValuesCompletedEventArgs status, CharpCtx ctx)
-		{
-			if (status.Result == null || status.Result.Length == 0) {
-				handleError (ERRORS [ERR.HTTP_CONNECT], ctx);
-				return;
+			if (status.Error != null) {
+				CharpError err = ERRORS [ERR.HTTP_SRVERR];
+				err.msg = String.Format (Catalog.GetString ("HTTP error: {0}."), status.Error.Message);
+				handleError (err, ctx);
+				return null;
 			}
 
+			if (status.Result == null || status.Result.Length == 0) {
+				handleError (ERRORS [ERR.HTTP_CONNECT], ctx);
+				return null;
+			}
+			
 			Dictionary<string, object> data;
 			try {
 				data = JSON.decode (status.Result);
 			} catch (Exception e) {
 				CharpError err = ERRORS [ERR.AJAX_JSON];
-				err.msg = String.Format (Catalog.GetString ("JSON decode error: {0}"), e.Message);
+				err.msg = String.Format (Catalog.GetString ("Error: {0}, Data: {1}"), 
+				                         e.Message, Encoding.UTF8.GetString (status.Result));
 				handleError (err, ctx);
-				return;
+				return null;
 			}
 			
 			if (data.ContainsKey ("error")) {
 				handleError (data ["error"], ctx);
+				return null;
+			}
+
+			return data;
+		}
+
+		private void replySuccess (Dictionary<string, object> data, UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		{
+			if (ctx.success == null) {
+				return;
+			}
+			
+			if (!data.ContainsKey ("fields") || !data.ContainsKey ("data")) {
+				handleError (ERRORS [ERR.DATA_BADMSG], ctx);
+			}
+
+			object res;
+			ArrayList fields = data["fields"];
+			ArrayList dat = data["data"];
+
+			if (fields.Count == 1 && fields[0] == "rp_" + ctx.reqData["res"]) {
+				res = new string (dat[0][0]);
+			} else if (!ctx.asArray) {
+				ArrayList arr = new ArrayList ();
+				ArrayList d;
+				for (int i = 0; d = dat[i]; i++) {
+					Dictionary<string, object> o = new Dictionray<string, object>;
+					string f;
+					for (int j = 0; f = fields[j]; j++) {
+						o[f] = d[j];
+					}
+				}
+				res = arr;
+			} else {
+				res = dat;
+			}
+
+			ctx.success (res, status, ctx);
+		}
+
+		// TODO: ver si podemos poner esta como private.
+		public static void replyCompleteH (object sender, UploadValuesCompletedEventArgs status)
+		{
+			CharpCtx ctx = status.UserState;
+			Charp charp = ctx.charp;
+			Dictionary<string, object> data = charp.handleResult (status, ctx);
+
+			if (data != null) {
+				charp.replySuccess (data, status, ctx);
+			}
+
+			if (ctx.complete)
+				ctx.complete (status, ctx);
+		}
+
+		private static string GetSHA256HexHash (SHA256 sha, string input)
+		{
+			byte[] data = sha.ComputeHash (Encoding.UTF8.GetBytes (input));
+
+			StringBuilder sBuilder = new StringBuilder ();
+			for (int i = 0; i < data.Length; i++) {
+				sBuilder.Append (data[i].ToString ("x2"));
+			}
+			return sBuilder.ToString ();
+		}
+
+		private void reply (string chal, CharpCtx ctx)
+		{
+			string url = baseUrl + "reply";
+			string hash = GetSHA256HexHash (sha, login + chal + passwd);
+
+			NameValueCollection data = new NameValueCollection ();
+			data["login"] = login;
+			data["chal"] = chal;
+			data["hash"] = hash;
+
+			if (ctx.reply_handler) {
+				ctx.reply_handler (url, data, ctx);
 				return;
 			}
 
+			ctx.wc = new WebClient ();
+			ctx.wc.UploadValuesCompleted += new UploadValuesCompletedEventHandler (replyCompleteH);
+			ctx.wc.UploadValuesAsync (url, "POST", data, ctx);
+		}
+
+		private void requestSuccess (Dictionary<string, object> data, UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		{
 			if (ctx.asAnon) {
 				replySuccess (data, status, ctx);
 				return;
@@ -188,21 +287,10 @@ namespace monoCharp
 		{
 			CharpCtx ctx = status.UserState;
 			Charp charp = ctx.charp;
+			Dictionary<string, object> data = charp.handleResult (status, ctx);
 			
-			if (status.Cancelled) {
-
-				charp.handleError (ERRORS [ERR.HTTP_CANCEL], ctx);
-
-			} else if (status.Error != null) {
-
-				CharpError err = ERRORS [ERR.HTTP_SRVERR];
-				err.msg = String.Format (Catalog.GetString ("HTTP error: {0}."), status.Error.Message);
-				charp.handleError (err, ctx);
-
-			} else {
-
+			if (data != null) {
 				charp.requestSuccess (status, ctx);
-
 			}
 
 			if (ctx.req_complete)
