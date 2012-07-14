@@ -28,7 +28,7 @@ namespace monoCharp
 			AJAX
 		}
 		
-		private struct CharpError {
+		public struct CharpError {
 			public int code;
 			public ERR_SEV sev;
 			public string desc;
@@ -51,23 +51,28 @@ namespace monoCharp
 		public delegate void CharpCtxSuccess (object data, UploadValuesCompletedEventArgs status, CharpCtx ctx);
 		public delegate void CharpCtxComplete (UploadValuesCompletedEventArgs status, CharpCtx ctx);
 		public delegate void CharpCtxError (CharpError err, CharpCtx ctx);
-		public delegate void CharpCtxReplyHandler (string base_url, NameValueCollection parms, CharpCtx ctx);
+		public delegate void CharpCtxReplyHandler (Uri base_uri, NameValueCollection parms, CharpCtx ctx);
 
-		private struct CharpCtx {
+		public class CharpCtx {
 			// Set by you
 			public CharpCtxSuccess success;
 			public CharpCtxComplete complete;
 			public CharpCtxComplete req_complete;
 			public CharpCtxError error;
 			public CharpCtxReplyHandler reply_handler;
-			public bool asAnon = false;
-			public bool asArray = false;
+			public bool asAnon;
+			public bool asArray;
 			public object obj; // your stuff here.
 
 			// Set by CHARP
 			public NameValueCollection reqData;
 			public Charp charp;
 			public WebClient wc;
+
+			public CharpCtx () {
+				asAnon = false;
+				asArray = false;
+			}
 		}
 
 		static public string BASE_URL = null;
@@ -81,7 +86,7 @@ namespace monoCharp
 
 		static Charp ()
 		{
-			sha = SHA256Managed.Create ();
+			sha = new SHA256Managed ();
 
 			Catalog.Init ("monoCharp", "./locale");
 
@@ -137,10 +142,10 @@ namespace monoCharp
 		{
 			CharpError cerr = new CharpError {
 				code = (int) err["code"],
-				sev = (int) err["sev"],
+				sev = (ERR_SEV) err["sev"],
 				desc = (string) err["desc"],
 				msg = (string) err["msg"],
-				lvl = (int) err["lvl"],
+				lvl = (ERR_LEVEL) err["lvl"],
 				key = (string) err["key"],
 				state = (int) err["state"],
 				statestr = (string) err["statestr"]
@@ -152,27 +157,27 @@ namespace monoCharp
 		private Dictionary<string, object> handleResult (UploadValuesCompletedEventArgs status, CharpCtx ctx)
 		{
 			if (status.Cancelled) {
-				handleError (ERRORS [ERR.HTTP_CANCEL], ctx);
+				handleError (ERRORS [(int) ERR.HTTP_CANCEL], ctx);
 				return null;
 			} 
 
 			if (status.Error != null) {
-				CharpError err = ERRORS [ERR.HTTP_SRVERR];
+				CharpError err = ERRORS [(int) ERR.HTTP_SRVERR];
 				err.msg = String.Format (Catalog.GetString ("HTTP error: {0}."), status.Error.Message);
 				handleError (err, ctx);
 				return null;
 			}
 
 			if (status.Result == null || status.Result.Length == 0) {
-				handleError (ERRORS [ERR.HTTP_CONNECT], ctx);
+				handleError (ERRORS [(int) ERR.HTTP_CONNECT], ctx);
 				return null;
 			}
 			
 			Dictionary<string, object> data;
 			try {
-				data = JSON.decode (status.Result);
+				data = (Dictionary<string, object>) JSON.decode (status.Result);
 			} catch (Exception e) {
-				CharpError err = ERRORS [ERR.AJAX_JSON];
+				CharpError err = ERRORS [(int) ERR.AJAX_JSON];
 				err.msg = String.Format (Catalog.GetString ("Error: {0}, Data: {1}"), 
 				                         e.Message, Encoding.UTF8.GetString (status.Result));
 				handleError (err, ctx);
@@ -180,7 +185,7 @@ namespace monoCharp
 			}
 			
 			if (data.ContainsKey ("error")) {
-				handleError (data ["error"], ctx);
+				handleError ((Dictionary<string, object>) data ["error"], ctx);
 				return null;
 			}
 
@@ -194,22 +199,22 @@ namespace monoCharp
 			}
 			
 			if (!data.ContainsKey ("fields") || !data.ContainsKey ("data")) {
-				handleError (ERRORS [ERR.DATA_BADMSG], ctx);
+				handleError (ERRORS [(int) ERR.DATA_BADMSG], ctx);
 			}
 
 			object res;
-			ArrayList fields = data["fields"];
-			ArrayList dat = data["data"];
+			ArrayList fields = (ArrayList) data["fields"];
+			ArrayList dat = (ArrayList) data["data"];
 
-			if (fields.Count == 1 && fields[0] == "rp_" + ctx.reqData["res"]) {
-				res = new string (dat[0][0]);
+			if (fields.Count == 1 && (string) fields[0] == "rp_" + ctx.reqData["res"]) {
+				res = (string) ((ArrayList) dat[0])[0];
 			} else if (!ctx.asArray) {
 				ArrayList arr = new ArrayList ();
 				ArrayList d;
-				for (int i = 0; d = dat[i]; i++) {
-					Dictionary<string, object> o = new Dictionray<string, object>;
+				for (int i = 0; (d = (ArrayList) dat[i]) != null; i++) {
+					Dictionary<string, object> o = new Dictionary<string, object> ();
 					string f;
-					for (int j = 0; f = fields[j]; j++) {
+					for (int j = 0; (f = (string) fields[j]) != null; j++) {
 						o[f] = d[j];
 					}
 				}
@@ -224,7 +229,7 @@ namespace monoCharp
 		// TODO: ver si podemos poner esta como private.
 		public static void replyCompleteH (object sender, UploadValuesCompletedEventArgs status)
 		{
-			CharpCtx ctx = status.UserState;
+			CharpCtx ctx = (CharpCtx) status.UserState;
 			Charp charp = ctx.charp;
 			Dictionary<string, object> data = charp.handleResult (status, ctx);
 
@@ -232,7 +237,7 @@ namespace monoCharp
 				charp.replySuccess (data, status, ctx);
 			}
 
-			if (ctx.complete)
+			if (ctx.complete != null)
 				ctx.complete (status, ctx);
 		}
 
@@ -249,7 +254,7 @@ namespace monoCharp
 
 		private void reply (string chal, CharpCtx ctx)
 		{
-			string url = baseUrl + "reply";
+			Uri uri = new Uri (baseUrl + "reply");
 			string hash = GetSHA256HexHash (sha, login + chal + passwd);
 
 			NameValueCollection data = new NameValueCollection ();
@@ -257,14 +262,14 @@ namespace monoCharp
 			data["chal"] = chal;
 			data["hash"] = hash;
 
-			if (ctx.reply_handler) {
-				ctx.reply_handler (url, data, ctx);
+			if (ctx.reply_handler != null) {
+				ctx.reply_handler (uri, data, ctx);
 				return;
 			}
 
 			ctx.wc = new WebClient ();
 			ctx.wc.UploadValuesCompleted += new UploadValuesCompletedEventHandler (replyCompleteH);
-			ctx.wc.UploadValuesAsync (url, "POST", data, ctx);
+			ctx.wc.UploadValuesAsync (uri, "POST", data, ctx);
 		}
 
 		private void requestSuccess (Dictionary<string, object> data, UploadValuesCompletedEventArgs status, CharpCtx ctx)
@@ -275,25 +280,25 @@ namespace monoCharp
 			}
 
 			if (data.ContainsKey ("chal")) {
-				reply (data ["chal"], ctx);
+				reply ((string) data ["chal"], ctx);
 				return;
 			}
 
-			handleError (ERRORS [ERR.DATA_BADMSG], ctx);
+			handleError (ERRORS [(int) ERR.DATA_BADMSG], ctx);
 		}
 
 		// TODO: ver si podemos poner esta como private.
 		public static void requestCompleteH (object sender, UploadValuesCompletedEventArgs status)
 		{
-			CharpCtx ctx = status.UserState;
+			CharpCtx ctx = (CharpCtx) status.UserState;
 			Charp charp = ctx.charp;
 			Dictionary<string, object> data = charp.handleResult (status, ctx);
 			
 			if (data != null) {
-				charp.requestSuccess (status, ctx);
+				charp.requestSuccess (data, status, ctx);
 			}
 
-			if (ctx.req_complete)
+			if (ctx.req_complete != null)
 				ctx.req_complete (status, ctx);
 		}
 
@@ -317,7 +322,7 @@ namespace monoCharp
 			ctx.charp = this;
 			ctx.wc = new WebClient ();
 			ctx.wc.UploadValuesCompleted += new UploadValuesCompletedEventHandler (requestCompleteH);
-			ctx.wc.UploadValuesAsync (baseUrl + "request", "POST", data, ctx);
+			ctx.wc.UploadValuesAsync (new Uri (baseUrl + "request"), "POST", data, ctx);
 		}
 	}
 }
