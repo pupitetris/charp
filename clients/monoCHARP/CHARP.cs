@@ -129,6 +129,8 @@ namespace monoCharp
 		public Charp (string login, string passwdHash)
 		{
 			init ();
+			this.login = login;
+			this.passwd = passwdHash;
 		}
 
 		private void init ()
@@ -302,11 +304,15 @@ namespace monoCharp
 				ctx.req_complete (status, ctx);
 		}
 
-		public void request (string resource, object[] parms, CharpCtx ctx = null)
+		public void request (string resource, object[] parms = null, CharpCtx ctx = null)
 		{
 			if (ctx == null) {
 				ctx = new CharpCtx ();
-			} 
+			}
+
+			if (parms == null) {
+				parms = new object[] {};
+			}
 
 			if (login == "!anonymous") {
 				ctx.asAnon = true;
