@@ -17,8 +17,8 @@
     </translations>
     <projectInformations>
       <projectInformations>
-        <TranslationProjectInformation projectName="fastJSON" isIncluded="false" />
-        <TranslationProjectInformation projectName="test" isIncluded="true" />
+        <TranslationProjectInformation projectName="fastJSON" isIncluded="False" />
+        <TranslationProjectInformation projectName="test" isIncluded="True" />
       </projectInformations>
     </projectInformations>
   </PropertyGroup>
