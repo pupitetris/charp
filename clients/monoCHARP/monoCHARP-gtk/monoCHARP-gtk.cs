@@ -11,7 +11,7 @@ namespace monoCharp
 
 		public override void handleError (CharpError err, CharpCtx ctx = null)
 		{
-			Console.WriteLine (err.ToString ());
+			Console.WriteLine (err.ToString (ctx));
 		}
 	}
 }
