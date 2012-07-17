@@ -37,6 +37,20 @@ namespace monoCharp
 			public string key;
 			public int state;
 			public string statestr;
+
+			public string ToString (CharpCtx ctx = null) {
+				StringBuilder b = new StringBuilder ();
+
+				b.Append (((int)sev < 3)? Catalog.GetString ("Error"): Catalog.GetString ("Warning"));
+				b.AppendFormat (Catalog.GetString (" {0}: \n{1}\n"), key, desc);
+				if (ctx != null) { b.AppendFormat (Catalog.GetString ("{0}: "), ctx.reqData["res"]); }
+				if (statestr != null) { b.Append (statestr); }
+				if (state > 0) { b.AppendFormat (Catalog.GetString (" ({0})"), state.ToString ()); }
+				b.AppendFormat (Catalog.GetString ("{0}\n"), msg);
+				b.AppendFormat (Catalog.GetString ("{0}\n"), ERR_SEV_MSG[(int) sev]);
+
+				return b.ToString ();
+			}
 		}
 		
 		private enum ERR {
@@ -165,7 +179,7 @@ namespace monoCharp
 
 			if (status.Error != null) {
 				CharpError err = ERRORS [(int) ERR.HTTP_SRVERR];
-				err.msg = String.Format (Catalog.GetString ("HTTP error: {0}."), status.Error.Message);
+				err.msg = String.Format (Catalog.GetString ("HTTP WebClient error: {0}"), status.Error.Message);
 				handleError (err, ctx);
 				return null;
 			}
@@ -319,9 +333,9 @@ namespace monoCharp
 			}
 
 			NameValueCollection data = new NameValueCollection ();
-			data["login"] = login;
+			data["login"] = (login == null)? "!anonymous": login;
 			data["res"] = resource;
-			data["anon"] = ctx.asAnon? "1": "0";
+			if (ctx.asAnon) { data["anon"] = "1"; }
 			data["params"] = JSON.encode (parms);
 
 			ctx.reqData = data;
@@ -329,6 +343,11 @@ namespace monoCharp
 			ctx.wc = new WebClient ();
 			ctx.wc.UploadValuesCompleted += new UploadValuesCompletedEventHandler (requestCompleteH);
 			ctx.wc.UploadValuesAsync (new Uri (baseUrl + "request"), "POST", data, ctx);
+		}
+
+		public void credentialsSet (string login, string passwd_hash) {
+			this.login = login;
+			this.passwd = passwd_hash;
 		}
 	}
 }
