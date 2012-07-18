@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2012-07-11 20:25:42-0500\n"
-"PO-Revision-Date: 2012-07-11 20:28:08-0500\n"
+"POT-Creation-Date: 2012-07-17 23:10:29-0500\n"
+"PO-Revision-Date: 2012-07-17 23:11:40-0500\n"
 "Last-Translator: arturo\n"
 "Language-Team: \n"
 "Language: \n"
@@ -11,7 +11,37 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: MonoDevelop Gettext addin\n"
 
-#: ../CHARP.cs:2
+#: ../CHARP.cs:3
+msgid "Error"
+msgstr "Error"
+
+#: ../CHARP.cs:3
+msgid "Warning"
+msgstr "Advertencia"
+
+#: ../CHARP.cs:3
+msgid ""
+" {0}: \n"
+"{1}\n"
+msgstr ""
+" {0}: \n"
+"{1}\n"
+
+#: ../CHARP.cs:3
+msgid "{0}: "
+msgstr "{0}: "
+
+#: ../CHARP.cs:3
+msgid " ({0})"
+msgstr " ({0})"
+
+#: ../CHARP.cs:3
+msgid ""
+"{0}\n"
+msgstr ""
+"{0}\n"
+
+#: ../CHARP.cs:13
 msgid ""
 "This is an internal system error. Please take note of the provided "
 "information in this message and call support so a solution can be worked on."
@@ -20,7 +50,7 @@ msgstr ""
 "proporcionada en este mensaje y llame a soporte para que se trabaje en una "
 "solución."
 
-#: ../CHARP.cs:2
+#: ../CHARP.cs:13
 msgid ""
 "You are trying to access unauthorized data. If you require adequate access, "
 "call support."
@@ -28,7 +58,7 @@ msgstr ""
 "Está tratando de acceder a datos a los que no tiene autorización. Si requiere "
 "mayor acceso, llame a soporte."
 
-#: ../CHARP.cs:2
+#: ../CHARP.cs:13
 msgid ""
 "This is a temporary error, please try again immediately or in a few minutes. "
 "If the error persists, call support."
@@ -36,38 +66,69 @@ msgstr ""
 "Este es un error temporal, por favor vuelva a intentar inmediatamente o en "
 "unos minutos. Si el error persiste, llame a soporte."
 
-#: ../CHARP.cs:2
+#: ../CHARP.cs:13
 msgid ""
 "The provided information is invalid, please ammend the data and try again."
 msgstr ""
 "La información que proporcionó es errónea, por favor corrija sus datos y "
 "vuelva a intentar."
 
-#: ../CHARP.cs:2
+#: ../CHARP.cs:13
 msgid "This message is a result value provided by the application."
 msgstr "Este es un mensaje de resultado proporcionado por la aplicación."
 
-#: ../CHARP.cs:2
+#: ../CHARP.cs:13
 msgid "Impossible to contact the web service."
 msgstr "No fue posible contactar al servicio web."
 
-#: ../CHARP.cs:2
+#: ../CHARP.cs:13
 msgid "Verify that your network connection works and try again."
 msgstr "Verifique que su conexión a internet funcione y vuelva a intentar."
 
-#: ../CHARP.cs:2
+#: ../CHARP.cs:13
 msgid "The web server replied with an error."
 msgstr "El servidor web respondió con un error."
 
-#: ../CHARP.cs:2
+#: ../CHARP.cs:13
 msgid "Data obtained from the web server are malformed."
 msgstr "Los datos obtenidos del servidor están mal formados."
 
-#: ../CHARP.cs:2
+#: ../CHARP.cs:13
 msgid "An unknown error type has occurred."
 msgstr "Un tipo de error no reconocido ha ocurrido."
 
+#: ../CHARP.cs:13
+msgid "The connection with the web service was cancelled."
+msgstr "La conexión con el servicio de web fue cancelada."
+
+#: ../CHARP.cs:13
+msgid ""
+"A web service operation was cancelled. Please verify that your network is in "
+"working order."
+msgstr ""
+"Una operación de servicio web fue cancelada. Por favor verifique que su red "
+"esté en orden."
+
+#: ../CHARP.cs:13
+msgid "The JSON web service response is invalid."
+msgstr "La respuesta JSON del servicio web es inválida."
+
+#: ../CHARP.cs:20
+msgid "HTTP WebClient error: {0}"
+msgstr "HTTP WebClient error: {0}"
+
+#: ../CHARP.cs:21
+msgid "Error: {0}, Data: {1}"
+msgstr "Error: {0}, Datos: {1}"
+
 #: ../test/gtk-gui/MainWindow.cs:2
-msgid "MainWindow"
-msgstr "Ventana Principal"
+msgid "CHARP test"
+msgstr "Prueba CHARP"
+
+#: ../test/gtk-gui/MainWindow.cs:2
+msgid "Login"
+msgstr "Login"
+
+#~ msgid "MainWindow"
+#~ msgstr "Ventana Principal"
 
