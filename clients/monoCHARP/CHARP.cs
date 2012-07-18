@@ -35,7 +35,7 @@ namespace monoCharp
 			public string msg;
 			public ERR_LEVEL lvl;
 			public string key;
-			public int state;
+			public string state;
 			public string statestr;
 
 			public string ToString (CharpCtx ctx = null) {
@@ -45,7 +45,7 @@ namespace monoCharp
 				b.AppendFormat (Catalog.GetString (" {0}: \n{1}\n"), key, desc);
 				if (ctx != null) { b.AppendFormat (Catalog.GetString ("{0}: "), ctx.reqData["res"]); }
 				if (statestr != null) { b.Append (statestr); }
-				if (state > 0) { b.AppendFormat (Catalog.GetString (" ({0})"), state.ToString ()); }
+				if (state != "") { b.AppendFormat (Catalog.GetString (" ({0})"), state); }
 				b.AppendFormat (Catalog.GetString ("{0}\n"), msg);
 				b.AppendFormat (Catalog.GetString ("{0}\n"), ERR_SEV_MSG[(int) sev]);
 
@@ -157,13 +157,13 @@ namespace monoCharp
 		public void handleError (Dictionary<string, object> err, CharpCtx ctx = null)
 		{
 			CharpError cerr = new CharpError {
-				code = (int) err["code"],
-				sev = (ERR_SEV) err["sev"],
+				code = Int32.Parse ((string) err["code"]),
+				sev = (ERR_SEV) Int32.Parse ((string) err["sev"]),
 				desc = (string) err["desc"],
 				msg = (string) err["msg"],
-				lvl = (ERR_LEVEL) err["lvl"],
+				lvl = (ERR_LEVEL) Int32.Parse ((string) err["level"]),
 				key = (string) err["key"],
-				state = (int) err["state"],
+				state = (string) err["state"],
 				statestr = (string) err["statestr"]
 			};
 
@@ -242,8 +242,7 @@ namespace monoCharp
 			ctx.success (res, status, ctx);
 		}
 
-		// TODO: ver si podemos poner esta como private.
-		public static void replyCompleteH (object sender, UploadValuesCompletedEventArgs status)
+		private static void replyCompleteH (object sender, UploadValuesCompletedEventArgs status)
 		{
 			CharpCtx ctx = (CharpCtx) status.UserState;
 			Charp charp = ctx.charp;
@@ -303,8 +302,7 @@ namespace monoCharp
 			handleError (ERRORS [(int) ERR.DATA_BADMSG], ctx);
 		}
 
-		// TODO: ver si podemos poner esta como private.
-		public static void requestCompleteH (object sender, UploadValuesCompletedEventArgs status)
+		private static void requestCompleteH (object sender, UploadValuesCompletedEventArgs status)
 		{
 			CharpCtx ctx = (CharpCtx) status.UserState;
 			Charp charp = ctx.charp;
