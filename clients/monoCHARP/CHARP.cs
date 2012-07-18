@@ -95,8 +95,8 @@ namespace monoCharp
 		static private SHA256Managed sha;
 
 		public string baseUrl;
-		private string login;
-		private string passwd;
+		protected string login;
+		protected string passwd;
 
 		static Charp ()
 		{
@@ -143,8 +143,7 @@ namespace monoCharp
 		public Charp (string login, string passwdHash)
 		{
 			init ();
-			this.login = login;
-			this.passwd = passwdHash;
+			credentialsSet (login, passwdHash);
 		}
 
 		private void init ()
@@ -256,9 +255,14 @@ namespace monoCharp
 				ctx.complete (status, ctx);
 		}
 
-		private static string GetSHA256HexHash (SHA256 sha, string input)
+		public static string GetMD5HexHash (string input)
 		{
-			byte[] data = sha.ComputeHash (Encoding.UTF8.GetBytes (input));
+			return GetHexHash (new MD5CryptoServiceProvider (), input);
+		}
+
+		private static string GetHexHash (HashAlgorithm hash, string input)
+		{
+			byte[] data = hash.ComputeHash (Encoding.UTF8.GetBytes (input));
 
 			StringBuilder sBuilder = new StringBuilder ();
 			for (int i = 0; i < data.Length; i++) {
@@ -270,7 +274,7 @@ namespace monoCharp
 		private void reply (string chal, CharpCtx ctx)
 		{
 			Uri uri = new Uri (baseUrl + "reply");
-			string hash = GetSHA256HexHash (sha, login + chal + passwd);
+			string hash = GetHexHash (sha, login + chal + passwd);
 
 			NameValueCollection data = new NameValueCollection ();
 			data["login"] = login;
@@ -347,5 +351,9 @@ namespace monoCharp
 			this.login = login;
 			this.passwd = passwd_hash;
 		}
+
+		public abstract void credentialsSave ();
+		public abstract string credentialsLoad ();
+		public abstract void credentialsDelete ();
 	}
 }
