@@ -3,19 +3,56 @@
 
 public partial class MainWindow
 {
+	private global::Gtk.VBox vbox1;
+	private global::Gtk.Entry entryResource;
+	private global::Gtk.Button testy;
+	
 	protected virtual void Build ()
 	{
 		global::Stetic.Gui.Initialize (this);
 		// Widget MainWindow
 		this.Name = "MainWindow";
-		this.Title = global::Mono.Unix.Catalog.GetString ("MainWindow");
+		this.Title = global::Mono.Unix.Catalog.GetString ("CHARP test");
+		this.Icon = global::Stetic.IconLoader.LoadIcon (this, "gtk-about", global::Gtk.IconSize.Menu);
 		this.WindowPosition = ((global::Gtk.WindowPosition)(4));
+		this.BorderWidth = ((uint)(6));
+		// Container child MainWindow.Gtk.Container+ContainerChild
+		this.vbox1 = new global::Gtk.VBox ();
+		this.vbox1.Name = "vbox1";
+		this.vbox1.Spacing = 6;
+		this.vbox1.BorderWidth = ((uint)(3));
+		// Container child vbox1.Gtk.Box+BoxChild
+		this.entryResource = new global::Gtk.Entry ();
+		this.entryResource.CanFocus = true;
+		this.entryResource.Name = "entryResource";
+		this.entryResource.IsEditable = true;
+		this.entryResource.InvisibleChar = '•';
+		this.vbox1.Add (this.entryResource);
+		global::Gtk.Box.BoxChild w1 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.entryResource]));
+		w1.Position = 0;
+		w1.Expand = false;
+		w1.Fill = false;
+		// Container child vbox1.Gtk.Box+BoxChild
+		this.testy = new global::Gtk.Button ();
+		this.testy.CanDefault = true;
+		this.testy.CanFocus = true;
+		this.testy.Name = "testy";
+		this.testy.UseUnderline = true;
+		this.testy.Label = global::Mono.Unix.Catalog.GetString ("Login");
+		this.vbox1.Add (this.testy);
+		global::Gtk.Box.BoxChild w2 = ((global::Gtk.Box.BoxChild)(this.vbox1 [this.testy]));
+		w2.Position = 1;
+		w2.Expand = false;
+		w2.Fill = false;
+		this.Add (this.vbox1);
 		if ((this.Child != null)) {
 			this.Child.ShowAll ();
 		}
 		this.DefaultWidth = 400;
-		this.DefaultHeight = 300;
+		this.DefaultHeight = 124;
+		this.testy.HasDefault = true;
 		this.Show ();
 		this.DeleteEvent += new global::Gtk.DeleteEventHandler (this.OnDeleteEvent);
+		this.testy.Clicked += new global::System.EventHandler (this.testyClick);
 	}
 }
