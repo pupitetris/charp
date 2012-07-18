@@ -123,7 +123,7 @@ namespace monoCharp
 					new CharpError { key = "HTTP:SRVERR", code = -2, sev = ERR_SEV.INTERNAL, lvl = ERR_LEVEL.HTTP,
 						desc = Catalog.GetString ("The web server replied with an error."), msg = null },
 					new CharpError { key = "AJAX:JSON", code = -3, sev = ERR_SEV.INTERNAL, lvl = ERR_LEVEL.AJAX,
-						desc = Catalog.GetString ("D#ifata obtained from the web server are malformed."), msg = null },
+						desc = Catalog.GetString ("Data obtained from the web server are malformed."), msg = null },
 					new CharpError { key = "AJAX:UNK", code = -4, sev = ERR_SEV.INTERNAL, lvl = ERR_LEVEL.AJAX,
 						desc = Catalog.GetString ("An unknown error type has occurred."), msg = null },
 					new CharpError { key = "HTTP:CANCEL", code = -5, sev = ERR_SEV.RETRY, lvl = ERR_LEVEL.HTTP,
