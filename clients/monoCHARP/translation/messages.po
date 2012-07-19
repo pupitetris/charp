@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2012-07-17 23:10:29-0500\n"
-"PO-Revision-Date: 2012-07-17 23:10:29-0500\n"
+"POT-Creation-Date: 2012-07-18 22:11:56-0500\n"
+"PO-Revision-Date: 2012-07-18 22:11:56-0500\n"
 "Last-Translator: Arturo Espinosa <arturoea@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -11,10 +11,12 @@ msgstr ""
 "X-Generator: MonoDevelop Gettext addin\n"
 
 #: ../CHARP.cs:3
+#: ../monoCHARP-gtk/CharpGtkErrorDlg.cs:3
 msgid "Error"
 msgstr ""
 
 #: ../CHARP.cs:3
+#: ../monoCHARP-gtk/CharpGtkErrorDlg.cs:3
 msgid "Warning"
 msgstr ""
 
@@ -25,11 +27,14 @@ msgid ""
 msgstr ""
 
 #: ../CHARP.cs:3
+#: ../monoCHARP-gtk/CharpGtkErrorDlg.cs:5
 msgid "{0}: "
 msgstr ""
 
 #: ../CHARP.cs:3
-msgid " ({0})"
+#: ../monoCHARP-gtk/CharpGtkErrorDlg.cs:5
+msgid ""
+" ({0})\n"
 msgstr ""
 
 #: ../CHARP.cs:3
@@ -98,11 +103,11 @@ msgstr ""
 msgid "The JSON web service response is invalid."
 msgstr ""
 
-#: ../CHARP.cs:20
+#: ../CHARP.cs:21
 msgid "HTTP WebClient error: {0}"
 msgstr ""
 
-#: ../CHARP.cs:21
+#: ../CHARP.cs:22
 msgid "Error: {0}, Data: {1}"
 msgstr ""
 
@@ -112,5 +117,18 @@ msgstr ""
 
 #: ../test/gtk-gui/MainWindow.cs:2
 msgid "Login"
+msgstr ""
+
+#: ../monoCHARP-gtk/CharpGtkErrorDlg.cs:3
+msgid " {0}({1})"
+msgstr ""
+
+#: ../monoCHARP-gtk/CharpGtkErrorDlg.cs:5
+msgid "<i><tt><small>"
+msgstr ""
+
+#: ../monoCHARP-gtk/CharpGtkErrorDlg.cs:5
+msgid ""
+"{0}</small></tt></i>\n"
 msgstr ""
 

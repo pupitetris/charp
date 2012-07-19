@@ -12,6 +12,14 @@ namespace monoCharp
 		{
 		}
 
+		public override void handleError (CharpError err, CharpCtx ctx = null)
+		{
+			Gtk.Application.Invoke (delegate {
+				CharpGtkErrorDlg dlg = new CharpGtkErrorDlg (err, ctx);
+				dlg.Run ();
+			});
+		}
+		
 		private void gConfChanged (object sender, GConf.NotifyEventArgs args)
 		{
 			credentialsLoad ();
@@ -33,11 +41,6 @@ namespace monoCharp
 			}
 		}
 		
-		public override void handleError (CharpError err, CharpCtx ctx = null)
-		{
-			Console.WriteLine (err.ToString (ctx));
-		}
-
 		public override void credentialsSave ()
 		{
 			gConfInit ();

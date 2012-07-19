@@ -38,16 +38,23 @@ namespace monoCharp
 			public string state;
 			public string statestr;
 
-			public string ToString (CharpCtx ctx = null) {
+			public string ToString (CharpCtx ctx = null)
+			{
 				StringBuilder b = new StringBuilder ();
 
-				b.Append (((int)sev < 3)? Catalog.GetString ("Error"): Catalog.GetString ("Warning"));
+				b.Append (((int)sev < 3) ? Catalog.GetString ("Error") : Catalog.GetString ("Warning"));
 				b.AppendFormat (Catalog.GetString (" {0}: \n{1}\n"), key, desc);
-				if (ctx != null) { b.AppendFormat (Catalog.GetString ("{0}: "), ctx.reqData["res"]); }
-				if (statestr != null) { b.Append (statestr); }
-				if (state != "") { b.AppendFormat (Catalog.GetString (" ({0})"), state); }
+				if (ctx != null) {
+					b.AppendFormat (Catalog.GetString ("{0}: "), ctx.reqData ["res"]);
+				}
+				if (statestr != null) {
+					b.Append (statestr);
+				}
+				if (state != "") {
+					b.AppendFormat (Catalog.GetString (" ({0})\n"), state);
+				}
 				b.AppendFormat (Catalog.GetString ("{0}\n"), msg);
-				b.AppendFormat (Catalog.GetString ("{0}\n"), ERR_SEV_MSG[(int) sev]);
+				b.AppendFormat (Catalog.GetString ("{0}\n"), ERR_SEV_MSG [(int)sev]);
 
 				return b.ToString ();
 			}
@@ -133,6 +140,10 @@ namespace monoCharp
 						desc = Catalog.GetString ("The JSON web service response is invalid."), msg = null }
 				};
 			}
+		}
+
+		static public string getErrSevMsg (ERR_SEV sev) {
+			return ERR_SEV_MSG[(int) sev];
 		}
 		
 		public Charp ()

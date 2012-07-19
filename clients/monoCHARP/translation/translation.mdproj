@@ -19,6 +19,7 @@
       <projectInformations>
         <TranslationProjectInformation projectName="fastJSON" isIncluded="False" />
         <TranslationProjectInformation projectName="test" isIncluded="True" />
+        <TranslationProjectInformation projectName="monoCHARP-gtk" isIncluded="True" />
       </projectInformations>
     </projectInformations>
   </PropertyGroup>
