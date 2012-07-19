@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: \n"
-"POT-Creation-Date: 2012-07-18 22:11:56-0500\n"
-"PO-Revision-Date: 2012-07-18 22:11:56-0500\n"
+"POT-Creation-Date: 2012-07-19 15:07:13-0500\n"
+"PO-Revision-Date: 2012-07-19 15:07:13-0500\n"
 "Last-Translator: Arturo Espinosa <arturoea@gmail.com>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -10,104 +10,104 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: MonoDevelop Gettext addin\n"
 
-#: ../CHARP.cs:3
+#: ../monoCHARP/CHARP.cs:3
 #: ../monoCHARP-gtk/CharpGtkErrorDlg.cs:3
 msgid "Error"
 msgstr ""
 
-#: ../CHARP.cs:3
+#: ../monoCHARP/CHARP.cs:3
 #: ../monoCHARP-gtk/CharpGtkErrorDlg.cs:3
 msgid "Warning"
 msgstr ""
 
-#: ../CHARP.cs:3
+#: ../monoCHARP/CHARP.cs:3
 msgid ""
 " {0}: \n"
 "{1}\n"
 msgstr ""
 
-#: ../CHARP.cs:3
+#: ../monoCHARP/CHARP.cs:3
 #: ../monoCHARP-gtk/CharpGtkErrorDlg.cs:5
 msgid "{0}: "
 msgstr ""
 
-#: ../CHARP.cs:3
+#: ../monoCHARP/CHARP.cs:3
 #: ../monoCHARP-gtk/CharpGtkErrorDlg.cs:5
 msgid ""
 " ({0})\n"
 msgstr ""
 
-#: ../CHARP.cs:3
+#: ../monoCHARP/CHARP.cs:3
 msgid ""
 "{0}\n"
 msgstr ""
 
-#: ../CHARP.cs:13
+#: ../monoCHARP/CHARP.cs:13
 msgid ""
 "This is an internal system error. Please take note of the provided "
 "information in this message and call support so a solution can be worked on."
 msgstr ""
 
-#: ../CHARP.cs:13
+#: ../monoCHARP/CHARP.cs:13
 msgid ""
 "You are trying to access unauthorized data. If you require adequate access, "
 "call support."
 msgstr ""
 
-#: ../CHARP.cs:13
+#: ../monoCHARP/CHARP.cs:13
 msgid ""
 "This is a temporary error, please try again immediately or in a few minutes. "
 "If the error persists, call support."
 msgstr ""
 
-#: ../CHARP.cs:13
+#: ../monoCHARP/CHARP.cs:13
 msgid ""
 "The provided information is invalid, please ammend the data and try again."
 msgstr ""
 
-#: ../CHARP.cs:13
+#: ../monoCHARP/CHARP.cs:13
 msgid "This message is a result value provided by the application."
 msgstr ""
 
-#: ../CHARP.cs:13
+#: ../monoCHARP/CHARP.cs:13
 msgid "Impossible to contact the web service."
 msgstr ""
 
-#: ../CHARP.cs:13
+#: ../monoCHARP/CHARP.cs:13
 msgid "Verify that your network connection works and try again."
 msgstr ""
 
-#: ../CHARP.cs:13
+#: ../monoCHARP/CHARP.cs:13
 msgid "The web server replied with an error."
 msgstr ""
 
-#: ../CHARP.cs:13
+#: ../monoCHARP/CHARP.cs:13
 msgid "Data obtained from the web server are malformed."
 msgstr ""
 
-#: ../CHARP.cs:13
+#: ../monoCHARP/CHARP.cs:13
 msgid "An unknown error type has occurred."
 msgstr ""
 
-#: ../CHARP.cs:13
+#: ../monoCHARP/CHARP.cs:13
 msgid "The connection with the web service was cancelled."
 msgstr ""
 
-#: ../CHARP.cs:13
+#: ../monoCHARP/CHARP.cs:13
 msgid ""
 "A web service operation was cancelled. Please verify that your network is in "
 "working order."
 msgstr ""
 
-#: ../CHARP.cs:13
+#: ../monoCHARP/CHARP.cs:13
 msgid "The JSON web service response is invalid."
 msgstr ""
 
-#: ../CHARP.cs:21
+#: ../monoCHARP/CHARP.cs:21
 msgid "HTTP WebClient error: {0}"
 msgstr ""
 
-#: ../CHARP.cs:22
+#: ../monoCHARP/CHARP.cs:22
 msgid "Error: {0}, Data: {1}"
 msgstr ""
 
@@ -128,7 +128,6 @@ msgid "<i><tt><small>"
 msgstr ""
 
 #: ../monoCHARP-gtk/CharpGtkErrorDlg.cs:5
-msgid ""
-"{0}</small></tt></i>\n"
+msgid "{0}</small></tt></i>"
 msgstr ""
 

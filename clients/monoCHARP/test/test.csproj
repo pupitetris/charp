@@ -56,7 +56,7 @@
       <Project>{B61CFDEB-4C4E-46BC-BEC6-8C3E71C0EA5A}</Project>
       <Name>monoCHARP-gtk</Name>
     </ProjectReference>
-    <ProjectReference Include="..\monoCHARP.csproj">
+    <ProjectReference Include="..\monoCHARP\monoCHARP.csproj">
       <Project>{7DE14CEC-61E3-46F4-9CB3-C367DA555044}</Project>
       <Name>monoCHARP</Name>
     </ProjectReference>

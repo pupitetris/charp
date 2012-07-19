@@ -46,7 +46,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\monoCHARP.csproj">
+    <ProjectReference Include="..\monoCHARP\monoCHARP.csproj">
       <Project>{7DE14CEC-61E3-46F4-9CB3-C367DA555044}</Project>
       <Name>monoCHARP</Name>
     </ProjectReference>

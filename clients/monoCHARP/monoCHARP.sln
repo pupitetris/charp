@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "monoCHARP", "monoCHARP.csproj", "{7DE14CEC-61E3-46F4-9CB3-C367DA555044}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "monoCHARP", "monoCHARP\monoCHARP.csproj", "{7DE14CEC-61E3-46F4-9CB3-C367DA555044}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fastJSON", "fastJSON\fastJSON.csproj", "{207E91B1-C9F8-4913-88E1-3549EF5F3273}"
 EndProject
