@@ -7,12 +7,14 @@
   <import>
     <widget-library name="../bin/Debug/monoCHARP-gtk.dll" internal="true" />
   </import>
-  <widget class="Gtk.Dialog" id="monoCharp.CharpGtkErrorDlg" design-size="416 348">
+  <widget class="Gtk.Dialog" id="monoCharp.CharpGtkErrorDlg" design-size="416 214">
     <property name="MemberName" />
     <property name="Title">CHARP Error</property>
     <property name="TypeHint">Dialog</property>
     <property name="WindowPosition">CenterOnParent</property>
     <property name="Modal">True</property>
+    <property name="DefaultWidth">416</property>
+    <property name="DefaultHeight">214</property>
     <property name="SkipTaskbarHint">True</property>
     <property name="Buttons">1</property>
     <property name="HelpButton">False</property>
@@ -54,18 +56,51 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="Gtk.Alignment" id="alignment3">
+                      <widget class="Gtk.VBox" id="vbox3">
                         <property name="MemberName" />
-                        <property name="LeftPadding">8</property>
-                        <property name="TopPadding">32</property>
                         <child>
-                          <widget class="Gtk.Label" id="labelDesc">
+                          <widget class="Gtk.Alignment" id="alignment5">
                             <property name="MemberName" />
-                            <property name="Yalign">0</property>
-                            <property name="LabelProp">Description</property>
-                            <property name="Wrap">True</property>
-                            <property name="Selectable">True</property>
+                            <property name="LeftPadding">8</property>
+                            <child>
+                              <widget class="Gtk.Label" id="labelTitle">
+                                <property name="MemberName" />
+                                <property name="Xalign">0</property>
+                                <property name="Yalign">0</property>
+                                <property name="LabelProp">Title</property>
+                                <property name="Selectable">True</property>
+                              </widget>
+                            </child>
                           </widget>
+                          <packing>
+                            <property name="Position">0</property>
+                            <property name="AutoSize">True</property>
+                            <property name="Expand">False</property>
+                            <property name="Fill">False</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <widget class="Gtk.Alignment" id="alignment3">
+                            <property name="MemberName" />
+                            <property name="LeftPadding">8</property>
+                            <property name="TopPadding">12</property>
+                            <child>
+                              <widget class="Gtk.Label" id="labelDesc">
+                                <property name="MemberName" />
+                                <property name="Xalign">0</property>
+                                <property name="Yalign">0</property>
+                                <property name="LabelProp">Description</property>
+                                <property name="Wrap">True</property>
+                                <property name="Selectable">True</property>
+                              </widget>
+                            </child>
+                          </widget>
+                          <packing>
+                            <property name="Position">1</property>
+                            <property name="AutoSize">True</property>
+                            <property name="Expand">False</property>
+                            <property name="Fill">False</property>
+                          </packing>
                         </child>
                       </widget>
                       <packing>

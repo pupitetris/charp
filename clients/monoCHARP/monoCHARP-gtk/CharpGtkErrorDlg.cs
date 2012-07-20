@@ -17,8 +17,11 @@ namespace monoCharp
 		{
 			Build ();
 
-			Title = (((int)err.sev < 3) ? Catalog.GetString ("Error") : Catalog.GetString ("Warning")) +
+			string titlestr = (((int)err.sev < 3) ? Catalog.GetString ("Error") : Catalog.GetString ("Warning")) +
 				String.Format (Catalog.GetString (" {0}({1})"), err.key, err.code);
+			Title = titlestr;
+			labelTitle.Text = titlestr;
+
 			if ((int) err.sev >= 3) {
 				imageIcon.Pixbuf = Gdk.Pixbuf.LoadFromResource ("monoCharp.warning.png");
 			}

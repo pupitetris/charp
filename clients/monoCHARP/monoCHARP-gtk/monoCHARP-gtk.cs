@@ -1,15 +1,22 @@
 using System;
-using GtkSharp;
+using Gtk;
 using monoCharp;
 
 namespace monoCharp
 {
-	public class CharpGtk : monoCharp.Charp
+	public class CharpGtk : Charp
 	{
-		private GConf.Client gconf = null;
-
-		public CharpGtk ()
+		public class CharpGtkCtx : Charp.CharpCtx
 		{
+			public Gtk.Window parent;
+		}
+
+		private GConf.Client gconf;
+		public Gtk.Window parent;
+
+		public CharpGtk (Gtk.Window parent = null)
+		{
+			this.parent = parent;
 		}
 
 		public override void handleError (CharpError err, CharpCtx ctx = null)
@@ -20,6 +27,11 @@ namespace monoCharp
 
 			Gtk.Application.Invoke (delegate {
 				CharpGtkErrorDlg dlg = new CharpGtkErrorDlg (err, ctx);
+				if (ctx is CharpGtkCtx && ((CharpGtkCtx) ctx).parent != null) {
+					dlg.TransientFor = ((CharpGtkCtx) ctx).parent;
+				} else if (parent != null) {
+					dlg.TransientFor = parent;
+				}
 				dlg.Run ();
 			});
 		}
