@@ -71,7 +71,7 @@ namespace monoCharp
 
 		public delegate void CharpCtxSuccess (object data, UploadValuesCompletedEventArgs status, CharpCtx ctx);
 		public delegate void CharpCtxComplete (UploadValuesCompletedEventArgs status, CharpCtx ctx);
-		public delegate void CharpCtxError (CharpError err, CharpCtx ctx);
+		public delegate bool CharpCtxError (CharpError err, CharpCtx ctx);
 		public delegate void CharpCtxReplyHandler (Uri base_uri, NameValueCollection parms, CharpCtx ctx);
 
 		public class CharpCtx {
