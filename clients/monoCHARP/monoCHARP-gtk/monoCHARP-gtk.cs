@@ -14,6 +14,10 @@ namespace monoCharp
 
 		public override void handleError (CharpError err, CharpCtx ctx = null)
 		{
+			if (ctx != null && ctx.error != null && !ctx.error (err, ctx)) {
+					return;
+			}
+
 			Gtk.Application.Invoke (delegate {
 				CharpGtkErrorDlg dlg = new CharpGtkErrorDlg (err, ctx);
 				dlg.Run ();
@@ -52,8 +56,12 @@ namespace monoCharp
 		public override string credentialsLoad ()
 		{
 			gConfInit ();
-			login = (string) gconf.Get (getGConfPath ("login"));
-			passwd = (string) gconf.Get (getGConfPath ("passwd"));
+			try {
+				login = (string) gconf.Get (getGConfPath ("login"));
+				passwd = (string) gconf.Get (getGConfPath ("passwd"));
+			} catch (GConf.NoSuchKeyException) {
+				return null;
+			}
 			return login;
 		}
 
