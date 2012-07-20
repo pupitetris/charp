@@ -4,3 +4,4 @@
 *.exe.mdb
 *.mo
 *.userprefs
+*/gtk-gui/*.cs
