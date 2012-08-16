@@ -189,7 +189,7 @@ namespace monoCharp
 
 			if (status.Error != null) {
 				CharpError err = ERRORS [(int) ERR.HTTP_SRVERR];
-				err.msg = String.Format (Catalog.GetString ("HTTP WebClient error: {0}"), status.Error.Message);
+				err.msg = String.Format (Catalog.GetString ("HTTP WebClient error: {0}"), status.Error.ToString ());
 				handleError (err, ctx);
 				return null;
 			}
@@ -233,16 +233,19 @@ namespace monoCharp
 			ArrayList dat = (ArrayList) data["data"];
 
 			if (fields.Count == 1 && (string) fields[0] == "rp_" + ctx.reqData["res"]) {
-				res = (string) ((ArrayList) dat[0])[0];
+				res = ((ArrayList) dat[0])[0];
 			} else if (!ctx.asArray) {
 				ArrayList arr = new ArrayList ();
 				ArrayList d;
-				for (int i = 0; (d = (ArrayList) dat[i]) != null; i++) {
+				for (int i = 0; i < dat.Count; i++) {
+					d = (ArrayList) dat[i];
 					Dictionary<string, object> o = new Dictionary<string, object> ();
 					string f;
-					for (int j = 0; (f = (string) fields[j]) != null; j++) {
+					for (int j = 0; j < fields.Count; j++) {
+						f = (string) fields[j];
 						o[f] = d[j];
 					}
+					arr.Add (o);
 				}
 				res = arr;
 			} else {
