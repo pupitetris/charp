@@ -1,9 +1,7 @@
--- Catalog COPYs. An example for locating the files is included.
 -- BEGIN TRANSACTION;
 -- 	SET CONSTRAINTS ALL DEFERRED;	
 -- 
--- 	\echo 'my_catalog'
--- 	DELETE FROM my_catalog;
--- 	COPY my_catalog (col1, col2, col3) 
--- 	     FROM 'M4_DEFN(sqldir)/catalogs/my_catalog.csv' WITH (FORMAT csv, HEADER TRUE, DELIMITER '|', QUOTE '"');
+-- This will COPY the file sqldir/catalogs/my_catalog.csv to the my_catalog table.
+--	M4_CATALOG(my_catalog);
+--
 -- COMMIT TRANSACTION;
