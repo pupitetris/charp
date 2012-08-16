@@ -30,17 +30,17 @@ namespace monoCharp
 
 			StringBuilder b = new StringBuilder (Catalog.GetString ("<i><tt><small>"));
 			if (ctx != null) {
-				b.AppendFormat (Catalog.GetString ("{0}: "), ctx.reqData ["res"]);
+				b.AppendFormat (Catalog.GetString ("{0}: "),  GLib.Markup.EscapeText (ctx.reqData ["res"]));
 			}
 			if (err.statestr != null) {
-				b.Append (err.statestr);
+				b.Append (GLib.Markup.EscapeText (err.statestr));
 			}
 			if (err.state != "") {
-				b.AppendFormat (Catalog.GetString (" ({0})\n"), err.state);
+				b.AppendFormat (Catalog.GetString (" ({0})\n"), GLib.Markup.EscapeText (err.state));
 			}
-			b.AppendFormat (Catalog.GetString ("{0}</small></tt></i>"), err.msg);
-			labelMsg.Text = b.ToString ();
+			b.AppendFormat (Catalog.GetString ("{0}</small></tt></i>"), GLib.Markup.EscapeText (err.msg));
 			labelMsg.UseMarkup = true;
+			labelMsg.Markup = b.ToString ();
 
 			labelSev.Text = Charp.getErrSevMsg (err.sev);
 		}
