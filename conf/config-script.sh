@@ -44,10 +44,12 @@ function psql_filter {
 	    -D CONF_DATABASE=${!CONF_DATABASE} \
 	    -D CONF_LOCALE="$DB_LOCALE" \
 	    -D CONF_SQLDIR="$SQLDIR" \
-	    "$CONFIGDIR"/config.m4 "$CONFIGDIR"/config_end.m4 "$sql_file" | 
-	psql -q "$@" 2>&1 >&3 3>&- | grep -v ''\
+	    "$CONFIGDIR"/config.m4 "$CONFIGDIR"/config_end.m4 "$sql_file" > ${sql_file}-tmp
+	psql -q -f ${sql_file}-tmp "$@" 2>&1 >&3 3>&- | grep -v ''\
+'NOTICE:  \(function\|funci.n\) [^)]\+) \(does not exist, skipping\|no existe\)\|'\
 'NOTICE:  CREATE TABLE / PRIMARY KEY \(will create implicit index\|crear. el .ndice impl.cito\)\|'\
 'NOTICE:  \(constraint\|no existe la restricci.n\)\|'\
 'NOTICE:  \(view\|la vista\)' >&2 3>&-
+	rm -f ${sql_file}-tmp
     } 3>&1
 }

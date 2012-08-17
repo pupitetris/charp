@@ -14,9 +14,7 @@ COPY $1 FROM 'M4_DEFN(sqldir)/catalogs/$1.csv' WITH (FORMAT csv, HEADER TRUE, DE
 
 # M4_FUNCTION («prototype», «return type», function type {STATIC|STABLE|VOLATILE}, owner, 'comment', «body»)
 m4_define( «M4_FUNCTION»,
-«\o /dev/null
-DROP FUNCTION IF EXISTS $1;
-\o
+«DROP FUNCTION IF EXISTS $1;
 CREATE FUNCTION $1
   RETURNS $2 AS
 $BODY$
