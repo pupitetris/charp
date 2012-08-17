@@ -272,14 +272,12 @@ namespace fastJSON
             return p1 + p2 + p3 + p4;
         }
 
-        private object ParseNumber()
+        private string ParseNumber()
         {
             ConsumeToken();
 
             // Need to start back one place because the first digit is also a token and would have been consumed
             var startIndex = index - 1;
-			bool isFloat = false;
-			bool isSigned = false;
 
             do
             {
@@ -287,12 +285,6 @@ namespace fastJSON
 
                 if ((c >= '0' && c <= '9') || c == '.' || c == '-' || c == '+' || c == 'e' || c == 'E')
                 {
-					if (c == '-') {
-						isSigned = true;
-					}
-					if (c == '.') {
-						isFloat = true;
-					}
                     if (++index == json.Length) throw new Exception("Unexpected end of string whilst parsing number");
                     continue;
                 }
@@ -300,40 +292,7 @@ namespace fastJSON
                 break;
             } while (true);
 
-			string str = new string(json, startIndex, index - startIndex);
-			if (isFloat) {
-				try {
-					return Convert.ToSingle (str);
-				} catch (OverflowException) {
-					return Convert.ToDouble (str);
-				}
-			}
-
-			if (isSigned) {
-				try {
-					try {
-						return Convert.ToInt16 (str);
-					} catch (OverflowException) {
-						return Convert.ToInt32 (str);
-					}
-				} catch (OverflowException) {
-					return Convert.ToInt64 (str);
-				}
-			}
-
-			try {
-				try {
-					try {
-						return Convert.ToInt16 (str);
-					} catch (OverflowException) {
-						return Convert.ToInt32 (str);
-					}
-				} catch (OverflowException) {
-					return Convert.ToUInt32 (str);
-				}
-			} catch (OverflowException) {
-				return Convert.ToUInt64 (str);
-			}
+			return new string(json, startIndex, index - startIndex);
         }
 
         private Token LookAhead()
