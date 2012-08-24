@@ -8,11 +8,6 @@ namespace monoCharp
 {
 	public partial class CharpGtkErrorDlg : Gtk.Dialog
 	{
-		public CharpGtkErrorDlg ()
-		{
-			Build ();
-		}
-
 		public CharpGtkErrorDlg (Charp.CharpError err, Charp.CharpCtx ctx = null)
 		{
 			Build ();
