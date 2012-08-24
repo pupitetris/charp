@@ -83,6 +83,7 @@ namespace monoCharp
 			public CharpCtxReplyHandler reply_handler;
 			public bool asAnon;
 			public bool asArray;
+			public bool valuesAsObjects;
 			public object obj; // your stuff here.
 
 			// Set by CHARP
@@ -93,6 +94,7 @@ namespace monoCharp
 			public CharpCtx () {
 				asAnon = false;
 				asArray = false;
+				valuesAsObjects = false;
 			}
 		}
 
@@ -180,25 +182,33 @@ namespace monoCharp
 			handleError (cerr, ctx);
 		}
 
-		private Dictionary<string, object> handleResult (UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		public bool resultHandleErrors (UploadValuesCompletedEventArgs status, CharpCtx ctx)
 		{
 			if (status.Cancelled) {
 				handleError (ERRORS [(int) ERR.HTTP_CANCEL], ctx);
-				return null;
+				return false;
 			} 
-
+			
 			if (status.Error != null) {
 				CharpError err = ERRORS [(int) ERR.HTTP_SRVERR];
 				err.msg = String.Format (Catalog.GetString ("HTTP WebClient error: {0}"), status.Error.ToString ());
 				handleError (err, ctx);
-				return null;
-			}
-
-			if (status.Result == null || status.Result.Length == 0) {
-				handleError (ERRORS [(int) ERR.HTTP_CONNECT], ctx);
-				return null;
+				return false;
 			}
 			
+			if (status.Result == null || status.Result.Length == 0) {
+				handleError (ERRORS [(int) ERR.HTTP_CONNECT], ctx);
+				return false;
+			}
+
+			return true;
+		}
+
+		private Dictionary<string, object> handleResult (UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		{
+			if (!resultHandleErrors (status, ctx))
+				return null;
+
 			Dictionary<string, object> data;
 			try {
 				data = (Dictionary<string, object>) JSON.decode (status.Result);
@@ -239,13 +249,30 @@ namespace monoCharp
 				ArrayList d;
 				for (int i = 0; i < dat.Count; i++) {
 					d = (ArrayList) dat[i];
-					Dictionary<string, object> o = new Dictionary<string, object> ();
+
+					Dictionary<string, object> so = null;
+					Dictionary<string, string> ss = null;
+					if (ctx.valuesAsObjects) { 
+						so = new Dictionary<string, object> ();
+					} else {
+						ss = new Dictionary<string, string> ();
+					}
+
 					string f;
 					for (int j = 0; j < fields.Count; j++) {
 						f = (string) fields[j];
-						o[f] = d[j];
+						if (ctx.valuesAsObjects) {
+							so[f] = d[j];
+						} else {
+							ss[f] = (string) d[j];
+						}
 					}
-					arr.Add (o);
+
+					if (ctx.valuesAsObjects) {
+						arr.Add (so);
+					} else {
+						arr.Add (ss);
+					}
 				}
 				res = arr;
 			} else {
