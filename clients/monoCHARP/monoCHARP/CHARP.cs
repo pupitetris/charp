@@ -3,7 +3,7 @@ using System.Net; // for WebClient
 using System.Text; // for Encoding.UTF8
 using System.Collections; // for ArrayList
 using System.Collections.Generic; // for Dictionary
-using System.Collections.Specialized; // for NameValueCollection
+using System.Collections.Specialized; // for NameValueCollection and StringDictionary
 using System.Security.Cryptography; // for SHA256Managed
 using Mono.Unix; // for Catalog
 
@@ -251,11 +251,11 @@ namespace monoCharp
 					d = (ArrayList) dat[i];
 
 					Dictionary<string, object> so = null;
-					Dictionary<string, string> ss = null;
+					StringDictionary ss = null;
 					if (ctx.valuesAsObjects) { 
 						so = new Dictionary<string, object> ();
 					} else {
-						ss = new Dictionary<string, string> ();
+						ss = new StringDictionary ();
 					}
 
 					string f;
