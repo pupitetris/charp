@@ -27,7 +27,7 @@ namespace monoCharp
 			HTTP,
 			AJAX
 		}
-		
+
 		public struct CharpError {
 			public int code;
 			public ERR_SEV sev;
@@ -76,15 +76,21 @@ namespace monoCharp
 
 		public class CharpCtx {
 			// Set by you
-			public CharpCtxSuccess success;
-			public CharpCtxComplete complete;
-			public CharpCtxComplete req_complete;
-			public CharpCtxError error;
-			public CharpCtxReplyHandler reply_handler;
-			public bool asAnon;
-			public bool asArray;
-			public bool valuesAsObjects;
-			public object obj; // your stuff here.
+			public CharpCtxSuccess success; // Called when the operation is successful.
+			public CharpCtxError error;  // Called when there's an error or exception during the request.
+			public CharpCtxComplete req_complete; // Called when the challenge request (1st HTTP roundtrip) is completed.
+			public CharpCtxComplete complete; // Called when the operation is finished, regardless of success.
+			public CharpCtxReplyHandler reply_handler; // You get the URI and deal with the 2nd HTTP roundtrip yourself.
+			public CharpCtxComplete success_handler; // Handle the processing of the reply, instead of using the 
+			                                         // default JSON parser (good for RP's returning file data).
+			public bool asAnon;          // avoid a full HTTP roundtrip by using a non-authenticated remote procedure.
+			public bool asArray;         // saves time for large datasets by returning the original array of arrays.
+			public bool valuesAsObjects; // if your remote procedure returns non-scalar values, you may want this.
+			public bool useCache;        // cache the reply?
+			public bool cacheRefresh;    // force the cache to re-get data from server and store again.
+			public bool cacheIsPrivate;  // privately store data in the object, not to be shared across CHARP objects.
+			public string cacheArea;     // cache area to use. Areas can be deleted completly using cacheDeleteArea.
+			public object obj;           // your stuff here.
 
 			// Set by CHARP
 			public NameValueCollection reqData;
@@ -95,6 +101,10 @@ namespace monoCharp
 				asAnon = false;
 				asArray = false;
 				valuesAsObjects = false;
+				useCache = false;
+				cacheRefresh = false;
+				cacheIsPrivate = false;
+				cacheArea = "default";
 			}
 		}
 
@@ -102,23 +112,29 @@ namespace monoCharp
 		static private string[] ERR_SEV_MSG = null;
 		static private CharpError[] ERRORS = null;
 		static private SHA256Managed sha;
+		static private Dictionary<string, object> commonCache;
 
 		public string baseUrl;
 		protected string login;
 		protected string passwd;
+		private Dictionary<string, object> privateCache;
 
 		static Charp ()
 		{
 			sha = new SHA256Managed ();
+			commonCache = new Dictionary<string, object> ();
 
 			Catalog.Init ("monoCharp", "./locale");
 
 			if (ERR_SEV_MSG == null) { // This to avoid warning.
 				ERR_SEV_MSG = new string[] {
 					null,
-					Catalog.GetString ("This is an internal system error. Please take note of the provided information in this message and call support so a solution can be worked on."),
-					Catalog.GetString ("You are trying to access unauthorized data. If you require adequate access, call support."),
-					Catalog.GetString ("This is a temporary error, please try again immediately or in a few minutes. If the error persists, call support."),
+					Catalog.GetString ("This is an internal system error. Please take note of the provided " +
+					                   "information in this message and call support so a solution can be worked on."),
+					Catalog.GetString ("You are trying to access unauthorized data. If you require adequate access, " +
+					                   "call support."),
+					Catalog.GetString ("This is a temporary error, please try again immediately or in a few minutes. " +
+					                   "If the error persists, call support."),
 					Catalog.GetString ("The provided information is invalid, please ammend the data and try again."),
 					Catalog.GetString ("This message is a result value provided by the application.")
 				};
@@ -137,7 +153,8 @@ namespace monoCharp
 						desc = Catalog.GetString ("An unknown error type has occurred."), msg = null },
 					new CharpError { key = "HTTP:CANCEL", code = -5, sev = ERR_SEV.RETRY, lvl = ERR_LEVEL.HTTP,
 						desc = Catalog.GetString ("The connection with the web service was cancelled."), 
-						msg = Catalog.GetString ("A web service operation was cancelled. Please verify that your network is in working order.") },
+						msg = Catalog.GetString ("A web service operation was cancelled. Please verify that your " + 
+						                         "network is in working order.") },
 					new CharpError { key = "DATA:BADMSG", code = -6, sev = ERR_SEV.INTERNAL, lvl = ERR_LEVEL.DATA,
 						desc = Catalog.GetString ("The JSON web service response is invalid."), msg = null }
 				};
@@ -147,7 +164,7 @@ namespace monoCharp
 		static public string getErrSevMsg (ERR_SEV sev) {
 			return ERR_SEV_MSG[(int) sev];
 		}
-		
+
 		public Charp ()
 		{
 			init ();
@@ -162,6 +179,7 @@ namespace monoCharp
 		private void init ()
 		{
 			baseUrl = BASE_URL;
+			privateCache = new Dictionary<string, object> ();
 		}
 
 		public abstract void handleError (CharpError err, CharpCtx ctx = null);
@@ -209,6 +227,13 @@ namespace monoCharp
 			if (!resultHandleErrors (status, ctx))
 				return null;
 
+			if (ctx.success_handler != null) {
+				if (ctx.useCache)
+					cacheSet (ctx, status);
+				ctx.success_handler (status, ctx);
+				return null;
+			}
+
 			Dictionary<string, object> data;
 			try {
 				data = (Dictionary<string, object>) JSON.decode (status.Result);
@@ -228,12 +253,78 @@ namespace monoCharp
 			return data;
 		}
 
-		private void replySuccess (Dictionary<string, object> data, UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		private class PathBuilder
 		{
-			if (ctx.success == null) {
-				return;
+			private StringBuilder sb;
+
+			public PathBuilder ()
+			{
+				sb = new StringBuilder ();
 			}
 			
+			public PathBuilder Append (string str) {
+				sb.Append (str);
+				return this;
+			}
+			
+			public PathBuilder AppendNode (string str) {
+				sb.Append (str).Append ('»');
+				return this;
+			}
+
+			public override string ToString () {
+				return sb.ToString ();
+			}
+		}
+		
+		private string cacheCtxToPath (CharpCtx ctx) {
+			PathBuilder path = new PathBuilder ();
+			
+			if (ctx.cacheIsPrivate)
+				path.Append ("u:").AppendNode (ctx.reqData["login"]);
+			else
+				path.AppendNode ("public");
+			
+			path.AppendNode (ctx.reqData["res"])
+				.AppendNode (ctx.reqData["params"]);
+			
+			return path.ToString ();
+		}
+
+		private object cacheGet (CharpCtx ctx)
+		{
+			Dictionary<string, object> cache = (ctx.cacheIsPrivate)? privateCache: commonCache;
+
+			if (!cache.ContainsKey (ctx.cacheArea))
+				return null;
+
+			Dictionary<string, object> area = (Dictionary<string, object>) cache[ctx.cacheArea];
+			string path = cacheCtxToPath (ctx);
+			if (!area.ContainsKey (path))
+				return null;
+			return area[path];
+		}
+
+		private void cacheSet (CharpCtx ctx, object res)
+		{
+			Dictionary<string, object> cache = (ctx.cacheIsPrivate)? privateCache: commonCache;
+			
+			if (!cache.ContainsKey (ctx.cacheArea))
+				cache[ctx.cacheArea] = new Dictionary<string, object> ();
+			Dictionary<string, object> area = (Dictionary<string, object>) cache[ctx.cacheArea];
+			string path = cacheCtxToPath (ctx);
+			area[path] = res;
+		}
+
+		public void cacheDeleteArea (string area, bool isPrivate)
+		{
+			Dictionary<string, object> cache = (isPrivate)? privateCache: commonCache;
+			if (cache.ContainsKey (area))
+				cache[area] = null;
+		}
+
+		private void replySuccess (Dictionary<string, object> data, UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		{
 			if (!data.ContainsKey ("fields") || !data.ContainsKey ("data")) {
 				handleError (ERRORS [(int) ERR.DATA_BADMSG], ctx);
 			}
@@ -279,7 +370,11 @@ namespace monoCharp
 				res = dat;
 			}
 
-			ctx.success (res, status, ctx);
+			if (ctx.useCache)
+				cacheSet (ctx, res);
+
+			if (ctx.success != null)
+				ctx.success (res, status, ctx);
 		}
 
 		private static void replyCompleteH (object sender, UploadValuesCompletedEventArgs status)
@@ -382,6 +477,23 @@ namespace monoCharp
 			data["params"] = JSON.encode (parms);
 
 			ctx.reqData = data;
+
+			if (ctx.useCache && !ctx.cacheRefresh) {
+				object res = cacheGet (ctx);
+				if (res != null) {
+					if (ctx.req_complete != null)
+						ctx.req_complete (null, ctx);
+					if (ctx.success_handler != null) {
+						ctx.success_handler ((UploadValuesCompletedEventArgs) res, ctx);
+					} else {
+						if (ctx.success != null)
+							ctx.success (res, null, ctx);
+					}
+					if (ctx.complete != null)
+						ctx.complete (null, ctx);
+				}
+			}
+
 			ctx.charp = this;
 			ctx.wc = new WebClient ();
 			ctx.wc.UploadValuesCompleted += new UploadValuesCompletedEventHandler (requestCompleteH);
