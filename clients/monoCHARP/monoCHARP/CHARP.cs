@@ -69,19 +69,19 @@ namespace monoCharp
 			DATA_BADMSG
 		}
 
-		public delegate void CharpCtxSuccess (object data, UploadValuesCompletedEventArgs status, CharpCtx ctx);
-		public delegate void CharpCtxComplete (UploadValuesCompletedEventArgs status, CharpCtx ctx);
-		public delegate bool CharpCtxError (CharpError err, CharpCtx ctx);
-		public delegate void CharpCtxReplyHandler (Uri base_uri, NameValueCollection parms, CharpCtx ctx);
+		public delegate void SuccessDelegate (object data, UploadValuesCompletedEventArgs status, CharpCtx ctx);
+		public delegate void CompleteDelegate (UploadValuesCompletedEventArgs status, CharpCtx ctx);
+		public delegate bool ErrorDelegate (CharpError err, CharpCtx ctx);
+		public delegate void ReplyHandlerDelegate (Uri base_uri, NameValueCollection parms, CharpCtx ctx);
 
 		public class CharpCtx {
 			// Set by you
-			public CharpCtxSuccess success; // Called when the operation is successful.
-			public CharpCtxError error;  // Called when there's an error or exception during the request.
-			public CharpCtxComplete req_complete; // Called when the challenge request (1st HTTP roundtrip) is completed.
-			public CharpCtxComplete complete; // Called when the operation is finished, regardless of success.
-			public CharpCtxReplyHandler reply_handler; // You get the URI and deal with the 2nd HTTP roundtrip yourself.
-			public CharpCtxComplete success_handler; // Handle the processing of the reply, instead of using the 
+			public SuccessDelegate success; // Called when the operation is successful.
+			public ErrorDelegate error;  // Called when there's an error or exception during the request.
+			public CompleteDelegate req_complete; // Called when the challenge request (1st HTTP roundtrip) is completed.
+			public CompleteDelegate complete; // Called when the operation is finished, regardless of success.
+			public ReplyHandlerDelegate reply_handler; // You get the URI and deal with the 2nd HTTP roundtrip yourself.
+			public CompleteDelegate success_handler; // Handle the processing of the reply, instead of using the 
 			                                         // default JSON parser (good for RP's returning file data).
 			public bool asAnon;          // avoid a full HTTP roundtrip by using a non-authenticated remote procedure.
 			public bool asArray;         // saves time for large datasets by returning the original array of arrays.
@@ -491,6 +491,7 @@ namespace monoCharp
 					}
 					if (ctx.complete != null)
 						ctx.complete (null, ctx);
+					return;
 				}
 			}
 
