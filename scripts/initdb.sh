@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # This file is part of the CHARP project.
 #
 # Copyright © 2011
@@ -30,6 +31,7 @@ if [ "$1" = "-td" ]; then
     shift
 fi
 
+# if -nocat, don't upload catalogs.
 if [ "$1" = "-nocat" ]; then
     NOCAT=1
     shift
@@ -49,8 +51,8 @@ source "$BASEDIR/conf/config.sh"
 
 cd $SQLDIR
 
-# Under Cygwin, set the Windows-specific locale and make sure permissions are right
-# and kill any cgi-fcgi scripts so the database can be dropped.
+# Under Cygwin, make sure permissions are right and kill
+# any cgi-fcgi scripts so the database can be dropped.
 if [ ! -z "$IS_CYGWIN" ]; then
     chmod -f 644 catalogs/*.csv
     chmod -f 644 datos_prueba/*.csv
@@ -62,31 +64,22 @@ if [ -e "$SQL_EXPORT" ]; then
     $BASEDIR/scripts/fix-sql.pl < "$SQL_EXPORT" > 04-tables.sql
 fi
 
-# Check if we can initialize the database before proceeding with the
-# rest of the SQL scripts so they don't fail.
-
 if [ ! -z "$DB" ]; then
     CONF_DATABASE=DB
-    export PGDATABASE=$DB
 fi
 
-psql -q -d postgres -U $PGSUPERUSER -c "DROP DATABASE IF EXISTS $PGDATABASE"
-
-if psql -q -U $PGSUPERUSER -c "SELECT procpid, application_name, client_addr FROM pg_stat_activity WHERE current_query NOT LIKE '% pg_stat_activity %';" 2>/dev/null; then
-    echo 'The database couldn''t be deleted, a client is still connected.' >&2
-    exit 2
-fi
+db_initialize
 
 # Finally run all of the SQL files.
-psql_filter 01-database.sql -d postgres -U $PGSUPERUSER
-psql_filter 02-pgcrypto.sql -U $PGSUPERUSER
-psql_filter 02-charp.sql
-psql_filter 03-types.sql
-psql_filter 04-tables.sql
-[ -e 04-tables-constraints.sql ] && psql_filter 04-tables-constraints.sql
-psql_filter 05-functions.sql -U $PGSUPERUSER
-[ -e 06-catalogs.sql ] && [ -z "$NOCAT" ] && psql_filter 06-catalogs.sql -U $PGSUPERUSER
-[ -e 07-views.sql ] && psql_filter 07-views.sql
-[ -e 09-data.sql ] && psql_filter 09-data.sql -U $PGSUPERUSER
-if [ -e 98-testdata.sql ]; then [ -z "$TESTDATA" ] || psql_filter 98-testdata.sql -U $PGSUPERUSER; fi
-if [ -e 99-test.sql ]; then [ -z "$TESTDATA" ] || psql_filter 99-test.sql -U $PGSUPERUSER; fi
+db_filter 01-database.sql -d postgres -U $DB_SUPERUSER
+db_filter 02-pgcrypto.sql -U $DB_SUPERUSER
+db_filter 02-charp.sql
+db_filter 03-types.sql
+db_filter 04-tables.sql
+[ -e 04-tables-constraints.sql ] && db_filter 04-tables-constraints.sql
+db_filter 05-functions.sql -U $DB_SUPERUSER
+[ -e 06-catalogs.sql ] && [ -z "$NOCAT" ] && db_filter 06-catalogs.sql -U $DB_SUPERUSER
+[ -e 07-views.sql ] && db_filter 07-views.sql
+[ -e 09-data.sql ] && db_filter 09-data.sql -U $DB_SUPERUSER
+if [ -e 98-testdata.sql ]; then [ -z "$TESTDATA" ] || db_filter 98-testdata.sql -U $DB_SUPERUSER; fi
+if [ -e 99-test.sql ]; then [ -z "$TESTDATA" ] || db_filter 99-test.sql -U $DB_SUPERUSER; fi
