@@ -8,7 +8,7 @@ SET search_path = public;
 CREATE OR REPLACE FUNCTION gen_random_bytes(int4)
 RETURNS bytea
 AS '$libdir/pgcrypto', 'pg_random_bytes'
-LANGUAGE 'C' VOLATILE STRICT;
+LANGUAGE C VOLATILE STRICT;
 
 CREATE OR REPLACE FUNCTION digest(text, text)
 RETURNS bytea
