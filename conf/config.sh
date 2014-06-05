@@ -38,4 +38,4 @@ DB_SUPERUSER=postgres
 
 # *** No further editing needed after this line. ***
 CONF_DIR=${PREFIX}DIR
-source ${!CONF_DIR}/conf/config-script.sh
+source ${!CONF_DIR}/conf/scripts/config-script.sh

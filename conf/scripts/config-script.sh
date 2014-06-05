@@ -29,9 +29,9 @@ if [ $DB_OS = "win" ]; then
 	WIN_SQLDIR=$(sed 's#/cygdrive/\(\w\+\)/#\1:/#' <<< "$SQLDIR")
 fi
 
-source ${!CONF_DIR}/$DB_TYPE/conf/config-script.sh
+source ${!CONF_DIR}/$DB_TYPE/conf/scripts/config-script.sh
 
-config_end=$CONFIGDIR/config_end.m4
+config_end=$CONFIGDIR/scripts/config_end.m4
 if [ ! -e "$config_end" ]; then
 	echo 'm4_changecom(«--», «
 »)
@@ -53,12 +53,12 @@ function db_filter {
 	shift
 	local sqldir=$SQLDIR
 	if [ $DB_OS = "win" ]; then sqldir=$WIN_SQLDIR; fi
-	m4 -P "$CONFIGDIR"/config_init.m4 \
+	m4 -P "$CONFIGDIR"/scripts/config_init.m4 \
 	    -D CONF_USER=${!CONF_USER} \
 	    -D CONF_DATABASE=${!CONF_DATABASE} \
 	    -D CONF_LOCALE="$DB_LOCALE" \
 	    -D CONF_SQLDIR="$sqldir" \
-	    "$CONFIGDIR"/config.m4 "$CONFIGDIR"/config_end.m4 "$sql_file" > ${sql_file}-tmp
+	    "$CONFIGDIR"/config.m4 "$CONFIGDIR"/scripts/config_end.m4 "$sql_file" > ${sql_file}-tmp
 	db_client ${sql_file}-tmp "$@"
 	rm -f ${sql_file}-tmp
 }
