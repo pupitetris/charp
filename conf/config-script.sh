@@ -31,6 +31,20 @@ fi
 
 source ${!CONF_DIR}/$DB_TYPE/conf/config-script.sh
 
+config_end=$CONFIGDIR/config_end.m4
+if [ ! -e "$config_end" ]; then
+	echo 'm4_changecom(«--», «
+»)
+m4_divert«»m4_dnl
+m4_undefine(' > $config_end
+	echo -n m4_dumpdef | m4 -P 2>&1 | grep -v '^\(m4_defn\|m4_dnl\):' | sed 's/^\([^:]\+\).*/		«\1»,/g' >> $config_end
+	echo '		«CONF_USER»,
+		«CONF_DATABASE»,
+		«CONF_LOCALE»,
+		«CONF_SQLDIR»,
+		«DEFINE»)«»m4_dnl' >> $config_end
+fi
+
 # This obscure function runs the db client with our own set of configuration variables
 # and filters out unwanted output.
 function db_filter {
