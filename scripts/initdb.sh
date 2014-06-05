@@ -8,6 +8,9 @@
 #
 # Licensed under the EUPL V.1.1. See the file LICENSE.txt for copying conditions.
 
+# For debugging:
+#set -x
+
 # Commands to initialize the database
 
 # Set the value of this variable to the name of the variable that points
