@@ -24,23 +24,33 @@ export LC_ALL="en_US.utf8"
 # *** No further editing needed after this line. ***
 
 arg_DB=
-if [ "$1" = "-db" ]; then
-    arg_DB=$2
-    shift 2
-fi
-
 TESTDATA=
-if [ "$1" = "-td" ]; then
-    TESTDATA=1
-    shift
-fi
-
-# if -nocat, don't upload catalogs.
 NOCAT=
-if [ "$1" = "-nocat" ]; then
-    NOCAT=1
-    shift
-fi
+
+while [ ! -z "$1" ]; do
+	case $1 in
+		-db) 
+			if [ -z "$2" ]; then
+				echo "Missing argument for -db." >&2
+				exit 2;
+			fi
+			arg_DB=$2
+			shift 
+			;;
+		-td) 
+			TESTDATA=1 
+			;;
+		-nocat)
+			# if -nocat, don't upload catalogs.
+			NOCAT=1
+			;;
+		*)
+			echo "Unrecognized option $1." >&2
+			exit 2;
+			;;
+	esac
+	shift
+done
 
 BASEDIR=${!BASEDIR_VAR}
 if [ -z "$BASEDIR" ]; then
@@ -65,7 +75,8 @@ if [ ! -z "$IS_CYGWIN" ]; then
     $BASEDIR/scripts/kill-fcgi.sh
 fi
 
-if [ -e "$SQL_EXPORT" ]; then
+# SQL outputs of PowerArchitect or MySQL Workbench.
+if [ ! -z "$SQL_EXPORT" ]; then
     $BASEDIR/scripts/fix-sql.pl < "$SQL_EXPORT" > 04-tables.sql
 fi
 
