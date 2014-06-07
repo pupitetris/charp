@@ -27,13 +27,7 @@ process_cnf "$DB_CONFIGDIR"/scripts/my-su-gen.cnf "$DB_SUPERUSER"
 check_cnf_mod "$DB_CONFIGDIR"/my.cnf
 check_cnf_mod "$DB_CONFIGDIR"/my-su.cnf
 
-# function called from db_filter that calls the database client silently.
-# This obscure function runs psql with our own set of configuration variables
-# and filters out unwanted psql NOTICEs.
-function db_client {
-	local sql_file=$1
-	shift
-
+function mymysql {
 	local cnf=my.cnf
 	if [ "$1" = "-su" ]; then
 		shift
@@ -43,19 +37,33 @@ function db_client {
 	local dbopts=
 	if [ "$1" = "-d" ]; then
 		shift
-		dbopts="mysql"
+		dbopts="--database=mysql"
 	fi
 
-	mysql --defaults-extra-file="$DB_CONFIGDIR"/$cnf $dbopts "$@" < "$sql_file"
+	(
+		cd $DB_CONFIGDIR
+		mysql --defaults-extra-file=$cnf $dbopts "$@"
+	)
+}
+
+# function called from db_filter that calls the database client silently.
+# This obscure function runs psql with our own set of configuration variables
+# and filters out unwanted psql NOTICEs.
+function db_client {
+	local sql_file=$1
+	shift
+
+	mymysql "$@" < "$sqlfile"
 }
 
 function db_initialize {
 	# Check if we can initialize the database before proceeding with the
 	# rest of the SQL scripts so they don't fail.
-	mysql --defaults-extra-file="$DB_CONFIGDIR"/my-su.cnf --database=mysql -e "DROP DATABASE IF EXISTS $CONF_DATABASE"
+	mymysql -su -d -e "DROP DATABASE IF EXISTS $CONF_DATABASE"
 	
-	if mysql --defaults-extra-file="$DB_CONFIGDIR"/my.cnf --vertical -e \
-		"SELECT Id, User, Host, Command, Time, State, substr(info, 1, 100) AS Info FROM information_schema.processlist WHERE db = 'mysql';" 2>/dev/null; then
+	if mymysql --vertical -e \
+		"SELECT Id, User, Host, Command, Time, State, substr(info, 1, 100) AS Info 
+			FROM information_schema.processlist WHERE db = 'mysql';" 2>/dev/null; then
 		echo 'The database couldn''t be deleted, a client is still connected.' >&2
 		exit 2
 	fi
