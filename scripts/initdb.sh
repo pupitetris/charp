@@ -10,9 +10,6 @@
 
 # Database initializator
 
-# For debugging:
-#set -x
-
 # Set the value of this variable to the name of the variable that points
 # to the project's code base.
 BASEDIR_VAR=CHARP_DIR
@@ -29,6 +26,9 @@ NOCAT=
 
 while [ ! -z "$1" ]; do
 	case $1 in
+		-x) # For debugging
+			set -x
+			;;
 		-db) 
 			if [ -z "$2" ]; then
 				echo "Missing argument for -db." >&2
@@ -40,8 +40,7 @@ while [ ! -z "$1" ]; do
 		-td) 
 			TESTDATA=1 
 			;;
-		-nocat)
-			# if -nocat, don't upload catalogs.
+		-nocat) # if -nocat, don't upload catalogs.
 			NOCAT=1
 			;;
 		*)
