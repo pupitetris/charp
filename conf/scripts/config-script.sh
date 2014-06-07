@@ -31,18 +31,18 @@ fi
 
 source ${!CONF_DIR}/$DB_TYPE/conf/scripts/config-script.sh
 
-config_end=$CONFIGDIR/scripts/config_end.m4
-if [ ! -e "$config_end" ]; then
+sqlvars_end=$CONFIGDIR/scripts/sqlvars_end.m4
+if [ ! -e "$sqlvars_end" ]; then
 	echo 'm4_changecom(«--», «
 »)
 m4_divert«»m4_dnl
-m4_undefine(' > $config_end
-	echo -n m4_dumpdef | m4 -P 2>&1 | grep -v '^\(m4_defn\|m4_dnl\):' | sed 's/^\([^:]\+\).*/		«\1»,/g' >> $config_end
+m4_undefine(' > $sqlvars_end
+	echo -n m4_dumpdef | m4 -P 2>&1 | grep -v '^\(m4_defn\|m4_dnl\):' | sed 's/^\([^:]\+\).*/		«\1»,/g' >> $sqlvars_end
 	echo '		«CONF_USER»,
 		«CONF_DATABASE»,
 		«CONF_LOCALE»,
 		«CONF_SQLDIR»,
-		«DEFINE»)«»m4_dnl' >> $config_end
+		«DEFINE»)«»m4_dnl' >> $sqlvars_end
 fi
 
 # This obscure function runs the db client with our own set of configuration variables
@@ -51,14 +51,16 @@ function db_filter {
 	local sql_file=$1
 	echo $sql_file
 	shift
+
 	local sqldir=$SQLDIR
 	if [ $DB_OS = "win" ]; then sqldir=$WIN_SQLDIR; fi
-	m4 -P "$CONFIGDIR"/scripts/config_init.m4 \
+
+	m4 -P "$CONFIGDIR"/scripts/sqlvars_init.m4 \
 	    -D CONF_USER=${!CONF_USER} \
 	    -D CONF_DATABASE=${!CONF_DATABASE} \
 	    -D CONF_LOCALE="$DB_LOCALE" \
 	    -D CONF_SQLDIR="$sqldir" \
-	    "$CONFIGDIR"/config.m4 "$CONFIGDIR"/scripts/config_end.m4 "$sql_file" > ${sql_file}-tmp
+	    "$CONFIGDIR"/sqlvars.m4 "$CONFIGDIR"/scripts/sqlvars_end.m4 "$sql_file" > ${sql_file}-tmp
 	db_client ${sql_file}-tmp "$@"
 	rm -f ${sql_file}-tmp
 }

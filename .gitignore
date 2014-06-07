@@ -10,4 +10,4 @@ Thumbs.db
 
 /design/architect.log
 *.sql-tmp
-/conf/scripts/config_end.m4
+/conf/scripts/sqlvars_end.m4
