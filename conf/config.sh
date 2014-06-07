@@ -3,8 +3,8 @@
 # Set the value of this variable to the prefix of your project.
 PREFIX=CHARP
 
-# Define a variable named <PREFIX>DIR in your bash_profile.
-# i.e. CHARPDIR=/path/to/charp-project
+# Define a variable named <PREFIX>_DIR in your bash_profile.
+# i.e. CHARP_DIR=/path/to/charp-project
 
 # These may be overriden by variables of the form <<PREFIX>>_<<VAR>>
 # i.e. CHARP_DB_DATABASE overrides DB_DATABASE.
@@ -48,7 +48,9 @@ fi
 
 # *** No further editing needed after this line. ***
 
-CONF_DIR=${!${PREFIX}DIR}
+function prefix { local var=${PREFIX}_$1; echo -n ${!var}; }
+
+CONF_DIR=$(prefix DIR)
 
 [ -z "$CONF_DIR" ] && echo Variable ${PREFIX}DIR is not defined. >&2 && exit 1
 [ ! -d "$CONF_DIR" ] && echo ${PREFIX}DIR value $CONF_DIR is not a directory. >&2 && exit 1

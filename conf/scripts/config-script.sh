@@ -1,18 +1,18 @@
 # Sourced by conf/config.sh
 
-CONF_DATABASE=${!${PREFIX}_DB_DATABASE}
-[ -z "$CONF_DATABASE" ] && CONF_DATABASE=${!DB_DATABASE}
+CONF_DATABASE=$(prefix DB_DATABASE)
+[ -z "$CONF_DATABASE" ] && CONF_DATABASE=$DB_DATABASE
 # If there was a command-line override (-db), use it.
 [ ! -z "$arg_DB" ] && export CONF_DATABASE=$arg_DB
 
-CONF_HOST=${!${PREFIX}_DB_HOST}
-[ -z "$CONF_HOST" ] && CONF_HOST=${!DB_HOST}
+CONF_HOST=$(prefix DB_HOST)
+[ -z "$CONF_HOST" ] && CONF_HOST=$DB_HOST
 
-CONF_PORT=${!${PREFIX}_DB_PORT}
-[ -z "$CONF_PORT" ] && CONF_PORT=${!DB_PORT}
+CONF_PORT=$(prefix DB_PORT)
+[ -z "$CONF_PORT" ] && CONF_PORT=$DB_PORT
 
-CONF_USER=${!${PREFIX}_DB_USER}
-[ -z "$CONF_USER" ] && CONF_USER=${!DB_USER}
+CONF_USER=$(prefix DB_USER)
+[ -z "$CONF_USER" ] && CONF_USER=$DB_USER
 
 DB_CONFIGDIR=$BASEDIR/$DB_TYPE/conf
 
@@ -62,11 +62,12 @@ function db_filter {
 	local tmp=${sql_file}-$RANDOM-tmp
 
 	m4 -P "$CONFIGDIR"/scripts/sqlvars_init.m4 \
+		"$DB_CONFIGDIR"/scripts/sqlvars_init.m4 \
 	    -D CONF_USER="$CONF_USER" \
 	    -D CONF_DATABASE="$CONF_DATABASE" \
 	    -D CONF_LOCALE="$DB_LOCALE" \
 	    -D CONF_SQLDIR="$sqldir" \
 	    "$CONFIGDIR"/sqlvars.m4 "$CONFIGDIR"/scripts/sqlvars_end.m4 "$sql_file" > "$tmp"
 	db_client "$tmp" "$@"
-	rm -f "$tmp"
+#	rm -f "$tmp"
 }
