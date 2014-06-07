@@ -1,9 +1,9 @@
 # Sourced by conf/config.sh
 
-export PGDATABASE=${!CONF_DATABASE}
-export PGHOST=${!CONF_HOST}
-export PGPORT=${!CONF_PORT}
-export PGUSER=${!CONF_USER}
+export PGDATABASE=$CONF_DATABASE
+export PGHOST=$CONF_HOST
+export PGPORT=$CONF_PORT
+export PGUSER=$CONF_USER
 
 # function called from db_filter that calls the database client silently.
 # This obscure function runs psql with our own set of configuration variables

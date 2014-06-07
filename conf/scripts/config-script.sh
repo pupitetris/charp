@@ -1,42 +1,30 @@
 # Sourced by conf/config.sh
 
-if [ -z "${!${PREFIX}_DB_DATABASE}" ]; then
-	CONF_DATABASE=DB_DATABASE
-else
-	CONF_DATABASE=${PREFIX}_DB_DATABASE
-fi
+CONF_DATABASE=${!${PREFIX}_DB_DATABASE}
+[ -z "$CONF_DATABASE" ] && CONF_DATABASE=${!DB_DATABASE}
 
-if [ -z "${!${PREFIX}_DB_HOST}" ]; then
-	CONF_DATABASE=DB_HOST
-else
-	CONF_DATABASE=${PREFIX}_DB_HOST
-fi
+CONF_HOST=${!${PREFIX}_DB_HOST}
+[ -z "$CONF_HOST" ] && CONF_HOST=${!DB_HOST}
 
-if [ -z "${!${PREFIX}_DB_PORT}" ]; then
-	CONF_DATABASE=DB_PORT
-else
-	CONF_DATABASE=${PREFIX}_DB_PORT
-fi
+CONF_PORT=${!${PREFIX}_DB_PORT}
+[ -z "$CONF_PORT" ] && CONF_PORT=${!DB_PORT}
 
-if [ -z "${!${PREFIX}_DB_USER}" ]; then
-	CONF_DATABASE=DB_USER
-else
-	CONF_DATABASE=${PREFIX}_DB_USER
-fi
+CONF_USER=${!${PREFIX}_DB_USER}
+[ -z "$CONF_USER" ] && CONF_USER=${!DB_USER}
 
 # Define <PREFIX>DIR in your bash_profile.
-CONF_DIR=${PREFIX}DIR
+CONF_DIR=${!${PREFIX}DIR}
 
-if [ -z "${!CONF_DIR}" ]; then
-    echo Variable $CONF_DIR is not defined. >&2
+if [ -z "$CONF_DIR" ]; then
+    echo Variable ${PREFIX}DIR is not defined. >&2
     exit 1
 fi
-if [ -d "${!CONF_DIR}" ]; then
-    echo $CONF_DIR value ${!CONF_DIR} is not a directory. >&2
+if [ -d "$CONF_DIR" ]; then
+    echo ${PREFIX}DIR value $CONF_DIR is not a directory. >&2
     exit 1
 fi
 
-BASEDIR="${!CONF_DIR}"
+BASEDIR=$CONF_DIR
 CONFIGDIR="$BASEDIR"/conf
 TESTDIR="$BASEDIR"/scripts/test
 
@@ -80,8 +68,8 @@ function db_filter {
 	if [ $DB_OS = "win" ]; then sqldir=$WIN_SQLDIR; fi
 
 	m4 -P "$CONFIGDIR"/scripts/sqlvars_init.m4 \
-	    -D CONF_USER=${!CONF_USER} \
-	    -D CONF_DATABASE=${!CONF_DATABASE} \
+	    -D CONF_USER=$CONF_USER \
+	    -D CONF_DATABASE=$CONF_DATABASE \
 	    -D CONF_LOCALE="$DB_LOCALE" \
 	    -D CONF_SQLDIR="$sqldir" \
 	    "$CONFIGDIR"/sqlvars.m4 "$CONFIGDIR"/scripts/sqlvars_end.m4 "$sql_file" > ${sql_file}-tmp
