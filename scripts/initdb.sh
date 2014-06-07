@@ -8,21 +8,22 @@
 #
 # Licensed under the EUPL V.1.1. See the file LICENSE.txt for copying conditions.
 
+# Database initializator
+
 # For debugging:
 #set -x
-
-# Commands to initialize the database
 
 # Set the value of this variable to the name of the variable that points
 # to the project's code base.
 BASEDIR_VAR=CHARPDIR
 
+# Set the locale you want the script to run under (comment for system default).
+export LANG="en_US.utf8"
+export LC_ALL="en_US.utf8"
+
 # *** No further editing needed after this line. ***
 
 BASEDIR=${!BASEDIR_VAR}
-
-export LANG="en_US.utf8"
-export LC_ALL="en_US.utf8"
 
 if [ "$1" = "-db" ]; then
     DB=$2
