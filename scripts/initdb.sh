@@ -23,7 +23,7 @@ export LC_ALL="en_US.utf8"
 
 # *** No further editing needed after this line. ***
 
-arg_DB=
+DB=
 TESTDATA=
 NOCAT=
 
@@ -34,7 +34,7 @@ while [ ! -z "$1" ]; do
 				echo "Missing argument for -db." >&2
 				exit 2;
 			fi
-			arg_DB=$2
+			DB=$2
 			shift 
 			;;
 		-td) 
