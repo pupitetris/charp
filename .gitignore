@@ -12,3 +12,5 @@ Thumbs.db
 /design/architect.log
 *.sql-*-tmp
 /conf/scripts/sqlvars_end.m4
+/mysql/conf/scripts/my-gen.cnf
+/mysql/conf/scripts/my-su-gen.cnf
