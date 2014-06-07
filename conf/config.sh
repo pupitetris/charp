@@ -3,6 +3,13 @@
 # Set the value of this variable to the prefix of your project.
 PREFIX=CHARP
 
+# These may be overriden by variables of the form <<PREFIX>>_<<VAR>>
+# i.e. CHARP_DB_DATABASE overrides DB_DATABASE.
+DB_DATABASE=myproject
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+
 # pg for PostgreSQL, mysql for MySQL
 DB_TYPE=pg
 

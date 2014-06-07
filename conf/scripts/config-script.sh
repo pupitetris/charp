@@ -1,14 +1,38 @@
 # Sourced by conf/config.sh
 
-CONF_DATABASE=${PREFIX}_DBDATABASE
-CONF_HOST=${PREFIX}_DBHOST
-CONF_PORT=${PREFIX}_DBPORT
-CONF_USER=${PREFIX}_DBUSER
-CONF_DIR=${PREFIX}DIR
+if [ -z "${!${PREFIX}_DB_DATABASE}" ]; then
+	CONF_DATABASE=DB_DATABASE
+else
+	CONF_DATABASE=${PREFIX}_DB_DATABASE
+fi
+
+if [ -z "${!${PREFIX}_DB_HOST}" ]; then
+	CONF_DATABASE=DB_HOST
+else
+	CONF_DATABASE=${PREFIX}_DB_HOST
+fi
+
+if [ -z "${!${PREFIX}_DB_PORT}" ]; then
+	CONF_DATABASE=DB_PORT
+else
+	CONF_DATABASE=${PREFIX}_DB_PORT
+fi
+
+if [ -z "${!${PREFIX}_DB_USER}" ]; then
+	CONF_DATABASE=DB_USER
+else
+	CONF_DATABASE=${PREFIX}_DB_USER
+fi
 
 # Define <PREFIX>DIR in your bash_profile.
-if [ ! -d "${!CONF_DIR}" ]; then
+CONF_DIR=${PREFIX}DIR
+
+if [ -z "${!CONF_DIR}" ]; then
     echo Variable $CONF_DIR is not defined. >&2
+    exit 1
+fi
+if [ -d "${!CONF_DIR}" ]; then
+    echo $CONF_DIR value ${!CONF_DIR} is not a directory. >&2
     exit 1
 fi
 
@@ -29,7 +53,7 @@ if [ $DB_OS = "win" ]; then
 	WIN_SQLDIR=$(sed 's#/cygdrive/\(\w\+\)/#\1:/#' <<< "$SQLDIR")
 fi
 
-source ${!CONF_DIR}/$DB_TYPE/conf/scripts/config-script.sh
+source $BASEDIR/$DB_TYPE/conf/scripts/config-script.sh
 
 sqlvars_end=$CONFIGDIR/scripts/sqlvars_end.m4
 if [ ! -e "$sqlvars_end" ]; then
