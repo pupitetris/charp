@@ -26,7 +26,7 @@ export LC_ALL="en_US.utf8"
 BASEDIR=${!BASEDIR_VAR}
 
 if [ "$1" = "-db" ]; then
-    DB=$2
+    arg_DB=$2
     shift 2
 fi
 
@@ -68,10 +68,6 @@ if [ -e "$SQL_EXPORT" ]; then
     $BASEDIR/scripts/fix-sql.pl < "$SQL_EXPORT" > 04-tables.sql
 fi
 
-if [ ! -z "$DB" ]; then
-    CONF_DATABASE=DB
-fi
-
 db_initialize
 
 # Finally run all of the SQL files.
@@ -79,7 +75,6 @@ db_initialize
 # -su runs the sql script as the database superuser (DBSUPERUSER).
 # -d connects to the system schema (postgres, mysql...)
 db_filter 01-database.sql -su -d
-db_filter 02-pgcrypto.sql -su
 db_filter 02-charp.sql
 db_filter 03-types.sql
 db_filter 04-tables.sql

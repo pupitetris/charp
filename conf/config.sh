@@ -13,6 +13,10 @@ DB_HOST=localhost
 DB_PORT=5432
 DB_USER=postgres
 
+# This is usually correct:
+# mysql: DBSUPERUSER=root
+DB_SUPERUSER=postgres
+
 # pg for PostgreSQL, mysql for MySQL
 DB_TYPE=pg
 
@@ -41,10 +45,6 @@ fi
 # Otherwise, leave it commented.
 #DB_BINDIR="/cygdrive/c/Program Files/PostgreSQL/9.3/bin/"
 #DB_BINDIR="/cygdrive/c/Program Files/MySQL/MySQL Server 5.5/bin"
-
-# This is usually correct:
-# mysql: DBSUPERUSER=root
-DB_SUPERUSER=postgres
 
 # *** No further editing needed after this line. ***
 

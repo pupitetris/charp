@@ -2,6 +2,8 @@
 
 CONF_DATABASE=${!${PREFIX}_DB_DATABASE}
 [ -z "$CONF_DATABASE" ] && CONF_DATABASE=${!DB_DATABASE}
+# If there was a command-line override (-db), use it.
+[ ! -z "$arg_DB" ] && export CONF_DATABASE=$arg_DB
 
 CONF_HOST=${!${PREFIX}_DB_HOST}
 [ -z "$CONF_HOST" ] && CONF_HOST=${!DB_HOST}
