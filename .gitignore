@@ -10,5 +10,5 @@ Thumbs.db
 *#
 
 /design/architect.log
-*.sql-tmp
+*.sql-*-tmp
 /conf/scripts/sqlvars_end.m4
