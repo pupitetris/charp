@@ -62,7 +62,7 @@ if [ ! -d "$BASEDIR" ]; then
     exit 3
 fi
 
-source "$BASEDIR/conf/config.sh"
+source "$BASEDIR"/conf/config.sh
 
 cd $SQLDIR
 
