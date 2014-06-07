@@ -1,0 +1,9 @@
+# The only parameter required here is the password for the privileged user.
+# This file must have 600 permissions.
+[client]
+password="xxx_your_db_super-user_password_xxx"
+
+# *** No further editing needed after this line. ***
+
+!include common.cnf
+!include scripts/my-su-gen.cnf
