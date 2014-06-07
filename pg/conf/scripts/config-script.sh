@@ -11,7 +11,20 @@ export PGUSER=${!CONF_USER}
 function db_client {
 	local sql_file=$1
 	shift
-	PGOPTIONS='--client-min-messages=warning' psql -q -f ${sql_file} "$@"
+
+	local suopts=
+	if [ "$1" = "-su" ]; then
+		shift
+		suopts="-U $DB_SUPERUSER"
+	fi
+
+	local dbopts=
+	if [ "$1" = "-d" ]; then
+		shift
+		dbopts="-d postgres"
+	fi
+
+	PGOPTIONS='--client-min-messages=warning' psql -q -f ${sql_file} $suopts $dbopts "$@"
 }
 
 function db_initialize {

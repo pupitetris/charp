@@ -74,15 +74,18 @@ fi
 db_initialize
 
 # Finally run all of the SQL files.
-db_filter 01-database.sql -d postgres -U $DB_SUPERUSER
-db_filter 02-pgcrypto.sql -U $DB_SUPERUSER
+
+# -su runs the sql script as the database superuser (DBSUPERUSER).
+# -d connects to the system schema (postgres, mysql...)
+db_filter 01-database.sql -su -d
+db_filter 02-pgcrypto.sql -su
 db_filter 02-charp.sql
 db_filter 03-types.sql
 db_filter 04-tables.sql
 [ -e 04-tables-constraints.sql ] && db_filter 04-tables-constraints.sql
-db_filter 05-functions.sql -U $DB_SUPERUSER
-[ -e 06-catalogs.sql ] && [ -z "$NOCAT" ] && db_filter 06-catalogs.sql -U $DB_SUPERUSER
+db_filter 05-functions.sql -su
+[ -e 06-catalogs.sql ] && [ -z "$NOCAT" ] && db_filter 06-catalogs.sql -su
 [ -e 07-views.sql ] && db_filter 07-views.sql
-[ -e 09-data.sql ] && db_filter 09-data.sql -U $DB_SUPERUSER
-if [ -e 98-testdata.sql ]; then [ -z "$TESTDATA" ] || db_filter 98-testdata.sql -U $DB_SUPERUSER; fi
-if [ -e 99-test.sql ]; then [ -z "$TESTDATA" ] || db_filter 99-test.sql -U $DB_SUPERUSER; fi
+[ -e 09-data.sql ] && db_filter 09-data.sql -su
+if [ -e 98-testdata.sql ]; then [ -z "$TESTDATA" ] || db_filter 98-testdata.sql -su; fi
+if [ -e 99-test.sql ]; then [ -z "$TESTDATA" ] || db_filter 99-test.sql -su; fi
