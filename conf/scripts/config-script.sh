@@ -48,8 +48,7 @@ m4_undefine(' > "$sqlvars_end"
 		«DEFINE»)«»m4_dnl' >> "$sqlvars_end"
 fi
 
-# This obscure function runs the db client with our own set of configuration variables
-# and filters out unwanted output.
+# Run the db client with our own set of configuration variables.
 function db_filter {
 	local sql_file=$1
 	echo $sql_file
@@ -68,5 +67,5 @@ function db_filter {
 	    -D CONF_SQLDIR="$sqldir" \
 	    "$CONFIGDIR"/sqlvars.m4 "$CONFIGDIR"/scripts/sqlvars_end.m4 "$sql_file" > "$tmp"
 	db_client "$tmp" "$@"
-#	rm -f "$tmp"
+	rm -f "$tmp"
 }
