@@ -19,6 +19,8 @@ CONFIGDIR=$BASEDIR/conf
 DB_CONFIGDIR=$BASEDIR/$DB_TYPE/conf
 TESTDIR=$BASEDIR/scripts/test
 
+OUR_RAND=$RANDOM
+
 if [ $(uname -o) = 'Cygwin' ]; then
     IS_CYGWIN=1
 fi
@@ -57,7 +59,7 @@ function db_filter {
 	local sqldir=$SQLDIR
 	if [ $DB_OS = "win" ]; then sqldir=$WIN_SQLDIR; fi
 
-	local tmp=${sql_file}-$RANDOM-tmp
+	local tmp=${sql_file}-$OUR_RAND-tmp
 
 	m4 -P "$CONFIGDIR"/scripts/sqlvars_init.m4 \
 		"$DB_CONFIGDIR"/scripts/sqlvars_init.m4 \
