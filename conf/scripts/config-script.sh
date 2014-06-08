@@ -14,10 +14,9 @@ CONF_PORT=$(prefix DB_PORT)
 CONF_USER=$(prefix DB_USER)
 [ -z "$CONF_USER" ] && CONF_USER=$DB_USER
 
-DB_CONFIGDIR=$BASEDIR/$DB_TYPE/conf
-
 BASEDIR=$CONF_DIR
 CONFIGDIR=$BASEDIR/conf
+DB_CONFIGDIR=$BASEDIR/$DB_TYPE/conf
 TESTDIR=$BASEDIR/scripts/test
 
 if [ $(uname -o) = 'Cygwin' ]; then
