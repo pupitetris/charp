@@ -15,3 +15,6 @@ DEFINE(user,	CONF_USER)
 DEFINE(dbname,	CONF_DATABASE)
 DEFINE(locale,	CONF_LOCALE)
 DEFINE(sqldir,	CONF_SQLDIR)
+
+# Uncomment for MySQL:
+#DEFINE(myuser,  CONF_USER@localhost)

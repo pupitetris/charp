@@ -11,7 +11,7 @@ CREATE DATABASE M4_DEFN(dbname);
 -- Connect to the newly created database for further configuration.
 \u M4_DEFN(dbname)
 
-M4_PROCEDURE (echo, msg text, DETERMINISTIC CONTAINS SQL, M4_DEFN(user), 
-			 'Simple function that allows us to send messages to the user''s console',
-			 SELECT msg AS '');
+M4_PROCEDURE(echo, msg text, DETERMINISTIC, M4_DEFN(myuser), 
+			'Simple function that allows us to send messages to the user''s console',
+			SELECT msg AS '');
 	
