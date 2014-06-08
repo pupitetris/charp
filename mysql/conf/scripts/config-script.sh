@@ -53,7 +53,7 @@ function db_client {
 	local sql_file=$1
 	shift
 
-	mymysql "$@" < "$sqlfile"
+	mymysql "$@" < "$sql_file"
 }
 
 function db_initialize {
