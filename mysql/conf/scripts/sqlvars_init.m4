@@ -8,14 +8,14 @@ LOAD DATA INFILE 'M4_DEFN(sqldir)/catalogs/$1.csv' INTO TABLE $1
 
 # M4_PROCEDURE (name, «args», 
 #               characteristics [[NOT] DETERMINISTIC] [CONTAINS SQL|NO SQL|READS SQL DATA|MODIFIES SQL DATA], 
-#               definer user, 'comment', «body»)
+#               definer user (CURRENT_USER special value), 'comment', «body»)
 m4_define( «M4_PROCEDURE»,
 «
 DROP PROCEDURE IF EXISTS $1;
 \d //
-CREATE DEFINER=$4 PROCEDURE $1 ($2)
+CREATE DEFINER=$4 PROCEDURE $1($2)
 	   COMMENT $5 $3
-	   $6 //
+$6 //
 \d ;
 DO NULL»)
 
