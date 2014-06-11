@@ -31,7 +31,7 @@ SQLDIR=$BASEDIR/$DB_TYPE/sql
 if [ $DB_OS = "win" ]; then
 	# Transform the sql directory to Windows notation, 
 	# since that's what the Windows-native Postgres requires for COPYs.
-	WIN_SQLDIR=$(sed 's#/cygdrive/\(\w\+\)/#\1:/#' <<< "$SQLDIR")
+	WIN_SQLDIR=$(cygpath -aw "$SQLDIR")
 fi
 
 source "$DB_CONFIGDIR"/scripts/config-script.sh
@@ -61,13 +61,18 @@ function db_filter {
 
 	local tmp=${sql_file}-$OUR_RAND-tmp
 
-	m4 -P "$CONFIGDIR"/scripts/sqlvars_init.m4 \
-		"$DB_CONFIGDIR"/scripts/sqlvars_init.m4 \
-	    -D CONF_USER="$CONF_USER" \
-	    -D CONF_DATABASE="$CONF_DATABASE" \
-	    -D CONF_LOCALE="$DB_LOCALE" \
-	    -D CONF_SQLDIR="$sqldir" \
-	    "$CONFIGDIR"/sqlvars.m4 "$CONFIGDIR"/scripts/sqlvars_end.m4 "$sql_file" > "$tmp"
+	(
+		umask 0177
+		m4 -P "$CONFIGDIR"/scripts/sqlvars_init.m4 \
+			"$DB_CONFIGDIR"/scripts/sqlvars_init.m4 \
+			-D CONF_USER="$CONF_USER" \
+			-D CONF_USER_PASSWD="$CONF_USER_PASSWD" \
+			-D CONF_DATABASE="$CONF_DATABASE" \
+			-D CONF_LOCALE="$DB_LOCALE" \
+			-D CONF_COLLATE="$DB_COLLATE" \
+			-D CONF_SQLDIR="$sqldir" \
+			"$CONFIGDIR"/sqlvars.m4 "$CONFIGDIR"/scripts/sqlvars_end.m4 "$sql_file" > "$tmp"
+	)
 	db_client "$tmp" "$@"
 	rm -f "$tmp"
 }
