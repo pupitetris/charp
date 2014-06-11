@@ -10,11 +10,12 @@ PREFIX=CHARP
 # i.e. CHARP_DB_DATABASE overrides DB_DATABASE.
 DB_DATABASE=myproject
 DB_HOST=localhost
+# mysql: DB_PORT=3306
 DB_PORT=5432
 DB_USER=postgres
 
 # This is usually correct:
-# mysql: DBSUPERUSER=root
+# mysql: DB_SUPERUSER=root
 DB_SUPERUSER=postgres
 
 # pg for PostgreSQL, mysql for MySQL
@@ -30,10 +31,11 @@ DB_OS=win
 # You may want to set this to a locale suitable to your country.
 # This is for Spanish/Mexico, UTF-8 (CHARP uses UTF-8 all around,
 # it is not recommended to switch to a diferent encoding).
-# For mysql, use utf_general_ci
 DB_LOCALE=es_MX.utf8
+# mysql: DB_COLLATE=utf8_spanish_ci
+DB_COLLATE=es_MX.utf8
 
-if [ $DB_OS = "win" ]; then
+if [ $DB_TYPE = "postgres" -a $DB_OS = "win" ]; then
 	# Locales under Windows have a different nomeclature and Postgres
 	# is system-dependent for locale specification. Uncomment and set 
 	# this accordingly if you are using Postgres for Windows.
@@ -51,7 +53,6 @@ fi
 function prefix { local var=${PREFIX}_$1; echo -n ${!var}; }
 
 CONF_DIR=$(prefix DIR)
-
 [ -z "$CONF_DIR" ] && echo Variable ${PREFIX}DIR is not defined. >&2 && exit 1
 [ ! -d "$CONF_DIR" ] && echo ${PREFIX}DIR value $CONF_DIR is not a directory. >&2 && exit 1
 
