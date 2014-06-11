@@ -5,3 +5,4 @@
 [client]
 silent
 no-beep
+default-character-set=utf8
