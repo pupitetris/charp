@@ -27,6 +27,8 @@ process_cnf "$DB_CONFIGDIR"/scripts/my-su-gen.cnf "$DB_SUPERUSER"
 check_cnf_mod "$DB_CONFIGDIR"/my.cnf
 check_cnf_mod "$DB_CONFIGDIR"/my-su.cnf
 
+CONF_USER_PASSWD=$(grep ^password "$DB_CONFIGDIR"/my.cnf | cut -f2 -d= | tr -d \")
+
 function mymysql {
 	local cnf=my.cnf
 	if [ "$1" = "-su" ]; then

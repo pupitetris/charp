@@ -46,7 +46,9 @@ m4_undefine(' > "$sqlvars_end"
 	echo '		«CONF_USER»,
 		«CONF_DATABASE»,
 		«CONF_LOCALE»,
+		«CONF_COLLATE»,
 		«CONF_SQLDIR»,
+		«CONF_USER_PASSWD»,
 		«DEFINE»)«»m4_dnl' >> "$sqlvars_end"
 fi
 
