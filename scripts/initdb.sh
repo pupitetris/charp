@@ -23,13 +23,32 @@ export LC_ALL="en_US.utf8"
 DB=
 TESTDATA=
 NOCAT=
+DRY_RUN=
+
+function showhelp {
+	echo "Usage: $1 { -h | [-dry] [-x] [-db <dbname>] [-td] [-nocat] }
+
+-h		Print this help text and exit.
+-dry		Don't execute commands, print instead.
+-x		Print all shell commands being executed (set -x).
+-db <dbname>	Define database on which to operate.
+-td		Feed test data to the database.
+-nocat		Don't upload catalogs."
+}
 
 while [ ! -z "$1" ]; do
 	case $1 in
-		-x) # For debugging
+		-h) # Print help.
+			showhelp "$0"
+			exit
+			;;
+		-dry) # Don't execute commands, print instead.
+			DRY_RUN=1
+			;;
+		-x) # For debugging.
 			set -x
 			;;
-		-db) 
+		-db) # Define database on which to operate.
 			if [ -z "$2" ]; then
 				echo "Missing argument for -db." >&2
 				exit 2;
@@ -37,7 +56,7 @@ while [ ! -z "$1" ]; do
 			DB=$2
 			shift 
 			;;
-		-td) 
+		-td) # Feed test data to the database.
 			TESTDATA=1 
 			;;
 		-nocat) # if -nocat, don't upload catalogs.
@@ -45,6 +64,8 @@ while [ ! -z "$1" ]; do
 			;;
 		*)
 			echo "Unrecognized option $1." >&2
+			echo >&2
+			showhelp "$0" >&2
 			exit 2;
 			;;
 	esac

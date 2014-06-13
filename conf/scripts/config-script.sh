@@ -75,6 +75,13 @@ function db_filter {
 			-D CONF_SQLDIR="$sqldir" \
 			"$CONFIGDIR"/sqlvars.m4 "$CONFIGDIR"/scripts/sqlvars_end.m4 "$sql_file" > "$tmp"
 	)
-	db_client "$tmp" "$@"
+
+	if [ -z "$DRY_RUN" ]; then
+		db_client "$tmp" "$@"
+	else
+		echo $'===============\n';
+		cat "$tmp"
+	fi
+
 	rm -f "$tmp"
 }
