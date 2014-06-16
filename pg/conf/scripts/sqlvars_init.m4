@@ -14,7 +14,7 @@ $6
 $BODY$
   LANGUAGE plpgsql $3;
 ALTER FUNCTION $1 OWNER TO $4;
-COMMENT ON FUNCTION $1 IS $5»)
+COMMENT ON FUNCTION $1 IS $5)»)
 
 # M4_SQL_FUNCTION («prototype», «return type», function type {IMMUTABLE|STABLE|VOLATILE}, owner, 'comment', «body»)
 m4_define( «M4_SQL_FUNCTION»,
@@ -26,4 +26,4 @@ $6
 $BODY$
   LANGUAGE sql $3;
 ALTER FUNCTION $1 OWNER TO $4;
-COMMENT ON FUNCTION $1 IS $5»)
+COMMENT ON FUNCTION $1 IS $5)»)
