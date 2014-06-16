@@ -42,7 +42,7 @@ if [ ! -e "$sqlvars_end" ]; then
 »)
 m4_divert«»m4_dnl
 m4_undefine(' > "$sqlvars_end"
-	echo -n m4_dumpdef | m4 -P 2>&1 | grep -v '^\(m4_defn\|m4_dnl\):' | sed 's/^\([^:]\+\).*/		«\1»,/g' >> $sqlvars_end
+	echo -n m4_dumpdef | m4 -P 2>&1 | grep -v '^\(m4_defn\|m4_dnl\|m4_patsubst\):' | sed 's/^\([^:]\+\).*/		«\1»,/g' >> $sqlvars_end
 	echo '		«CONF_USER»,
 		«CONF_DATABASE»,
 		«CONF_LOCALE»,
