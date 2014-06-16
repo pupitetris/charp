@@ -37,9 +37,10 @@ DB_COLLATE=es_MX.utf8
 
 if [ $DB_TYPE = "pg" -a $DB_OS = "win" ]; then
 	# Locales under Windows have a different nomeclature and Postgres
-	# is system-dependent for locale specification. Uncomment and set 
-	# this accordingly if you are using Postgres for Windows.
+	# is system-dependent for locale specification. Set this accordingly 
+	# if you are using Postgres for Windows.
 	DB_LOCALE="«Spanish, Mexico»"
+	DB_COLLATE="«Spanish, Mexico»"
 fi
 
 # Set this accordingly if you are using Cygwin and need to run
