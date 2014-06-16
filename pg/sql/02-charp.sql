@@ -47,19 +47,15 @@ CREATE TYPE charp_account_status AS ENUM (
 -- CHARP functions.
 
 
-CREATE OR REPLACE FUNCTION charp_log_error(_code character varying, _username character varying, _ip_addr INET, _res character varying, _msg character varying, _params character varying[])
-  RETURNS void AS
-$BODY$
-BEGIN
-	INSERT INTO error_log VALUES(DEFAULT, CURRENT_TIMESTAMP, _code::charp_error_code, _username, _ip_addr, _res, _msg, _params);
-END;
-$BODY$
-  LANGUAGE plpgsql VOLATILE;
+M4_FUNCTION( «charp_log_error(_code character varying, _username character varying, _ip_addr INET, _res character varying, _msg character varying, _params character varying[])»,
+			 void, VOLATILE, M4_DEFN(user), 'Send an error report to the error log.', «
+BEGIN 
+	  INSERT INTO error_log VALUES(DEFAULT, CURRENT_TIMESTAMP, _code::charp_error_code, _username, _ip_addr, _res, _msg, _params);
+END;»);
 
 
-CREATE OR REPLACE FUNCTION charp_raise(_code text, VARIADIC _args text[] DEFAULT ARRAY[]::text[])
-  RETURNS void AS
-$BODY$
+M4_FUNCTION( «charp_raise(_code text, VARIADIC _args text[] DEFAULT ARRAY[]::text[])»,
+			 void, VOLATILE, M4_DEFN(user), 'Raise and log an exception with the CHARP format for client consumption.', «
 DECLARE
 	_i integer;
 	_sqlcode text;
@@ -94,16 +90,11 @@ BEGIN
 	       END;
 
 	RAISE EXCEPTION '|>%|{%}|', _code, array_to_string(_args, ',') USING ERRCODE = _sqlcode;
-END;
-$BODY$
-  LANGUAGE plpgsql VOLATILE;
-ALTER FUNCTION charp_raise(text, VARIADIC text[]) OWNER TO M4_DEFN(user);
-COMMENT ON FUNCTION charp_raise(text, VARIADIC text[]) IS 'Levanta una excepción y manda un reporte a la tabla de error_log.';
+END;»);
 
 
-CREATE OR REPLACE FUNCTION charp_account_get_id_by_username_status(_username character varying, _status charp_account_status)
-  RETURNS integer AS
-$BODY$
+M4_FUNCTION( «charp_account_get_id_by_username_status(_username character varying, _status charp_account_status)»,
+			 integer, STABLE, M4_DEFN(user), «'Get the user id for a given user name, raise USERUNK if not found.'», «
 DECLARE
 	_id integer;
 BEGIN
@@ -113,16 +104,11 @@ BEGIN
 	   PERFORM charp_raise('USERUNK', _username::text, _status::text);
 	END IF;
 	RETURN _id;
-END
-$BODY$
-  LANGUAGE plpgsql STABLE;
-ALTER FUNCTION charp_account_get_id_by_username_status(character varying, charp_account_status) OWNER TO M4_DEFN(user);
-COMMENT ON FUNCTION charp_account_get_id_by_username_status(character varying, charp_account_status) IS 'Obtiene el ID de una cuenta por username. Levanta una excepción si el username no existe.';
+END;»);
 
 
-CREATE OR REPLACE FUNCTION charp_rp_get_function_by_name(_function_name character varying)
-  RETURNS character varying AS
-$BODY$
+M4_FUNCTION( «charp_rp_get_function_by_name(_function_name character varying)»,
+			 character varying, STABLE, M4_DEFN(user), «'Find given function with prefix rp_, raise PROCUNK if not found.'», «
 DECLARE
 	_name character varying;
 BEGIN
@@ -131,15 +117,11 @@ BEGIN
 	   PERFORM charp_raise('PROCUNK', _function_name);
 	END IF;
 	RETURN _name;
-END
-$BODY$
-  LANGUAGE plpgsql STABLE;
-ALTER FUNCTION charp_rp_get_function_by_name(character varying) OWNER TO M4_DEFN(user);
+END;»);
 
 
-CREATE OR REPLACE FUNCTION charp_request_create(_username character varying, _ip_addr inet, _function_name character varying, _params character varying)
-  RETURNS character varying AS
-$BODY$
+M4_FUNCTION( «charp_request_create(_username character varying, _ip_addr inet, _function_name character varying, _params character varying)»,
+			 character varying, VOLATILE, M4_DEFN(user), 'Registers a request returning a corresponding challlenge for the client to respond.', «
 DECLARE
 	_random_bytes character varying;
 BEGIN
@@ -153,16 +135,11 @@ BEGIN
 		_params
 	);
 	RETURN _random_bytes;
-END
-$BODY$
-  LANGUAGE plpgsql VOLATILE;
-ALTER FUNCTION charp_request_create(character varying, inet, character varying, character varying) OWNER TO M4_DEFN(user);
-COMMENT ON FUNCTION charp_request_create(character varying, inet, character varying, character varying) IS 'Registra una petición y devuelve un desafío para ser contestado por el cliente.';
+END;»);
 
 
-CREATE OR REPLACE FUNCTION charp_get_function_params(_proargtypes oidvector)
-  RETURNS charp_param_type ARRAY AS
-$BODY$
+M4_FUNCTION( «charp_get_function_params(_proargtypes oidvector)»,
+			 charp_param_type ARRAY, IMMUTABLE, M4_DEFN(user), 'Convert the parameter array of a function for given oids to charp_param_type', «
 DECLARE
 	_fparams charp_param_type ARRAY;
 BEGIN
@@ -185,16 +162,11 @@ BEGIN
 		      ) 
 	       INTO _fparams;
 	RETURN _fparams;
-END
-$BODY$
-  LANGUAGE plpgsql IMMUTABLE;
-ALTER FUNCTION charp_get_function_params(_proargtypes oidvector) OWNER TO M4_DEFN(user);
-COMMENT ON FUNCTION charp_get_function_params(_proargtypes oidvector) IS 'Convierte el arreglo de parámetros que requiere una función de oids a charp_param_type.';
+END;»);
 
 
-CREATE OR REPLACE FUNCTION charp_function_params(_function_name character varying)
-  RETURNS charp_param_type ARRAY AS
-$BODY$
+M4_FUNCTION( «charp_function_params(_function_name character varying)»,
+			 charp_param_type ARRAY, VOLATILE, M4_DEFN(user), 'Return the input parameter types that a given sotred procedure requires.', «
 DECLARE
 	_fparams charp_param_type ARRAY;
 BEGIN
@@ -203,16 +175,12 @@ BEGIN
 	   PERFORM charp_raise('PROCUNK', _function_name);
 	END IF;
 	RETURN _fparams;
-END
-$BODY$
-  LANGUAGE plpgsql VOLATILE;
-ALTER FUNCTION charp_function_params(character varying) OWNER TO M4_DEFN(user);
-COMMENT ON FUNCTION charp_function_params(character varying) IS 'Devuelve los tipos de parámetros de entrada que requiere un store procedure de la base.';
+END;»);
 
 
-CREATE OR REPLACE FUNCTION charp_request_check(_username character varying, _ip_addr inet, _chal character varying, _hash character varying)
-  RETURNS TABLE(user_id integer, fname character varying, fparams charp_param_type ARRAY, req_params character varying) AS
-$BODY$
+M4_FUNCTION( «charp_request_check(_username character varying, _ip_addr inet, _chal character varying, _hash character varying)»,
+			 «TABLE(user_id integer, fname character varying, fparams charp_param_type ARRAY, req_params character varying)», 
+			 VOLATILE, M4_DEFN(user), 'Check that a given request is registered with the given data and compare the hash with one locally computed. Return the necessary data to execute.', «
 DECLARE
 	_req RECORD;
 	_our_hash character varying;
@@ -245,18 +213,9 @@ BEGIN
 	fparams := _req.fparams;
 	req_params := _req.req_params;
 	RETURN NEXT;
-END
-$BODY$
-  LANGUAGE plpgsql VOLATILE;
-ALTER FUNCTION charp_request_check(character varying, inet, character varying, character varying) OWNER TO M4_DEFN(user);
-COMMENT ON FUNCTION charp_request_check(character varying, inet, character varying, character varying) IS 'Checa que haya una petición registrada con los datos aportados y compara la firma(hash) con una computada por el server, y devuelve datos necesarios para hacer la ejecución.';
+END;»);
 
 
-CREATE OR REPLACE FUNCTION rp_user_auth()
-  RETURNS boolean AS
-$BODY$
-	SELECT TRUE;
-$BODY$
-  LANGUAGE sql IMMUTABLE;
-ALTER FUNCTION rp_user_auth() OWNER TO M4_DEFN(user);
-COMMENT ON FUNCTION rp_user_auth() IS 'Devuelve trivialmente TRUE, ya que si el usuario se autentificó, es que los pasos anteriores ocurrieron sin problema y las credenciales son auténticas.';
+M4_SQL_FUNCTION( «rp_user_auth()», boolean, IMMUTABLE, M4_DEFN(user),
+				 «'Trivially return TRUE. If the user was authenticated, everything went OK with challenge-request sequence and there is nothing left to do: success.'»,
+				 «SELECT TRUE»);
