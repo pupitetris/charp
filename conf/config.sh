@@ -47,7 +47,7 @@ fi
 # the native executables instead of the ones from Cygwin.
 # Otherwise, leave it commented.
 #DB_BINDIR="/cygdrive/c/Program Files/PostgreSQL/9.3/bin/"
-#DB_BINDIR="/cygdrive/c/Program Files/MySQL/MySQL Server 5.5/bin"
+# mysql: DB_BINDIR="/cygdrive/c/Program Files/MySQL/MySQL Server 5.5/bin"
 
 # *** No further editing needed after this line. ***
 
