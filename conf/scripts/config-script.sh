@@ -55,7 +55,6 @@ fi
 # Run the db client with our own set of configuration variables.
 function db_filter {
 	local sql_file=$1
-	echo $sql_file
 	shift
 
 	local sqldir=$SQLDIR
@@ -77,10 +76,13 @@ function db_filter {
 	)
 
 	if [ -z "$DRY_RUN" ]; then
+		echo $sql_file
 		db_client "$tmp" "$@"
 	else
-		echo $'===============\n';
-		cat "$tmp"
+		echo '>>>' $sql_file
+		local width=$(($(wc -l < "$tmp" | wc -c) - 1))
+		nl -ba -w $width -s : "$tmp"
+		echo
 	fi
 
 	rm -f "$tmp"
