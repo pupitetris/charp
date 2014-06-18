@@ -78,7 +78,7 @@ BEGIN
 	       	    WHEN 'USERUNK'      THEN 'CH001'
 	       	    WHEN 'PROCUNK'      THEN 'CH002'
 	       	    WHEN 'REQUNK'       THEN 'CH003'
-		    WHEN 'REPFAIL'      THEN 'CH004'
+				WHEN 'REPFAIL'      THEN 'CH004'
 	       	    WHEN 'ASSERT'       THEN 'CH005'
 	       	    WHEN 'USERPARMPERM' THEN 'CH006'
 	       	    WHEN 'USERPERM'     THEN 'CH007'
