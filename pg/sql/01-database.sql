@@ -13,15 +13,15 @@ CREATE FUNCTION charp_create_user(_username text, _passwd text)
   RETURNS VOID AS
 $BODY$
 BEGIN
-	PERFORM 1 FROM pg_authid WHERE rolname = _username;
-	IF FOUND THEN RETURN; END IF;
+    PERFORM 1 FROM pg_authid WHERE rolname = _username;
+    IF FOUND THEN RETURN; END IF;
 
-	EXECUTE $$
-		CREATE ROLE $$ || _username || $$ WITH
-	       	       LOGIN ENCRYPTED PASSWORD $$ || quote_literal(_passwd) || $$
-	       	       NOSUPERUSER NOCREATEDB NOCREATEROLE;
-	$$;
-	UPDATE pg_authid SET rolcatupdate = FALSE WHERE rolname = _username;
+    EXECUTE $$
+	CREATE ROLE $$ || _username || $$ WITH
+		      LOGIN ENCRYPTED PASSWORD $$ || quote_literal(_passwd) || $$
+		      NOSUPERUSER NOCREATEDB NOCREATEROLE;
+    $$;
+    UPDATE pg_authid SET rolcatupdate = FALSE WHERE rolname = _username;
 END
 $BODY$
   LANGUAGE plpgsql VOLATILE;

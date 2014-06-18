@@ -74,18 +74,18 @@ BEGIN
 	END IF;
 
 	SELECT INTO _sqlcode
-	       CASE _code
-	       	    WHEN 'USERUNK'      THEN 'CH001'
-	       	    WHEN 'PROCUNK'      THEN 'CH002'
-	       	    WHEN 'REQUNK'       THEN 'CH003'
-				WHEN 'REPFAIL'      THEN 'CH004'
-	       	    WHEN 'ASSERT'       THEN 'CH005'
-	       	    WHEN 'USERPARMPERM' THEN 'CH006'
-	       	    WHEN 'USERPERM'     THEN 'CH007'
-	       	    WHEN 'MAILFAIL'     THEN 'CH008'
-	       	    WHEN 'DATADUP'      THEN 'CH009'
-	       	    WHEN 'NOTFOUND'     THEN 'CH010'
-	       	    WHEN 'EXIT'         THEN 'CH011'
+	       CASE _code_t
+		    WHEN 'USERUNK'      THEN 'CH001'
+		    WHEN 'PROCUNK'      THEN 'CH002'
+		    WHEN 'REQUNK'       THEN 'CH003'
+		    WHEN 'REPFAIL'      THEN 'CH004'
+		    WHEN 'ASSERT'       THEN 'CH005'
+		    WHEN 'USERPARMPERM' THEN 'CH006'
+		    WHEN 'USERPERM'     THEN 'CH007'
+		    WHEN 'MAILFAIL'     THEN 'CH008'
+		    WHEN 'DATADUP'      THEN 'CH009'
+		    WHEN 'NOTFOUND'     THEN 'CH010'
+		    WHEN 'EXIT'         THEN 'CH011'
 		    ELSE 'CH000'
 	       END;
 
@@ -145,8 +145,8 @@ DECLARE
 BEGIN
 	SELECT ARRAY( 
 	       	      SELECT 
-		      	     CASE format_type (_proargtypes[s.i], NULL)
-			     	  WHEN 'charp_user_id'	     THEN 'UID'
+			     CASE format_type (_proargtypes[s.i], NULL)
+				  WHEN 'charp_user_id'	     THEN 'UID'
 				  WHEN 'integer'	     THEN 'INT'
 				  WHEN 'character varying'   THEN 'STR'
 				  WHEN 'text'		     THEN 'STR'
@@ -158,7 +158,7 @@ BEGIN
 				  WHEN 'boolean[]'	     THEN 'BOOLARR'
 				  ELSE 'STR'
 			     END
-	        	     FROM generate_series(0, array_upper(_proargtypes, 1)) AS s(i)
+			     FROM generate_series(0, array_upper(_proargtypes, 1)) AS s(i)
 		      ) 
 	       INTO _fparams;
 	RETURN _fparams;
