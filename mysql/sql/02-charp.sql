@@ -87,3 +87,15 @@ BEGIN
 END;»);
 
 
+M4_FUNCTION( charp_account_get_id_by_username_status, «_username varchar(20), _status M4_DEFN(charp_account_status)»,
+	     integer, READS SQL DATA, M4_DEFN(myuser), «'Get the user id for a given user name, raise USERUNK if not found.'», «
+BEGIN
+	DECLARE	_id integer;
+
+	SELECT a.persona_id INTO _id FROM account AS a
+	       WHERE a.username = _username AND a.status = _status;
+	IF _id IS NULL THEN
+	   CALL charp_raise2('USERUNK', _username, _status);
+	END IF;
+	RETURN _id;
+END;»);
