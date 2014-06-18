@@ -73,7 +73,7 @@ function db_filter {
 			-D CONF_COLLATE="$DB_COLLATE" \
 			-D CONF_SQLDIR="$sqldir" \
 			"$CONFIGDIR"/sqlvars.m4 "$CONFIGDIR"/scripts/sqlvars_end.m4 "$sql_file" > "$tmp"
-	)
+	) || exit 4
 
 	if [ -z "$DRY_RUN" ]; then
 		echo $sql_file
