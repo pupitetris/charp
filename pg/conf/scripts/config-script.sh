@@ -28,6 +28,8 @@ function db_client {
 }
 
 function db_initialize {
+	[ ! -z "$DRY_RUN" ] && return;
+
 	# Check if we can initialize the database before proceeding with the
 	# rest of the SQL scripts so they don't fail.
 	PGOPTIONS=--client-min-messages=warning psql -q -d postgres -U $DB_SUPERUSER -c "DROP DATABASE IF EXISTS $CONF_DATABASE"
