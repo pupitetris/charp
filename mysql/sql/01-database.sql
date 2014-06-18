@@ -6,25 +6,34 @@
 --
 -- Licensed under the EUPL V.1.1. See the file LICENSE.txt for copying conditions.
 
-M4_PROCEDURE(charp_create_user, «_username text, _passwd text», DETERMINISTIC MODIFIES SQL DATA, CURRENT_USER,
+M4_PROCEDURE(charp_create_user, «_username text, _client text, _passwd text», DETERMINISTIC MODIFIES SQL DATA, CURRENT_USER,
 			'Create user if it doesn''t exist',
 «_f: BEGIN 
 	   DECLARE _found integer;
 	   SELECT count(*) INTO _found FROM mysql.user WHERE user = _username;
 	   IF _found > 0 THEN LEAVE _f; END IF;
 
-	   set @s = concat('CREATE USER ''', _username, '''@''localhost'' IDENTIFIED BY ''', _passwd, '''');
+	   SET @s = concat('CREATE USER ''', _username, '''@''', _client, ''' IDENTIFIED BY ''', _passwd, '''');
 	   PREPARE _charp_create_user_prep FROM @s;
+	   EXECUTE _charp_create_user_prep;
+	   DEALLOCATE PREPARE _charp_create_user_prep;
+
+	   SET @s = concat('GRANT ALL ON M4_DEFN(dbname).* TO ''', _username, '''@''', _client, '''');
+	   PREPARE _charp_create_user_prep FROM @s;
+	   EXECUTE _charp_create_user_prep;
+	   DEALLOCATE PREPARE _charp_create_user_prep;
+
+	   PREPARE _charp_create_user_prep FROM 'FLUSH PRIVILEGES';
 	   EXECUTE _charp_create_user_prep;
 	   DEALLOCATE PREPARE _charp_create_user_prep;
 END»);
 
-CALL charp_create_user('M4_DEFN(user)', 'M4_DEFN(passwd)');
-DROP PROCEDURE charp_create_user;
-
 CREATE DATABASE M4_DEFN(dbname)
 	   CHARACTER SET = 'utf8'
 	   COLLATE = 'M4_DEFN(collate)';
+
+CALL charp_create_user('M4_DEFN(user)', 'M4_DEFN(client)', 'M4_DEFN(passwd)');
+DROP PROCEDURE charp_create_user;
 
 -- Connect to the newly created database for further configuration.
 \u M4_DEFN(dbname)
