@@ -48,14 +48,14 @@ CREATE TYPE charp_account_status AS ENUM (
 
 
 M4_PROCEDURE( «charp_log_error(_code character varying, _username character varying, _ip_addr INET, _res character varying, _msg character varying, _params character varying[])»,
-			  void, VOLATILE, M4_DEFN(user), 'Send an error report to the error log.', «
+	      void, VOLATILE, M4_DEFN(user), 'Send an error report to the error log.', «
 BEGIN 
 	  INSERT INTO error_log VALUES(DEFAULT, CURRENT_TIMESTAMP, _code::charp_error_code, _username, _ip_addr, _res, _msg, _params);
 END;»);
 
 
 M4_PROCEDURE( «charp_raise(_code text, VARIADIC _args text[] DEFAULT ARRAY[]::text[])»,
-			  void, VOLATILE, M4_DEFN(user), 'Raise and log an exception with the CHARP format for client consumption.', «
+	      void, VOLATILE, M4_DEFN(user), 'Raise and log an exception with the CHARP format for client consumption.', «
 DECLARE
 	_i integer;
 	_sqlcode text;
@@ -94,7 +94,7 @@ END;»);
 
 
 M4_PROCEDURE( «charp_account_get_id_by_username_status(_username character varying, _status charp_account_status)»,
-			  integer, STABLE, M4_DEFN(user), «'Get the user id for a given user name, raise USERUNK if not found.'», «
+	      integer, STABLE, M4_DEFN(user), «'Get the user id for a given user name, raise USERUNK if not found.'», «
 DECLARE
 	_id integer;
 BEGIN
@@ -108,7 +108,7 @@ END;»);
 
 
 M4_PROCEDURE( «charp_rp_get_function_by_name(_function_name character varying)»,
-			  character varying, STABLE, M4_DEFN(user), «'Find given function with prefix rp_, raise PROCUNK if not found.'», «
+	      character varying, STABLE, M4_DEFN(user), «'Find given function with prefix rp_, raise PROCUNK if not found.'», «
 DECLARE
 	_name character varying;
 BEGIN
@@ -121,7 +121,7 @@ END;»);
 
 
 M4_PROCEDURE( «charp_request_create(_username character varying, _ip_addr inet, _function_name character varying, _params character varying)»,
-			  character varying, VOLATILE, M4_DEFN(user), 'Registers a request returning a corresponding challlenge for the client to respond.', «
+	      character varying, VOLATILE, M4_DEFN(user), 'Registers a request returning a corresponding challlenge for the client to respond.', «
 DECLARE
 	_random_bytes character varying;
 BEGIN
@@ -139,7 +139,7 @@ END;»);
 
 
 M4_PROCEDURE( «charp_get_function_params(_proargtypes oidvector)»,
-			  charp_param_type ARRAY, IMMUTABLE, M4_DEFN(user), 'Convert the parameter array of a function for given oids to charp_param_type', «
+	      charp_param_type ARRAY, IMMUTABLE, M4_DEFN(user), 'Convert the parameter array of a function for given oids to charp_param_type', «
 DECLARE
 	_fparams charp_param_type ARRAY;
 BEGIN
@@ -166,7 +166,7 @@ END;»);
 
 
 M4_PROCEDURE( «charp_function_params(_function_name character varying)»,
-			  charp_param_type ARRAY, VOLATILE, M4_DEFN(user), 'Return the input parameter types that a given sotred procedure requires.', «
+	      charp_param_type ARRAY, VOLATILE, M4_DEFN(user), 'Return the input parameter types that a given sotred procedure requires.', «
 DECLARE
 	_fparams charp_param_type ARRAY;
 BEGIN
@@ -179,8 +179,8 @@ END;»);
 
 
 M4_PROCEDURE( «charp_request_check(_username character varying, _ip_addr inet, _chal character varying, _hash character varying)»,
-			  «TABLE(user_id integer, fname character varying, fparams charp_param_type ARRAY, req_params character varying)», 
-			  VOLATILE, M4_DEFN(user), 'Check that a given request is registered with the given data and compare the hash with one locally computed. Return the necessary data to execute.', «
+	      «TABLE(user_id integer, fname character varying, fparams charp_param_type ARRAY, req_params character varying)», 
+	      VOLATILE, M4_DEFN(user), 'Check that a given request is registered with the given data and compare the hash with one locally computed. Return the necessary data to execute.', «
 DECLARE
 	_req RECORD;
 	_our_hash character varying;
@@ -217,5 +217,5 @@ END;»);
 
 
 M4_SQL_PROCEDURE( «rp_user_auth()», boolean, IMMUTABLE, M4_DEFN(user),
-				  «'Trivially return TRUE. If the user was authenticated, everything went OK with challenge-request sequence and there is nothing left to do: success.'»,
-				  «SELECT TRUE»);
+	          «'Trivially return TRUE. If the user was authenticated, everything went OK with challenge-request sequence and there is nothing left to do: success.'»,
+	          «SELECT TRUE»);
