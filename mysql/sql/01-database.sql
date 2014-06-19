@@ -10,15 +10,18 @@ M4_PROCEDURE(charp_create_user, «_username text, _client text, _passwd text», 
 	    'Create user if it doesn''t exist',
 «_f: BEGIN 
        DECLARE _found integer;
-       SELECT count(*) INTO _found FROM mysql.user WHERE user = _username AND host = _client;
+       DECLARE _fullname text;
+
+       SET _fullname := concat('''', _username, '''@''', _client, '''');
+       SELECT count(*) INTO _found FROM information_schema.user_privileges WHERE grantee = _fullname;
        IF _found > 0 THEN LEAVE _f; END IF;
 
-       SET @s = concat('CREATE USER ''', _username, '''@''', _client, ''' IDENTIFIED BY ''', _passwd, '''');
+       SET @s = concat('CREATE USER ', _fullname, ' IDENTIFIED BY ''', _passwd, '''');
        PREPARE _charp_create_user_prep FROM @s;
        EXECUTE _charp_create_user_prep;
        DEALLOCATE PREPARE _charp_create_user_prep;
 
-       SET @s = concat('GRANT ALL ON M4_DEFN(dbname).* TO ''', _username, '''@''', _client, '''');
+       SET @s = concat('GRANT ALL ON M4_DEFN(dbname).* TO ', _fullname);
        PREPARE _charp_create_user_prep FROM @s;
        EXECUTE _charp_create_user_prep;
        DEALLOCATE PREPARE _charp_create_user_prep;
