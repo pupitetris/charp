@@ -77,7 +77,7 @@ function db_filter {
 
 	if [ -z "$DRY_RUN" ]; then
 		echo $sql_file
-		db_client "$tmp" "$@"
+		db_client "$tmp" "$@" || exit 4
 	else
 		echo '>>>' $sql_file
 		local width=$(($(wc -l < "$tmp" | wc -c) - 1))
