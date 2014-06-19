@@ -55,7 +55,7 @@ function db_client {
 	local sql_file=$1
 	shift
 
-	mymysql "$@" -s < "$sql_file"
+	mymysql "$@" -s -A -B < "$sql_file"
 }
 
 function db_initialize {
@@ -63,9 +63,9 @@ function db_initialize {
 
 	# Check if we can initialize the database before proceeding with the
 	# rest of the SQL scripts so they don't fail.
-	mymysql -su -d -s -e "DROP DATABASE IF EXISTS $CONF_DATABASE"
+	mymysql -su -d -s -A -B -e "DROP DATABASE IF EXISTS $CONF_DATABASE"
 	
-	if mymysql -s --vertical -e \
+	if mymysql -s -A -B --vertical -e \
 		"SELECT Id, User, Host, Command, Time, State, substr(info, 1, 100) AS Info 
 			FROM information_schema.processlist WHERE db = 'mysql';" 2>/dev/null; then
 		echo 'The database couldn''t be deleted, a client is still connected.' >&2
