@@ -93,8 +93,8 @@ BEGIN
 END;»);
 
 
-M4_PROCEDURE( «charp_account_get_id_by_username_status(_username character varying, _status charp_account_status)»,
-	      integer, STABLE, M4_DEFN(user), «'Get the user id for a given user name, raise USERUNK if not found.'», «
+M4_FUNCTION( «charp_account_get_id_by_username_status(_username character varying, _status charp_account_status)»,
+	     integer, STABLE, M4_DEFN(user), «'Get the user id for a given user name, raise USERUNK if not found.'», «
 DECLARE
 	_id integer;
 BEGIN
@@ -107,8 +107,8 @@ BEGIN
 END;»);
 
 
-M4_PROCEDURE( «charp_rp_get_function_by_name(_function_name character varying)»,
-	      character varying, STABLE, M4_DEFN(user), «'Find given function with prefix rp_, raise PROCUNK if not found.'», «
+M4_FUNCTION( «charp_rp_get_function_by_name(_function_name character varying)»,
+	     character varying, STABLE, M4_DEFN(user), «'Find given function with prefix rp_, raise PROCUNK if not found.'», «
 DECLARE
 	_name character varying;
 BEGIN
@@ -120,8 +120,8 @@ BEGIN
 END;»);
 
 
-M4_PROCEDURE( «charp_request_create(_username character varying, _ip_addr inet, _function_name character varying, _params character varying)»,
-	      character varying, VOLATILE, M4_DEFN(user), 'Registers a request returning a corresponding challlenge for the client to respond.', «
+M4_FUNCTION( «charp_request_create(_username character varying, _ip_addr inet, _function_name character varying, _params character varying)»,
+	     character varying, VOLATILE, M4_DEFN(user), 'Registers a request returning a corresponding challlenge for the client to respond.', «
 DECLARE
 	_random_bytes character varying;
 BEGIN
@@ -138,8 +138,8 @@ BEGIN
 END;»);
 
 
-M4_PROCEDURE( «charp_get_function_params(_proargtypes oidvector)»,
-	      charp_param_type ARRAY, IMMUTABLE, M4_DEFN(user), 'Convert the parameter array of a function for given oids to charp_param_type', «
+M4_FUNCTION( «charp_get_function_params(_proargtypes oidvector)»,
+	     charp_param_type ARRAY, IMMUTABLE, M4_DEFN(user), 'Convert the parameter array of a function for given oids to charp_param_type', «
 DECLARE
 	_fparams charp_param_type ARRAY;
 BEGIN
@@ -165,8 +165,8 @@ BEGIN
 END;»);
 
 
-M4_PROCEDURE( «charp_function_params(_function_name character varying)»,
-	      charp_param_type ARRAY, VOLATILE, M4_DEFN(user), 'Return the input parameter types that a given sotred procedure requires.', «
+M4_FUNCTION( «charp_function_params(_function_name character varying)»,
+	     charp_param_type ARRAY, VOLATILE, M4_DEFN(user), 'Return the input parameter types that a given sotred procedure requires.', «
 DECLARE
 	_fparams charp_param_type ARRAY;
 BEGIN
@@ -216,6 +216,6 @@ BEGIN
 END;»);
 
 
-M4_SQL_PROCEDURE( «rp_user_auth()», boolean, IMMUTABLE, M4_DEFN(user),
-	          «'Trivially return TRUE. If the user was authenticated, everything went OK with challenge-request sequence and there is nothing left to do: success.'»,
-	          «SELECT TRUE»);
+M4_SQL_FUNCTION( «rp_user_auth()», boolean, IMMUTABLE, M4_DEFN(user),
+	         «'Trivially return TRUE. If the user was authenticated, everything went OK with challenge-request sequence and there is nothing left to do: success.'»,
+	         «SELECT TRUE»);

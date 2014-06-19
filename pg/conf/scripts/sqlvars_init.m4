@@ -29,3 +29,8 @@ $BODY$
   LANGUAGE sql $3;
 ALTER FUNCTION M4_PROCEDURE_PROTO(«$1») OWNER TO $4;
 COMMENT ON FUNCTION M4_PROCEDURE_PROTO(«$1») IS $5»)
+
+# An alias for M4_PROCEDURE (all procedures are actually functions in postgres).
+# The idea is functions return "scalar" values. Procedures either void or tables.
+m4_define( «M4_FUNCTION», «M4_PROCEDURE($@)») 
+m4_define( «M4_SQL_FUNCTION», «M4_SQL_PROCEDURE($@)»)
