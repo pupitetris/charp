@@ -5,3 +5,4 @@
 [client]
 no-beep
 default-character-set=utf8
+prompt="\U.\d> "
