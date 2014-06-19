@@ -30,7 +30,14 @@ BEGIN
        SET _code_t := _code;
     END IF;
 
-    SET _msg := CONCAT('|>', _code, '|{', CONCAT_WS(',', QUOTE(_arg1), QUOTE(_arg2), QUOTE(_arg3), QUOTE(_arg4)), '}|');
+    SET _msg := CONCAT( '|>', _code, '|{', 
+    	     		CONCAT_WS( ',', 
+				   IF(ISNULL(_arg1),NULL,QUOTE(_arg1)), 
+				   IF(ISNULL(_arg2),NULL,QUOTE(_arg2)), 
+				   IF(ISNULL(_arg3),NULL,QUOTE(_arg3)), 
+				   IF(ISNULL(_arg4),NULL,QUOTE(_arg4))
+				   ), 
+			'}|');
 
     CASE _code_t
 	 WHEN 'USERUNK'      THEN SIGNAL SQLSTATE 'CH001' SET MESSAGE_TEXT = _msg;
