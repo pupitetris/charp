@@ -108,7 +108,6 @@ db_initialize
 # -d connects to the system schema (postgres, mysql...)
 db_filter 01-database.sql -su -d
 db_filter 02-charp.sql
-exit
 db_filter 03-types.sql
 db_filter 04-tables.sql
 [ -e 04-tables-constraints.sql ] && db_filter 04-tables-constraints.sql
