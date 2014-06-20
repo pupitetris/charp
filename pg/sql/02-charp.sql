@@ -166,7 +166,7 @@ END;»);
 
 
 M4_FUNCTION( «charp_function_params(_function_name character varying)»,
-	     charp_param_type ARRAY, VOLATILE, M4_DEFN(user), 'Return the input parameter types that a given sotred procedure requires.', «
+	     charp_param_type ARRAY, VOLATILE, M4_DEFN(user), 'Return the input parameter types that a given stored procedure requires.', «
 DECLARE
 	_fparams charp_param_type ARRAY;
 BEGIN
