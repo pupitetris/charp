@@ -10,10 +10,10 @@
 -- CHARP functions.
 
 
-M4_PROCEDURE( charp_log_error, «_code varchar(255), _username varchar(20), _ip_addr integer unsigned, _res varchar(255), _msg text, _params text», 
+M4_PROCEDURE( charp_log_error, «_code varchar(255), _username varchar(20), _ip_addr varchar(16), _res varchar(255), _msg text, _params text», 
 	      MODIFIES SQL DATA, M4_DEFN(myuser), 'Send an error report to the error log.', «
 BEGIN 
-    INSERT INTO error_log VALUES(DEFAULT, CURRENT_TIMESTAMP, _code, _username, _ip_addr, _res, _msg, _params);
+    INSERT INTO error_log VALUES(DEFAULT, CURRENT_TIMESTAMP, _code, _username, inet_aton(_ip_addr), _res, _msg, _params);
 END;»);
 
 
@@ -138,7 +138,7 @@ BEGIN
 END;»);
 
 
-M4_FUNCTION( charp_request_create, «_username varchar(20), _ip_addr integer unsigned, _function_name varchar(60), _params text»,
+M4_FUNCTION( charp_request_create, «_username varchar(20), _ip_addr varchar(16), _function_name varchar(60), _params text»,
 	     text, NOT DETERMINISTIC MODIFIES SQL DATA, M4_DEFN(myuser), 'Registers a request returning a corresponding challlenge for the client to respond.', «
 BEGIN
 	DECLARE _random_bytes text;
@@ -148,7 +148,7 @@ BEGIN
 		_random_bytes, 
 		charp_account_get_id_by_username_status(_username, 'ACTIVE'),
 		CURRENT_TIMESTAMP,
-		_ip_addr,
+		inet_aton(_ip_addr),
 		charp_rp_get_function_by_name(_function_name),
 		_params
 	);
@@ -183,7 +183,7 @@ BEGIN
 END;»);
 
 
-M4_PROCEDURE( charp_request_check, «_username varchar(20), _ip_addr integer unsigned, _chal text, _hash text»,
+M4_PROCEDURE( charp_request_check, «_username varchar(20), _ip_addr varchar(16), _chal text, _hash text»,
 	      NOT DETERMINISTIC READS SQL DATA, M4_DEFN(myuser), 
 	      'Check that a given request is registered with the given data and compare the hash with one locally computed. Return the necessary data to execute.', «
 BEGIN
@@ -204,7 +204,7 @@ BEGIN
 	       FROM request AS r NATURAL JOIN account AS a JOIN information_schema.routines AS p ON p.routine_name = r.proname
 	       WHERE a.username = _username AND
 		     r.request_id = _chal AND 
-		     r.ip_addr = _ip_addr;
+		     r.ip_addr = inet_aton(_ip_addr);
 
 	IF _fname IS NULL THEN
 	   CALL charp_raise3('REQUNK', _username, _ip_addr, _chal);
