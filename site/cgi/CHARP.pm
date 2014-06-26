@@ -20,7 +20,7 @@ $DB_NAME = 'myproject';
 $DB_HOST = 'localhost';
 $DB_PORT = '5432';
 $DB_USER = 'postgres';
-$DB_PASS = 'tat1nha';
+$DB_PASS = 'mosquito';
 $DB_DRIVER = 'Pg';
 
 %ERROR_LEVELS = (
