@@ -21,7 +21,12 @@ $DB_HOST = 'localhost';
 $DB_PORT = '5432';
 $DB_USER = 'postgres';
 $DB_PASS = 'mosquito';
+# MySQL: use mysql
 $DB_DRIVER = 'Pg';
+# Language for the localized strings.
+$CHARP_LANG = 'es';
+
+require "strings-$CHARP_LANG.pm";
 
 %ERROR_LEVELS = (
     'DATA' => 1,
@@ -38,32 +43,33 @@ $ERROR_SEV_USER = 4;
 $ERROR_SEV_EXIT = 5;
 
 %ERRORS = (
-    'DBI:CONNECT'	 => { 'code' => 	1, 'sev' => $ERROR_SEV_RETRY,		'desc' => 'No fue posible contactar a la base de datos.' },
-    'DBI:PREPARE'	 => { 'code' => 	2, 'sev' => $ERROR_SEV_INTERNAL,	'desc' => 'Una sentencia SQL falló al ser preparada.' },
-    'DBI:EXECUTE'	 => { 'code' => 	3, 'sev' => $ERROR_SEV_INTERNAL,	'desc' => 'La sentencia SQL no pudo ser ejecutada.' },
-    'CGI:REQPARM'	 => { 'code' => 	4, 'sev' => $ERROR_SEV_INTERNAL,	'desc' => 'Faltan parámetros en petición HTTP.' },
-    'CGI:NOTPOST'	 => { 'code' => 	7, 'sev' => $ERROR_SEV_INTERNAL,	'desc' => 'Método HTTP no es POST.' },
-    'CGI:PATHUNK'	 => { 'code' => 	8, 'sev' => $ERROR_SEV_INTERNAL,	'desc' => 'Dirección HTTP no reconocida.' },
-    'CGI:BADPARAM'	 => { 'code' =>	       11, 'sev' => $ERROR_SEV_INTERNAL,	'desc' => '%s: Parámetros malformados `%s`.' },
-    'CGI:NUMPARAM'	 => { 'code' =>	       12, 'sev' => $ERROR_SEV_INTERNAL,	'desc' => '%s: %s parámetros requeridos, se entregaron %s.' },
-    'CGI:BINDPARAM'	 => { 'code' =>	       16, 'sev' => $ERROR_SEV_INTERNAL,	'desc' => '%s: No se pudo asociar el parámetro %s (`%s`) de `%s`.' },
-    'CGI:FILESEND'	 => { 'code' =>	       19, 'sev' => $ERROR_SEV_INTERNAL,	'desc' => 'Error al enviar archivo.' },
-    'SQL:USERUNK'	 => { 'code' => 	5, 'sev' => $ERROR_SEV_USER,		'desc' => 'Usuario `%s` con status `%s` no encontrado.' },
-    'SQL:PROCUNK'	 => { 'code' => 	6, 'sev' => $ERROR_SEV_INTERNAL,	'desc' => 'Función `%s` no encontrada.' },
-    'SQL:REQUNK'	 => { 'code' => 	9, 'sev' => $ERROR_SEV_INTERNAL,	'desc' => 'Petición no encontrada.' },
-    'SQL:REPFAIL'	 => { 'code' =>        10, 'sev' => $ERROR_SEV_USER,		'desc' => 'Firma errónea. Verifique nombre de usuario y contraseña.' },
-    'SQL:ASSERT'	 => { 'code' =>	       13, 'sev' => $ERROR_SEV_INTERNAL,	'desc' => 'Parámetros erróneos (`%s`).' },
-    'SQL:USERPARAMPERM'	 => { 'code' =>	       14, 'sev' => $ERROR_SEV_PERM,		'desc' => 'El usuario %s no tiene permiso de realizar esta operación.' },
-    'SQL:USERPERM'	 => { 'code' =>	       15, 'sev' => $ERROR_SEV_PERM,		'desc' => 'Su cuenta no tiene los permisos necesarios para realizar esta operación.' },
-    'SQL:MAILFAIL'	 => { 'code' =>	       17, 'sev' => $ERROR_SEV_USER,		'desc' => 'Hubo un error al intentar enviar un mensaje de correo a <%s>. Por favor, revise que la dirección esté bien escrita.' },
-    'SQL:DATADUP'	 => { 'code' =>        20, 'sev' => $ERROR_SEV_USER,		'desc' => 'Los datos no pudieron ser insertados por duplicidad.' },
-    'SQL:NOTFOUND'	 => { 'code' =>        21, 'sev' => $ERROR_SEV_USER,		'desc' => 'Información no encontrada.' },
-    'SQL:EXIT'		 => { 'code' =>        18, 'sev' => $ERROR_SEV_EXIT,		'desc' => '%s' }
+    'DBI:CONNECT'	 => { 'code' => 	1, 'sev' => $ERROR_SEV_RETRY },
+    'DBI:PREPARE'	 => { 'code' => 	2, 'sev' => $ERROR_SEV_INTERNAL },
+    'DBI:EXECUTE'	 => { 'code' => 	3, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:REQPARM'	 => { 'code' => 	4, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:NOTPOST'	 => { 'code' => 	7, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:PATHUNK'	 => { 'code' => 	8, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:BADPARAM'	 => { 'code' =>	       11, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:NUMPARAM'	 => { 'code' =>	       12, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:BINDPARAM'	 => { 'code' =>	       16, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:FILESEND'	 => { 'code' =>	       19, 'sev' => $ERROR_SEV_INTERNAL },
+    'SQL:USERUNK'	 => { 'code' => 	5, 'sev' => $ERROR_SEV_USER },
+    'SQL:PROCUNK'	 => { 'code' => 	6, 'sev' => $ERROR_SEV_INTERNAL },
+    'SQL:REQUNK'	 => { 'code' => 	9, 'sev' => $ERROR_SEV_INTERNAL },
+    'SQL:REPFAIL'	 => { 'code' =>        10, 'sev' => $ERROR_SEV_USER },
+    'SQL:ASSERT'	 => { 'code' =>	       13, 'sev' => $ERROR_SEV_INTERNAL },
+    'SQL:USERPARAMPERM'	 => { 'code' =>	       14, 'sev' => $ERROR_SEV_PERM },
+    'SQL:USERPERM'	 => { 'code' =>	       15, 'sev' => $ERROR_SEV_PERM },
+    'SQL:MAILFAIL'	 => { 'code' =>	       17, 'sev' => $ERROR_SEV_USER },
+    'SQL:DATADUP'	 => { 'code' =>        20, 'sev' => $ERROR_SEV_USER },
+    'SQL:NOTFOUND'	 => { 'code' =>        21, 'sev' => $ERROR_SEV_USER },
+    'SQL:EXIT'		 => { 'code' =>        18, 'sev' => $ERROR_SEV_EXIT }
 );
 
 foreach my $key (keys %ERRORS) {
     my $lvl = (split (':', $key))[0];
     my $err = $ERRORS{$key};
+    $err->{'desc'} = $ERROR_DESCS{$key};
     $err->{'level'} = $ERROR_LEVELS{$lvl};
     $err->{'key'} = $key;
 }
