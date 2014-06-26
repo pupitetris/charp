@@ -14,3 +14,10 @@ Thumbs.db
 /conf/scripts/sqlvars_end.m4
 /mysql/conf/scripts/my-gen.cnf
 /mysql/conf/scripts/my-su-gen.cnf
+
+# Remove these if you want these configurations to be tracked
+# in the source repository of your project:
+/conf/sqlvars.m4
+/conf/config.sh
+/mysql/conf/my-su.cnf
+/mysql/conf/my.cnf
