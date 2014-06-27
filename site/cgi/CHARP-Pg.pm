@@ -3,7 +3,7 @@ package CHARP;
 use DBD::Pg qw(:pg_types);
 
 %CHARP::pg_errcodes = ();
-open (my $efd, 'errcodes.txt') || die "Can't open errcodes.txt file.";
+open (my $efd, 'Pg-errcodes.txt') || die "Can't open errcodes.txt file.";
 while (my $l = <$efd>) {
     chomp $l;
     $l =~ s/^\s*//;
