@@ -15,6 +15,15 @@ while (my $l = <$efd>) {
     }
 }
 
+sub connect_attrs_add {
+    my $attr_hash = shift;
+    $attr_hash->{'pg_enable_utf8'} = 1;
+}
+
+sub dsn_add {
+    return '';
+}
+
 sub prepare_attrs {
     return { 'pg_server_prepare' => 1 };
 }
@@ -42,11 +51,6 @@ sub boolarr_type {
 sub state_str {
     my $state = shift;
     return $CHARP::pg_errcodes{$state};
-}
-
-sub connect_attrs_add {
-    my $attr_hash = shift;
-    $attr_hash->{'pg_enable_utf8'} = 1;
 }
 
 1;

@@ -279,7 +279,7 @@ sub connect {
     $attr_hash = {} if (!defined $attr_hash);
     connect_attrs_add ($attr_hash);
 
-    my $dbh = DBI->connect_cached ("dbi:$DB_DRIVER:database=$DB_NAME;host=$DB_HOST;port=$DB_PORT", $DB_USER, $DB_PASS, $attr_hash);
+    my $dbh = DBI->connect_cached ("dbi:$DB_DRIVER:database=$DB_NAME;host=$DB_HOST;port=$DB_PORT" . dsn_add (), $DB_USER, $DB_PASS, $attr_hash);
     if (!defined $dbh) {
 	dispatch_error ({'err' => 'DBI:CONNECT', 'msg' => $DBI::errstr });
     } else {
