@@ -16,7 +16,7 @@ use JSON::XS;
 use utf8;
 
 require "CHARP-config.pm";
-require "strings-$CHARP_LANG.pm";
+require "CHARP-strings-$CHARP_LANG.pm";
 require "CHARP-$DB_DRIVER.pm";
 
 %ERROR_LEVELS = (
