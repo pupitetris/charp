@@ -232,7 +232,6 @@ sub error_execute_send {
 	my $errstr = $1;
 	$objs = [$errstr =~ /"([^"]+)"/g];
     }
-    my $state = $sth->state;
 
     if ($dolog) {
 	$CHARP::ctx->{'err_sth'}->execute ($err_type, $login, $ip_addr, $res, $msg, $parms_str);
@@ -241,8 +240,8 @@ sub error_execute_send {
     error_send ($fcgi, { 'err' => $code, 
 			 'msg' => $msg, 
 			 'parms' => \@parms, 
-			 'state' => $state, 
-			 'statestr' => state_str ($state),
+			 'state' => state_num ($sth, $dbh), 
+			 'statestr' => state_str ($sth, $dbh),
 			 'objs' => $objs 
 		});
 }

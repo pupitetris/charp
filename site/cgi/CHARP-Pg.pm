@@ -48,9 +48,18 @@ sub boolarr_type {
     return { 'pg_type' => PG_BOOLARRAY };
 }
 
+sub state_num {
+    my $sth = shift;
+    my $dbh = shift;
+
+    return $sth->state;
+}
+
 sub state_str {
-    my $state = shift;
-    return $CHARP::pg_errcodes{$state};
+    my $sth = shift;
+    my $dbh = shift;
+
+    return $CHARP::pg_errcodes{$sth->state};
 }
 
 1;
