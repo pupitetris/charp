@@ -9,24 +9,15 @@
 package CHARP;
 
 use DBI qw(:sql_types);
-use DBD::Pg qw(:pg_types);
 
 use Encode qw(encode decode);
 use CGI::Fast qw(:cgi);
 use JSON::XS;
 use utf8;
 
-$DB_NAME = 'myproject';
-$DB_HOST = 'localhost';
-$DB_PORT = '5432';
-$DB_USER = 'postgres';
-$DB_PASS = 'mosquito';
-# MySQL: use mysql
-$DB_DRIVER = 'Pg';
-# Language for the localized strings.
-$CHARP_LANG = 'es';
-
+require "CHARP-config.pm";
 require "strings-$CHARP_LANG.pm";
+require "CHARP-$DB_DRIVER.pm";
 
 %ERROR_LEVELS = (
     'DATA' => 1,
@@ -74,24 +65,10 @@ foreach my $key (keys %ERRORS) {
     $err->{'key'} = $key;
 }
 
-%CHARP::pg_errcodes = ();
-open (my $efd, 'errcodes.txt') || die "Can't open errcodes.txt file.";
-while (my $l = <$efd>) {
-    chomp $l;
-    $l =~ s/^\s*//;
-    next if $l =~ /^#/;
-    next if $l =~ /^$/;
-    next if $l =~ /^Section/;
-    if ($l =~ /(^[0-9A-Z]{5})\s+([EWS])\s+(\w+)\s+(\w+)/) {
-	$CHARP::pg_errcodes{$1} = $4;
-    }
-}
-
 sub init {
     my $dbh = shift;
 
-    my $err_sth = $dbh->prepare ('SELECT charp_log_error (?, ?, ?, ?, ?, ?)', 
-				 { 'pg_server_prepare' => 1 });
+    my $err_sth = $dbh->prepare ('SELECT charp_log_error (?, ?, ?, ?, ?, ?)', prepare_attrs ());
     if (!defined $err_sth) {
 	dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
 	return;
@@ -99,37 +76,34 @@ sub init {
 
     $err_sth->bind_param (1, undef, SQL_VARCHAR); # type
     $err_sth->bind_param (2, undef, SQL_VARCHAR); # login
-    $err_sth->bind_param (3, undef, { 'pg_type' => PG_INET }); # ip_addr
+    $err_sth->bind_param (3, undef, inet_type ()); # ip_addr
     $err_sth->bind_param (4, undef, SQL_VARCHAR); # resource
     $err_sth->bind_param (5, undef, SQL_VARCHAR); # msg
-    $err_sth->bind_param (6, undef, { 'pg_type' => PG_VARCHARARRAY }); # params
+    $err_sth->bind_param (6, undef, params_type ()); # params
 
-    my $chal_sth = $dbh->prepare ('SELECT charp_request_create (?, ?, ?, ?) AS chal', 
-				  { 'pg_server_prepare' => 1 });
+    my $chal_sth = $dbh->prepare ('SELECT charp_request_create (?, ?, ?, ?) AS chal', prepare_attrs ());
     if (!defined $chal_sth) {
 	dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
 	return;
     }
 
     $chal_sth->bind_param (1, undef, SQL_VARCHAR); # login
-    $chal_sth->bind_param (2, undef, { 'pg_type' => PG_INET }); # ip_addr
+    $chal_sth->bind_param (2, undef, inet_type ()); # ip_addr
     $chal_sth->bind_param (3, undef, SQL_VARCHAR); # resource
     $chal_sth->bind_param (4, undef, SQL_VARCHAR); # params
 
-    my $chk_sth = $dbh->prepare ('SELECT * FROM charp_request_check (?, ?, ?, ?)', 
-				 { 'pg_server_prepare' => 1 });
+    my $chk_sth = $dbh->prepare ('SELECT * FROM charp_request_check (?, ?, ?, ?)', prepare_attrs ());
     if (!defined $chk_sth) {
 	dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
 	return;
     }
 
     $chk_sth->bind_param (1, undef, SQL_VARCHAR); # login
-    $chk_sth->bind_param (2, undef, { 'pg_type' => PG_INET }); # ip_addr
+    $chk_sth->bind_param (2, undef, inet_type ()); # ip_addr
     $chk_sth->bind_param (3, undef, SQL_VARCHAR); # chal
     $chk_sth->bind_param (4, undef, SQL_VARCHAR); # hash
 
-    my $func_sth = $dbh->prepare ('SELECT charp_function_params (?) AS fparams', 
-				  { 'pg_server_prepare' => 1 });
+    my $func_sth = $dbh->prepare ('SELECT charp_function_params (?) AS fparams', prepare_attrs ());
     if (!defined $func_sth) {
 	dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
 	return;
@@ -149,7 +123,7 @@ sub init {
     return $ctx;
 }
 
-# Para pruebas, agregar ->pretty.
+# For testing, add ->pretty.
 $JSON = JSON::XS->new;
 
 sub json_print_headers {
@@ -268,7 +242,7 @@ sub error_execute_send {
 			 'msg' => $msg, 
 			 'parms' => \@parms, 
 			 'state' => $state, 
-			 'statestr' => $CHARP::pg_errcodes{$state}, 
+			 'statestr' => state_str ($state),
 			 'objs' => $objs 
 		});
 }
@@ -303,7 +277,7 @@ sub connect {
     my ($attr_hash) = @_;
 
     $attr_hash = {} if (!defined $attr_hash);
-    $attr_hash->{'pg_enable_utf8'} = 1;
+    connect_attrs_add ($attr_hash);
 
     my $dbh = DBI->connect_cached ("dbi:$DB_DRIVER:database=$DB_NAME;host=$DB_HOST;port=$DB_PORT", $DB_USER, $DB_PASS, $attr_hash);
     if (!defined $dbh) {

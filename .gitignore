@@ -21,3 +21,4 @@ Thumbs.db
 /conf/config.sh
 /mysql/conf/my-su.cnf
 /mysql/conf/my.cnf
+/site/cgi/CHARP-config.pm

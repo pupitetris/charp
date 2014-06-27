@@ -26,4 +26,9 @@ use utf8;
     'SQL:EXIT'		=> '%s'
 );
 
+%STRS = (
+    'CGI:FILESEND:MISSING:MSG' => '%s: Missing `filename` parameter.',
+    'CGI:FILESEND:OPENFAIL:MSG' => '%s: Error opening `%s` (%s).',
+);    
+
 1;

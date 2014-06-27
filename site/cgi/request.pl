@@ -75,9 +75,9 @@ sub request_challenge {
     'STR' => SQL_VARCHAR,
     'BOOL' => SQL_BOOLEAN,
     'DATE' => SQL_DATE,
-    'INTARR'  => { 'pg_type' => PG_INT4ARRAY },
-    'STRARR'  => { 'pg_type' => PG_VARCHARARRAY },
-    'BOOLARR' => { 'pg_type' => PG_BOOLARRAY }
+    'INTARR'  => CHARP::intarr_type,
+    'STRARR'  => CHARP::strarr_type,
+    'BOOLARR' => CHARP::boolarr_type
 );
 
 sub request_reply_file {
@@ -90,11 +90,11 @@ sub request_reply_file {
     $sth->fetchrow_hashref (NAME_lc); # Avoid 'still Active' warning, exhaust response buffer.
 
     if (! exists $res->{'filename'}) {
-	CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => '$fname: Parámetro `filename` faltante.' });
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => sprintf ($CHARP::STRS{'CGI:FILESEND:MISSING:MSG'}, $fname) });
 	return;
     }
     if (! exists $res->{'mimetype'}) {
-	CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => '$fname: Parámetro `mimetype` faltante.' });
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => sprintf ($CHARP::STRS{'CGI:FILESEND:MISSING:MSG'}, $fname) });
 	return;
     }
 
@@ -102,7 +102,7 @@ sub request_reply_file {
 
     if (-e $res->{'filename'}) {
 	if (! sysopen ($fd, $res->{'filename'}, 0)) {
-	    CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => "$fname: Error al abrir `$res->{'filename'}` ($!)." });
+	    CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => sprintf ($CHARP::STRS{'CGI:FILESEND:OPENFAIL:MSG'}, $fname, $res->{'filename'}, $!) });
 	    return;
 	}
 
@@ -118,7 +118,7 @@ sub request_reply_file {
 	close ($fd);
     } else {
 	if (! open ($fd, $res->{'filename'})) {
-	    CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => "$fname: Error al abrir `$res->{'filename'}` ($!)." });
+	    CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => sprintf ($CHARP::STRS{'CGI:FILESEND:OPENFAIL:MSG'}, $fname, $res->{'filename'}, $!) });
 	    return;
 	}
 	
@@ -195,8 +195,7 @@ sub request_reply_do {
 	return;
     }
 
-    my $sth = $ctx->{'dbh'}->prepare_cached ("SELECT * FROM rp_$fname ($placeholders)",
-					     { 'pg_server_prepare' => 1 });
+    my $sth = $ctx->{'dbh'}->prepare_cached ("SELECT * FROM rp_$fname ($placeholders)", CHARP::prepare_attrs ());
     if (!defined $sth) {
 	CHARP::dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
 	return;
