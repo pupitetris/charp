@@ -156,13 +156,10 @@ BEGIN
 END;»);
 
 
-M4_FUNCTION( charp_function_params, _function_name varchar(60),
+M4_FUNCTION( charp_get_function_params, _function_name varchar(64),
 	     text, READS SQL DATA, M4_DEFN(myuser), 'Return the input parameter types that a given stored procedure requires.', «
 BEGIN
 	DECLARE	_fparams text;
-	DECLARE _fname text;
-
-	SELECT charp_rp_get_function_by_name (_function_name) INTO _fname;
 
 	SELECT group_concat(q.type SEPARATOR ',') INTO _fparams 
 	       FROM (SELECT IF (parameter_name = '_uid', 'UID',
@@ -175,10 +172,23 @@ BEGIN
 				     ELSE 'STR'
 			        END) AS type
 			   FROM information_schema.parameters 
-			   WHERE specific_name = _fname AND ordinal_position > 0 
+			   WHERE specific_name = _function_name COLLATE utf8_general_ci AND ordinal_position > 0 
 			   ORDER BY ordinal_position
 		    ) AS q;
 
+	RETURN _fparams;
+END;»);
+
+
+M4_FUNCTION( charp_function_params, _function_name varchar(60),
+	     text, READS SQL DATA, M4_DEFN(myuser), 'Return the input parameter types that a given stored procedure requires.', «
+BEGIN
+	DECLARE	_fparams text;
+
+	SELECT charp_get_function_params (concat('rp_', _function_name)) INTO _fparams;
+	IF _fparams IS NULL THEN
+	   CALL charp_raise1('PROCUNK', _function_name);
+	END IF;
 	RETURN _fparams;
 END;»);
 
@@ -196,12 +206,12 @@ BEGIN
 
 	SELECT 
 	       a.persona_id, 
-	       substring(p.routine_name FROM 4), 
-	       charp_get_function_params (p.proargtypes), 
+	       substring(r.proname FROM 4), 
+	       charp_get_function_params (r.proname), 
 	       r.params, 
 	       a.passwd
 	       INTO _user_id, _fname, _fparams, _req_params, _passwd
-	       FROM request AS r NATURAL JOIN account AS a JOIN information_schema.routines AS p ON p.routine_name = r.proname
+	       FROM request AS r NATURAL JOIN account AS a JOIN information_schema.routines AS p ON p.routine_name = r.proname COLLATE utf8_general_ci
 	       WHERE a.username = _username AND
 		     r.request_id = _chal AND 
 		     r.ip_addr = inet_aton(_ip_addr);
