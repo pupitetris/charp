@@ -73,11 +73,11 @@ function db_filter {
 			-D CONF_COLLATE="$DB_COLLATE" \
 			-D CONF_SQLDIR="$sqldir" \
 			"$CONFIGDIR"/sqlvars.m4 "$CONFIGDIR"/scripts/sqlvars_end.m4 "$sql_file" > "$tmp"
-	) || exit 4
+	) || return 4
 
 	if [ -z "$DRY_RUN" ]; then
 		echo $sql_file
-		db_client "$tmp" "$@" || exit 4
+		db_client "$tmp" "$@" || return 4
 	else
 		echo '-- >>>' $sql_file '<<<'
 		local width=$(($(wc -l < "$tmp" | wc -c) - 1))
@@ -86,4 +86,9 @@ function db_filter {
 	fi
 
 	rm -f "$tmp"
+	return 0
+}
+
+function db_filter_or_exit {
+    db_filter "$@" || exit $?
 }

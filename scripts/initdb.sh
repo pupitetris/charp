@@ -106,14 +106,14 @@ db_initialize
 
 # -su runs the sql script as the database superuser (DBSUPERUSER).
 # -d connects to the system schema (postgres, mysql...)
-db_filter 01-database.sql -su -d
-db_filter 02-charp.sql
-db_filter 03-types.sql
-db_filter 04-tables.sql
-[ -e 04-tables-constraints.sql ] && db_filter 04-tables-constraints.sql
-db_filter 05-functions.sql -su
-[ -e 06-catalogs.sql -a -z "$NOCAT" ] && db_filter 06-catalogs.sql -su
-[ -e 07-views.sql ] && db_filter 07-views.sql
-[ -e 09-data.sql ] && db_filter 09-data.sql -su
-[ -e 98-testdata.sql -a ! -z "$TESTDATA" ] && db_filter 98-testdata.sql -su
-[ -e 99-test.sql -a ! -z "$TESTDATA" ] && db_filter 99-test.sql -su
+db_filter_or_exit 01-database.sql -su -d
+db_filter_or_exit 02-charp.sql
+db_filter_or_exit 03-types.sql
+db_filter_or_exit 04-tables.sql
+[ -e 04-tables-constraints.sql ] && db_filter_or_exit 04-tables-constraints.sql
+db_filter_or_exit 05-functions.sql -su
+[ -e 06-catalogs.sql -a -z "$NOCAT" ] && db_filter_or_exit 06-catalogs.sql -su
+[ -e 07-views.sql ] && db_filter_or_exit 07-views.sql
+[ -e 09-data.sql ] && db_filter_or_exit 09-data.sql -su
+[ -e 98-testdata.sql -a ! -z "$TESTDATA" ] && db_filter_or_exit 98-testdata.sql -su
+[ -e 99-test.sql -a ! -z "$TESTDATA" ] && db_filter_or_exit 99-test.sql -su
