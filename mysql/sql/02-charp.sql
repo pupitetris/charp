@@ -196,7 +196,7 @@ BEGIN
 
 	SELECT 
 	       a.persona_id, 
-	       substring(p.proname FROM 4), 
+	       substring(p.routine_name FROM 4), 
 	       charp_get_function_params (p.proargtypes), 
 	       r.params, 
 	       a.passwd
