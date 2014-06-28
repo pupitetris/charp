@@ -231,6 +231,6 @@ BEGIN
 END;»);
 
 
-M4_FUNCTION( rp_user_auth, «», boolean, DETERMINISTIC NO SQL, M4_DEFN(myuser),
-	     «'Trivially return TRUE. If the user was authenticated, everything went OK with challenge-request sequence and there is nothing left to do: success.'»,
-	     «RETURN TRUE»);
+M4_PROCEDURE( rp_user_auth, «», DETERMINISTIC NO SQL, M4_DEFN(myuser),
+	      «'Trivially return TRUE. If the user was authenticated, everything went OK with challenge-request sequence and there is nothing left to do: success.'»,
+	      «SELECT TRUE»);
