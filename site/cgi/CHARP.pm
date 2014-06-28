@@ -70,7 +70,7 @@ sub init {
 
     my $err_sth = $dbh->prepare ('SELECT charp_log_error (?, ?, ?, ?, ?, ?)', prepare_attrs ());
     if (!defined $err_sth) {
-	dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
+	dispatch_error ({ 'err' => 'DBI:PREPARE', 'msg' => $DBI::errstr });
 	return;
     }
 
@@ -83,7 +83,7 @@ sub init {
 
     my $chal_sth = $dbh->prepare ('SELECT charp_request_create (?, ?, ?, ?) AS chal', prepare_attrs ());
     if (!defined $chal_sth) {
-	dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
+	dispatch_error ({ 'err' => 'DBI:PREPARE', 'msg' => $DBI::errstr });
 	return;
     }
 
@@ -94,7 +94,7 @@ sub init {
 
     my $chk_sth = $dbh->prepare ('SELECT * FROM charp_request_check (?, ?, ?, ?)', prepare_attrs ());
     if (!defined $chk_sth) {
-	dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
+	dispatch_error ({ 'err' => 'DBI:PREPARE', 'msg' => $DBI::errstr });
 	return;
     }
 
@@ -105,7 +105,7 @@ sub init {
 
     my $func_sth = $dbh->prepare ('SELECT charp_function_params (?) AS fparams', prepare_attrs ());
     if (!defined $func_sth) {
-	dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
+	dispatch_error ({ 'err' => 'DBI:PREPARE', 'msg' => $DBI::errstr });
 	return;
     }
 
