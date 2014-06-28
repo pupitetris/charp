@@ -68,7 +68,7 @@ foreach my $key (keys %ERRORS) {
 sub init {
     my $dbh = shift;
 
-    my $err_sth = $dbh->prepare ('SELECT charp_log_error (?, ?, ?, ?, ?, ?)', prepare_attrs ());
+    my $err_sth = $dbh->prepare (call_procedure_query ('charp_log_error (?, ?, ?, ?, ?, ?)'), prepare_attrs ());
     if (!defined $err_sth) {
 	dispatch_error ({ 'err' => 'DBI:PREPARE', 'msg' => $DBI::errstr });
 	return;
@@ -92,7 +92,7 @@ sub init {
     $chal_sth->bind_param (3, undef, SQL_VARCHAR); # resource
     $chal_sth->bind_param (4, undef, SQL_VARCHAR); # params
 
-    my $chk_sth = $dbh->prepare ('SELECT * FROM charp_request_check (?, ?, ?, ?)', prepare_attrs ());
+    my $chk_sth = $dbh->prepare (call_procedure_query ('charp_request_check (?, ?, ?, ?)'), prepare_attrs ());
     if (!defined $chk_sth) {
 	dispatch_error ({ 'err' => 'DBI:PREPARE', 'msg' => $DBI::errstr });
 	return;

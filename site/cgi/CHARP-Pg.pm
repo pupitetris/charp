@@ -62,4 +62,9 @@ sub state_str {
     return $CHARP::pg_errcodes{$sth->state};
 }
 
+sub call_procedure_query {
+    my $proc = shift;
+    return 'SELECT * FROM ' . $proc;
+}
+
 1;

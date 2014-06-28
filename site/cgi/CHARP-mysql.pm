@@ -51,4 +51,9 @@ sub state_str {
     return $dbh->{'mysql_error'};
 }
 
+sub call_procedure_query {
+    my $proc = shift;
+    return 'CALL ' . $proc;
+}
+
 1;
