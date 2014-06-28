@@ -195,7 +195,7 @@ sub request_reply_do {
 	return;
     }
 
-    my $sth = $ctx->{'dbh'}->prepare_cached (call_procedure_query ("rp_$fname ($placeholders)"), CHARP::prepare_attrs ());
+    my $sth = $ctx->{'dbh'}->prepare_cached (CHARP::call_procedure_query ("rp_$fname ($placeholders)"), CHARP::prepare_attrs ());
     if (!defined $sth) {
 	CHARP::dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
 	return;
