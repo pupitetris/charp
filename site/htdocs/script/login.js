@@ -6,7 +6,7 @@
 //
 // Licensed under the EUPL V.1.1. See the file LICENSE.txt for copying conditions.
 
-// Módulo de ejemplo que presenta un diálogo de entrada.
+// Sample module that offers a login dialog and a few other elements to play with.
 (function () {
 
     function loadCredentials () {
@@ -53,9 +53,9 @@
     }
 
     function clearInputs () {
-/*	$('#login-username,#login-passwd')
+	$('#login-username,#login-passwd')
 	    .val ('')
-	    .blur ();*/
+	    .blur ();
     }
 
     function layoutInit () {

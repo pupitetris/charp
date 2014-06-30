@@ -6,6 +6,9 @@
 //
 // Licensed under the EUPL V.1.1. See the file LICENSE.txt for copying conditions.
 
+// This module implements a simple caching fetcher to get data from the DB that doesn't change
+// much, such as catalogs.
+
 (function () {
     var cache = {};
 

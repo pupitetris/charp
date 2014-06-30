@@ -6,10 +6,18 @@
 //
 // Licensed under the EUPL V.1.1. See the file LICENSE.txt for copying conditions.
 
-// Módulo que se encarga de atender las peticiones y autentificar el origen de la carga de la página.
+// Entry point processing module. Entry point URLs come with a fragment part (#frag) which 
+// contains a signature provided by the server. When loading, we ask the server to check that 
+// the URL corresponds to the signature to prevent argument forging. 
+//
+// Another required argument is 't', a timestamp that requires credentials to be reissued
+// if it is stale (change _TIMEOUT value to configure validity
+//
+// If everything is correct, the requested module is loaded and control is handed to it.
+
 (function () {
 
-    var _TIMEOUT = 30 * 60 * 1000;
+    var _TIMEOUT = 30 * 60 * 1000; // milisecs
     var _sevSupport = 'Contacte a soporte para reportar el problema.';
 
     var mod = {
@@ -27,7 +35,7 @@
 		return APP.msgDialog ({ icon: 'stop', 
 					title: 'Sesión expirada.', 
 					desc: 'Esta sesión ha expirado ya.', 
-					sev: 'Vuelva a abrir esta ventana desde el menú del SINAPCV.' });
+					sev: 'Vuelva a abrir esta ventana desde el menú.' });
 	    }
 	    
 	    APP.charp.credentialsLoad ();
