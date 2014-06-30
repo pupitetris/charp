@@ -216,6 +216,37 @@ BEGIN
 END;»);
 
 
+M4_PROCEDURE( «rp_check_url(_url character varying)», boolean, IMMUTABLE, M4_DEFN(user),
+	      'Check that an entrypoint URL was created by the system.', «
+DECLARE
+	_hash_pos integer;
+	_url_part text;
+	_hash_part text;
+	_our_hash text;
+BEGIN
+	_hash_pos := position ('#' IN _url);
+	IF _hash_pos < 1 THEN
+	   PERFORM charp_raise('ASSERT', 'URL has #');
+	END IF;
+	
+	_url_part := substring (_url FROM 1 FOR _hash_pos - 1);
+	_hash_part := substring (_url FROM _hash_pos + 1);
+	_our_hash := rp_sign_url(_url_part);
+
+	IF _our_hash = _hash_part THEN
+	   RETURN TRUE;
+	END IF;
+	RETURN FALSE;
+END;»);
+
+
+-- url_check_hash1 and 2 are salts that need to be defined in sqlvars.m4.
+-- For added security, you may want to create a remote procedure that returns a modified URL with a timestamp embedded.
+M4_SQL_FUNCTION( «rp_sign_url(_url character varying)», character varying, IMMUTABLE, M4_DEFN(user),
+	      	 'Generate a signature for a given URL.', «
+		 SELECT encode(digest('M4_DEFN(url_check_hash1)' || _url || 'M4_DEFN(url_check_hash2)', 'sha256'), 'hex');»);
+
+
 M4_SQL_FUNCTION( «rp_user_auth()», boolean, IMMUTABLE, M4_DEFN(user),
 	         «'Trivially return TRUE. If the user was authenticated, everything went OK with challenge-request sequence and there is nothing left to do: success.'»,
 	         «SELECT TRUE»);
