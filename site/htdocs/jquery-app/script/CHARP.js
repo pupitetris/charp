@@ -71,15 +71,15 @@ CHARP.prototype = {
 	case 'success':
 	    return;
 	case 'error':
-	    err = $.extend ({ msg: 'Error HTTP: ' + req.statusText + ' (' + req.status + ').' }, this.ERRORS['HTTP:SRVERR']);
+	    err = $.extend ({}, { msg: 'Error HTTP: ' + req.statusText + ' (' + req.status + ').' }, this.ERRORS['HTTP:SRVERR']);
 	    break;
 	case 'parsererror':
 	    err = this.ERRORS['AJAX:JSON'];
 	    if (APP.DEVEL)
-		err = $.extend ({ msg: 'Datos: `' + req.responseText + '`.' }, err);
+		err = $.extend ({}, { msg: 'Datos: `' + req.responseText + '`.' }, err);
 	    break;
 	default:
-	    err = $.extend ({ msg: 'Error desconocido: (' + status + ').' }, this.ERRORS['AJAX:UNK']);
+	    err = $.extend ({}, { msg: 'Error desconocido: (' + status + ').' }, this.ERRORS['AJAX:UNK']);
 	}
 	this.handleError (err, ctx);
     },
