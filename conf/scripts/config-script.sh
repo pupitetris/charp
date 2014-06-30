@@ -61,6 +61,7 @@ function db_filter {
 	if [ $DB_OS = "win" ]; then sqldir=$WIN_SQLDIR; fi
 
 	local tmp=${sql_file}-$OUR_RAND-tmp
+	local status=0
 
 	(
 		umask 0177
@@ -73,20 +74,22 @@ function db_filter {
 			-D CONF_COLLATE="$DB_COLLATE" \
 			-D CONF_SQLDIR="$sqldir" \
 			"$CONFIGDIR"/sqlvars.m4 "$CONFIGDIR"/scripts/sqlvars_end.m4 "$sql_file" > "$tmp"
-	) || return 4
+	) || status=4
 
-	if [ -z "$DRY_RUN" ]; then
+	if [ $status = 0 ]; then
+	    if [ -z "$DRY_RUN" ]; then
 		echo $sql_file
-		db_client "$tmp" "$@" || return 4
-	else
+		db_client "$tmp" "$@" || status=4
+	    else
 		echo '-- >>>' $sql_file '<<<'
 		local width=$(($(wc -l < "$tmp" | wc -c) - 1))
 		nl -ba -w $width -s : "$tmp"
 		echo
+	    fi
 	fi
 
 	rm -f "$tmp"
-	return 0
+	return $status
 }
 
 function db_filter_or_exit {
