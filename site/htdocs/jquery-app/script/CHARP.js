@@ -49,8 +49,9 @@ CHARP.prototype = {
 	return APP.msgDialog ({ icon: (err.sev < 3)? 'error': 'warning',
 				desc: err.desc,
 				msg: '<><pre>' + err.ctx.reqData.res + ': ' + err.statestr + 
-				    ((err.state)? ' (' + err.state + ')': '') + 
-				    '<br />' + err.msg + '</pre>',
+				     ((err.state)? ' (' + err.state + ')' : '') + 
+				     ((err.msg)? '<br />' + err.msg : '') +
+				     '</pre>',
 				sev: this.ERROR_SEV_MSG[err.sev],
 				title: 'Error ' + err.key + '(' + err.code + ')',
 				opts: {
