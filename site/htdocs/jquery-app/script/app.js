@@ -137,7 +137,7 @@
 	    if (div.parent ().length == 0)
 		$('body').append (div);
 
-	    var dialogOpts = $.extend ({}, {
+	    var dialogOpts = CHARP.extendObj ({
 		title: opts.title,
 		draggable: false,
 		modal: true,
