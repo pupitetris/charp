@@ -1,7 +1,7 @@
 #!/bin/sh
 # This file is part of the CHARP project.
 #
-# Copyright © 2011
+# Copyright © 2011 - 2014
 #   Free Software Foundation Europe, e.V.,
 #   Talstrasse 110, 40217 Dsseldorf, Germany
 #
