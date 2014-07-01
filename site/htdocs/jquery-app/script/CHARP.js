@@ -18,15 +18,6 @@ CHARP.ERROR_SEV = {
     EXIT: 5
 };
 
-CHARP.ERROR_SEV_MSG = [
-    undefined,
-    'Este es un error interno en el sistema. Por favor anote la información proporcionada en este mensaje y llame a soporte para que se trabaje en una solución.',
-    'Está tratando de acceder a datos a los que no tiene autorización. Si requiere mayor acceso, llame a soporte.',
-    'Este es un error temporal, por favor vuelva a intentar inmediatamente o en unos minutos. Si el error persiste, llame a soporte.',
-    'La información que proporcionó es errónea, por favor corrija sus datos y vuelva a intentar.',
-    'Este es un mensaje de resultado proporcionado por la aplicación'
-];
-
 CHARP.ERROR_LEVELS = {
     DATA : 1,
     SQL  : 2,
@@ -35,6 +26,34 @@ CHARP.ERROR_LEVELS = {
     HTTP : 5,
     AJAX : 6
 };
+
+CHARP.ERRORS = {
+    'HTTP:CONNECT': {
+	code: -1,
+	sev: CHARP.ERROR_SEV.RETRY,
+    },
+    'HTTP:SRVERR': {
+	code: -2,
+	sev: CHARP.ERROR_SEV.INTERNAL,
+    },
+    'AJAX:JSON': {
+	code: -3,
+	sev: CHARP.ERROR_SEV.INTERNAL,
+    },
+    'AJAX:UNK': {
+	code: -4,
+	sev: CHARP.ERROR_SEV.INTERNAL,
+    }
+};
+
+(function () {
+    for (var key in CHARP.ERRORS) {
+	var lvl = key.split (':')[0];
+	var err = CHARP.ERRORS[key];
+	err.level = CHARP.ERROR_LEVELS[lvl];
+	err.key = key;
+    }
+}) ();
 
 CHARP.prototype = {
     handleError: function (err, ctx) {
@@ -211,36 +230,3 @@ CHARP.prototype = {
 	return this;
     }
 };
-
-(function () {
-    CHARP.ERRORS = {
-	'HTTP:CONNECT': {
-	    code: -1,
-	    sev: CHARP.ERROR_SEV.RETRY,
-	    desc: 'No fue posible contactar al servicio web.',
-	    msg: 'Verifique que su conexión a internet funcione y vuelva a intentar.'
-	},
-	'HTTP:SRVERR': {
-	    code: -2,
-	    sev: CHARP.ERROR_SEV.INTERNAL,
-	    desc: 'El servidor web respondió con un error.'
-	},
-	'AJAX:JSON': {
-	    code: -3,
-	    sev: CHARP.ERROR_SEV.INTERNAL,
-	    desc: 'Los datos obtenidos del servidor están mal formados.'
-	},
-	'AJAX:UNK': {
-	    code: -4,
-	    sev: CHARP.ERROR_SEV.INTERNAL,
-	    desc: 'Un tipo de error no reconocido ha ocurrido.'
-	}
-    };
-
-    for (var key in CHARP.ERRORS) {
-	var lvl = key.split (':')[0];
-	var err = CHARP.ERRORS[key];
-	err.level = CHARP.ERROR_LEVELS[lvl];
-	err.key = key;
-    }
-}) ();
