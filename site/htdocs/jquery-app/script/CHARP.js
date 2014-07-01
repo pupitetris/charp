@@ -7,9 +7,8 @@
 // Licensed under the EUPL V.1.1. See the file LICENSE.txt for copying conditions.
 
 function CHARP () {
+    this.BASE_URL = window.location.protocol + '//' + window.location.hostname + (window.location.port? ':' + window.location.port: '') + '/';
 };
-
-CHARP.BASE_URL = window.location.protocol + '//' + window.location.hostname + (window.location.port? ':' + window.location.port: '') + '/',
 
 CHARP.ERROR_SEV = {
     INTERNAL: 1,
