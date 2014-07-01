@@ -9,35 +9,35 @@
 function CHARP () {
 };
 
+CHARP.BASE_URL = window.location.protocol + '//' + window.location.hostname + (window.location.port? ':' + window.location.port: '') + '/',
+
+CHARP.ERROR_SEV = {
+    INTERNAL: 1,
+    PERM: 2,
+    RETRY: 3,
+    USER: 4,
+    EXIT: 5
+};
+
+CHARP.ERROR_SEV_MSG = [
+    undefined,
+    'Este es un error interno en el sistema. Por favor anote la información proporcionada en este mensaje y llame a soporte para que se trabaje en una solución.',
+    'Está tratando de acceder a datos a los que no tiene autorización. Si requiere mayor acceso, llame a soporte.',
+    'Este es un error temporal, por favor vuelva a intentar inmediatamente o en unos minutos. Si el error persiste, llame a soporte.',
+    'La información que proporcionó es errónea, por favor corrija sus datos y vuelva a intentar.',
+    'Este es un mensaje de resultado proporcionado por la aplicación'
+];
+
+CHARP.ERROR_LEVELS = {
+    DATA : 1,
+    SQL  : 2,
+    DBI  : 3,
+    CGI  : 4,
+    HTTP : 5,
+    AJAX : 6
+};
+
 CHARP.prototype = {
-    BASE_URL: window.location.protocol + '//' + window.location.hostname + (window.location.port? ':' + window.location.port: '') + '/',
-
-    ERROR_SEV: {
-	INTERNAL: 1,
-	PERM: 2,
-	RETRY: 3,
-	USER: 4,
-	EXIT: 5
-    },
-
-    ERROR_SEV_MSG: [
-	undefined,
-	'Este es un error interno en el sistema. Por favor anote la información proporcionada en este mensaje y llame a soporte para que se trabaje en una solución.',
-	'Está tratando de acceder a datos a los que no tiene autorización. Si requiere mayor acceso, llame a soporte.',
-	'Este es un error temporal, por favor vuelva a intentar inmediatamente o en unos minutos. Si el error persiste, llame a soporte.',
-	'La información que proporcionó es errónea, por favor corrija sus datos y vuelva a intentar.',
-	'Este es un mensaje de resultado proporcionado por la aplicación'
-    ],
-
-    ERROR_LEVELS: {
-	DATA: 1,
-	SQL: 2,
-	DBI: 3,
-	CGI: 4,
-	HTTP: 5,
-	AJAX: 6
-    },
-
     handleError: function (err, ctx) {
 	if (ctx) {
 	    if (!err.ctx)
@@ -52,7 +52,7 @@ CHARP.prototype = {
 				     ((err.state)? ' (' + err.state + ')' : '') + 
 				     ((err.msg)? '<br />' + err.msg : '') +
 				     '</pre>',
-				sev: this.ERROR_SEV_MSG[err.sev],
+				sev: CHARP.ERROR_SEV_MSG[err.sev],
 				title: 'Error ' + err.key + '(' + err.code + ')',
 				opts: {
 				    resizable: true,
@@ -71,15 +71,15 @@ CHARP.prototype = {
 	case 'success':
 	    return;
 	case 'error':
-	    err = CHARP.extendObj ({ msg: 'Error HTTP: ' + req.statusText + ' (' + req.status + ').' }, this.ERRORS['HTTP:SRVERR']);
+	    err = CHARP.extendObj ({ msg: 'Error HTTP: ' + req.statusText + ' (' + req.status + ').' }, CHARP.ERRORS['HTTP:SRVERR']);
 	    break;
 	case 'parsererror':
-	    err = this.ERRORS['AJAX:JSON'];
+	    err = CHARP.ERRORS['AJAX:JSON'];
 	    if (APP.DEVEL)
 		err = CHARP.extendObj ({ msg: 'Datos: `' + req.responseText + '`.' }, err);
 	    break;
 	default:
-	    err = CHARP.extendObj ({ msg: 'Error desconocido: (' + status + ').' }, this.ERRORS['AJAX:UNK']);
+	    err = CHARP.extendObj ({ msg: 'Error desconocido: (' + status + ').' }, CHARP.ERRORS['AJAX:UNK']);
 	}
 	this.handleError (err, ctx);
     },
@@ -88,7 +88,7 @@ CHARP.prototype = {
 	switch (status) {
 	case 'success':
 	    if (!data)
-		return this.handleError (this.ERRORS['AJAX:JSON'], ctx);
+		return this.handleError (CHARP.ERRORS['AJAX:JSON'], ctx);
 	    if (data.error)
 		return this.handleError (data.error, ctx);
 	    if (ctx.success) {
@@ -131,19 +131,12 @@ CHARP.prototype = {
 	};
 
 	if (ctx.charpReplyHandler)
-	    return ctx.charpReplyHandler (url + '?' + $.param (params), ctx);
+	    return ctx.charpReplyHandler (url + '?' + CHARP.paramsUriEncode (params), ctx);
 
 	var charp = this;
-	$.ajax ({
-	    type: 'POST',
-	    url: url,
-	    cache: false,
-	    data: params,
-	    dataType: 'json',
-	    global: false,
-	    complete: function (req, status) { return charp.replyComplete (req, status, ctx); },
-	    success: function (data, status, req) { return charp.replySuccess (data, status, req, ctx); }
-	});
+	CHARP.ajaxPost (url, params, 
+			function (data, status, req) { return charp.replySuccess (data, status, req, ctx); },
+			function (req, status) { return charp.replyComplete (req, status, ctx); });
     },
 
     requestSuccess: function (data, status, req, ctx) {
@@ -151,7 +144,7 @@ CHARP.prototype = {
 	    return this.replySuccess (data, status, req, ctx);
 
 	if (req.status == 0 && req.responseText == "")
-	    this.handleError (this.ERRORS['HTTP:CONNECT'], ctx);
+	    this.handleError (CHARP.ERRORS['HTTP:CONNECT'], ctx);
 	if (status == 'success') {
 	    if (data.error)
 		return this.handleError (data.error, ctx);
@@ -168,8 +161,6 @@ CHARP.prototype = {
     },
 
     request: function (resource, params, ctx) {
-	var charp = this;
-
 	if (!ctx)
 	    ctx = {};
 	else if (typeof ctx == 'function')
@@ -189,16 +180,10 @@ CHARP.prototype = {
 
 	ctx.reqData = data;
 
-	$.ajax ({
-	    type: 'POST',
-	    url: this.BASE_URL + 'request',
-	    cache: false,
-	    data: data,
-	    dataType: 'json',
-	    global: false,
-	    complete: function (req, status) { return charp.requestComplete (req, status, ctx); },
-	    success: function (data, status, req) { return charp.requestSuccess (data, status, req, ctx); }
-	});
+	var charp = this;
+	CHARP.ajaxPost (this.BASE_URL + 'request', data, 
+			function (data, status, req) { return charp.requestSuccess (data, status, req, ctx); },
+			function (req, status) { return charp.requestComplete (req, status, ctx); });
     },
 
     credentialsSet: function (login, passwd_hash) {
@@ -229,34 +214,34 @@ CHARP.prototype = {
 };
 
 (function () {
-    CHARP.prototype.ERRORS = {
+    CHARP.ERRORS = {
 	'HTTP:CONNECT': {
 	    code: -1,
-	    sev: CHARP.prototype.ERROR_SEV.RETRY,
+	    sev: CHARP.ERROR_SEV.RETRY,
 	    desc: 'No fue posible contactar al servicio web.',
 	    msg: 'Verifique que su conexión a internet funcione y vuelva a intentar.'
 	},
 	'HTTP:SRVERR': {
 	    code: -2,
-	    sev: CHARP.prototype.ERROR_SEV.INTERNAL,
+	    sev: CHARP.ERROR_SEV.INTERNAL,
 	    desc: 'El servidor web respondió con un error.'
 	},
 	'AJAX:JSON': {
 	    code: -3,
-	    sev: CHARP.prototype.ERROR_SEV.INTERNAL,
+	    sev: CHARP.ERROR_SEV.INTERNAL,
 	    desc: 'Los datos obtenidos del servidor están mal formados.'
 	},
 	'AJAX:UNK': {
 	    code: -4,
-	    sev: CHARP.prototype.ERROR_SEV.INTERNAL,
+	    sev: CHARP.ERROR_SEV.INTERNAL,
 	    desc: 'Un tipo de error no reconocido ha ocurrido.'
 	}
     };
 
-    for (var key in CHARP.prototype.ERRORS) {
+    for (var key in CHARP.ERRORS) {
 	var lvl = key.split (':')[0];
-	var err = CHARP.prototype.ERRORS[key];
-	err.level = CHARP.prototype.ERROR_LEVELS[lvl];
+	var err = CHARP.ERRORS[key];
+	err.level = CHARP.ERROR_LEVELS[lvl];
 	err.key = key;
     }
 }) ();

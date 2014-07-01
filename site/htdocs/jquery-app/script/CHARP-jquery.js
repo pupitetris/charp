@@ -6,6 +6,23 @@
 //
 // Licensed under the EUPL V.1.1. See the file LICENSE.txt for copying conditions.
 
-CHARP.prototype.extendObj = function (obj, add) {
+CHARP.extendObj = function (obj, add) {
     return $.extend ({}, obj, add);
+}
+
+CHARP.paramsUriEncode = function (params) {
+    return $.param (params);
+}
+
+CHARP.ajaxPost = function (url, params, successCb, completeCb) {
+    $.ajax ({ 
+	type: 'POST',
+	url: url,
+	cache: false,
+	data: params,
+	dataType: 'json',
+	global: false,
+	success: successCb,
+	complete: completeCb,
+    });
 }
