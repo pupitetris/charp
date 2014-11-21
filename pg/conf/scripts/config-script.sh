@@ -24,7 +24,7 @@ function db_client {
 		dbopts="-d postgres"
 	fi
 
-	PGOPTIONS=--client-min-messages=warning psql -q -f "$sql_file" $suopts $dbopts "$@"
+	PGOPTIONS='-c client_min_messages=WARNING' psql -q -f "$sql_file" $suopts $dbopts "$@"
 }
 
 function db_initialize {
@@ -32,7 +32,7 @@ function db_initialize {
 
 	# Check if we can initialize the database before proceeding with the
 	# rest of the SQL scripts so they don't fail.
-	PGOPTIONS=--client-min-messages=warning psql -q -d postgres -U $DB_SUPERUSER -c "DROP DATABASE IF EXISTS $CONF_DATABASE"
+	PGOPTIONS='-c client_min_messages=WARNING' psql -q -d postgres -U $DB_SUPERUSER -c "DROP DATABASE IF EXISTS $CONF_DATABASE"
 	
 	if psql -q -U $DB_SUPERUSER -c "SELECT procpid, application_name, client_addr FROM pg_stat_activity WHERE current_query NOT LIKE '% pg_stat_activity %';" 2>/dev/null; then
 		echo 'The database couldn''t be deleted, a client is still connected.' >&2

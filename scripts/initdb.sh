@@ -97,7 +97,11 @@ fi
 
 # SQL outputs of PowerArchitect or MySQL Workbench.
 if [ ! -z "$SQL_EXPORT" ]; then
-    $BASEDIR/scripts/fix-sql.pl < "$SQL_EXPORT" > 04-tables.sql
+    if [ ! -f "$SQL_EXPORT" ]; then
+	echo "Warning: Exported SQL file $SQL_EXPORT not found" >&2
+    else
+	$BASEDIR/scripts/fix-sql.pl < "$SQL_EXPORT" > 04-tables.sql
+    fi
 fi
 
 db_initialize

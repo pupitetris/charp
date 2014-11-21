@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Kill all perl scripts spawned by cgi-fcgi on cygwin
 # to drop database connections.
 
