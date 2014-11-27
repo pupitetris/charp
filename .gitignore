@@ -22,3 +22,7 @@ Thumbs.db
 /mysql/conf/my-su.cnf
 /mysql/conf/my.cnf
 /site/cgi/CHARP-config.pm
+
+# Compiled binaries for monoCHARP
+Debug
+Release
