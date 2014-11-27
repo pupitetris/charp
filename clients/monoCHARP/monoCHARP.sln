@@ -5,7 +5,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "monoCHARP", "monoCHARP\mono
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fastJSON", "fastJSON\fastJSON.csproj", "{207E91B1-C9F8-4913-88E1-3549EF5F3273}"
 EndProject
-Project("{9344bdbb-3e7f-41fc-a0dd-8665d75ee146}") = "translation", "translation\translation.mdproj", "{305D885A-BBAC-4AB3-A5F8-FB01788F56FE}"
+Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "translation", "translation\translation.mdproj", "{305D885A-BBAC-4AB3-A5F8-FB01788F56FE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "test\test.csproj", "{47A2B475-65D8-4CE9-84AD-EC8A068B09FC}"
 EndProject

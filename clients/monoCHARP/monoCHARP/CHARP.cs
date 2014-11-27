@@ -253,6 +253,16 @@ namespace monoCharp
 			return data;
 		}
 
+		public abstract class Config {
+			public abstract string GetPath (string key = null);
+			public abstract string Get (string path);
+			public abstract void Set (string path, string value);
+			public abstract void Delete (string path);
+			public abstract void SuggestSync ();
+
+			public class NoSuchKeyException : Exception {};
+		}
+
 		private class PathBuilder
 		{
 			private StringBuilder sb;

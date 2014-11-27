@@ -4,19 +4,25 @@ using monoCharp;
 
 namespace monoCharp
 {
-	public class CharpGtk : Charp
+	public partial class CharpGtk : Charp
 	{
 		public class CharpGtkCtx : Charp.CharpCtx
 		{
 			public Gtk.Window parent;
 		}
 
-		private GConf.Client gconf;
+		private CharpGtk.Config conf;
 		public Gtk.Window parent;
 
 		public CharpGtk (Gtk.Window parent = null)
 		{
 			this.parent = parent;
+
+			#if CHARP_WINDOWS
+			this.conf = new CharpGtk.MSConfig (baseUrl);
+			#else
+			this.conf = new CharpGtk.GConfConfig (baseUrl);
+			#endif
 		}
 
 		public override void handleError (CharpError err, CharpCtx ctx = null)
@@ -36,42 +42,19 @@ namespace monoCharp
 			});
 		}
 		
-		private void gConfChanged (object sender, GConf.NotifyEventArgs args)
-		{
-			credentialsLoad ();
-		}
-
-		private string getGConfPath (string key = null)
-		{
-			string path = "/apps/CHARP";
-			if (baseUrl != null) { path += "/" + GetMD5HexHash (baseUrl); }
-			if (key != null) { path += "/" + key; }
-			return path;
-		}
-
-		private void gConfInit ()
-		{
-			if (gconf == null) {
-				gconf = new GConf.Client ();
-				gconf.AddNotify (getGConfPath (), gConfChanged);
-			}
-		}
-		
 		public override void credentialsSave ()
 		{
-			gConfInit ();
-			gconf.Set (getGConfPath ("login"), login);
-			gconf.Set (getGConfPath ("passwd"), passwd);
-			gconf.SuggestSync ();
+			conf.Set (conf.GetPath ("login"), login);
+			conf.Set (conf.GetPath ("passwd"), passwd);
+			conf.SuggestSync ();
 		}
 
 		public override string credentialsLoad ()
 		{
-			gConfInit ();
 			try {
-				login = (string) gconf.Get (getGConfPath ("login"));
-				passwd = (string) gconf.Get (getGConfPath ("passwd"));
-			} catch (GConf.NoSuchKeyException) {
+				login = (string) conf.Get (conf.GetPath ("login"));
+				passwd = (string) conf.Get (conf.GetPath ("passwd"));
+			} catch (Charp.Config.NoSuchKeyException) {
 				return null;
 			}
 			return login;
@@ -79,10 +62,9 @@ namespace monoCharp
 
 		public override void credentialsDelete ()
 		{
-			gConfInit ();
-			gconf.Set (getGConfPath ("login"), "");
-			gconf.Set (getGConfPath ("passwd"), "");
-			gconf.SuggestSync ();
+			conf.Delete (conf.GetPath ("login"));
+			conf.Delete (conf.GetPath ("passwd"));
+			conf.SuggestSync ();
 		}
 	}
 }

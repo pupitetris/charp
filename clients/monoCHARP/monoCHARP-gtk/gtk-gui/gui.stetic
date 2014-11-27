@@ -7,7 +7,7 @@
   <import>
     <widget-library name="../bin/Debug/monoCHARP-gtk.dll" internal="true" />
   </import>
-  <widget class="Gtk.Dialog" id="monoCharp.CharpGtkErrorDlg" design-size="380 215">
+  <widget class="Gtk.Dialog" id="monoCharp.CharpGtkErrorDlg" design-size="692 215">
     <property name="MemberName" />
     <property name="Title">CHARP Error</property>
     <property name="TypeHint">Dialog</property>
