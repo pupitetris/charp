@@ -193,7 +193,7 @@ namespace monoCharp
 				msg = (string) err["msg"],
 				lvl = (ERR_LEVEL) Int32.Parse ((string) err["level"]),
 				key = (string) err["key"],
-				state = (string) err["state"],
+				state = err.ContainsKey ("state")? (string) err["state"]: "",
 				statestr = (string) err["statestr"]
 			};
 
