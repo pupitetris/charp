@@ -44,9 +44,9 @@ namespace monoCharp.CharpGtk
 				return null;
 			}
 
-			public void Set (string path, string key) {
+			public void Set (string path, string value) {
 				Init ();
-				gconf.Set (path, key);
+				gconf.Set (path, value);
 			}
 
 			public void Delete (string path) {
