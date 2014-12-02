@@ -31,8 +31,9 @@ namespace monoCharp
 				b.Append (GLib.Markup.EscapeText (err.statestr));
 			}
 			if (err.state != "") {
-				b.AppendFormat (Catalog.GetString (" ({0})\n"), GLib.Markup.EscapeText (err.state));
+				b.AppendFormat (Catalog.GetString (" ({0})"), GLib.Markup.EscapeText (err.state));
 			}
+			b.Append ("\n");
 			b.AppendFormat (Catalog.GetString ("{0}</small></tt></i>"), GLib.Markup.EscapeText (err.msg));
 			labelMsg.UseMarkup = true;
 			labelMsg.Markup = b.ToString ();
