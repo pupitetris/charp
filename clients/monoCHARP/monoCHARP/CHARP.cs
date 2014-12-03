@@ -114,7 +114,16 @@ namespace monoCharp
 		static private SHA256Managed sha;
 		static private Dictionary<string, object> commonCache;
 
-		public string baseUrl;
+		protected string baseUrl;
+		public string BaseUrl {
+			get {
+				return baseUrl;
+			}
+			set {
+				BaseUrlChange (value);
+				baseUrl = value;
+			}
+		}
 		protected string login;
 		protected string passwd;
 		private Dictionary<string, object> privateCache;
@@ -519,5 +528,7 @@ namespace monoCharp
 		public abstract void credentialsSave ();
 		public abstract string credentialsLoad ();
 		public abstract void credentialsDelete ();
+
+		public abstract void BaseUrlChange (string value);
 	}
 }

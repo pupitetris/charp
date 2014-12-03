@@ -13,7 +13,7 @@ namespace test
 			Application.Init ();
 
 			charp = new CharpGtk ();
-			charp.baseUrl = "http://www.imr.local/";
+			charp.BaseUrl = "http://www.imr.local/";
 			charp.credentialsSet ("testuser", "6f1ed002ab5595859014ebf0951522d9");
 			charp.credentialsSave ();
 
