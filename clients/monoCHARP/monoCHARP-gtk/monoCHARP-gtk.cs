@@ -28,9 +28,9 @@ namespace monoCharp
 
 		private void InitConf (string base_url) {
 			#if CHARP_WINDOWS
-			this.conf = new CharpGtk.MSConfig (base_url);
+			conf = new CharpGtk.MSConfig (base_url);
 			#else
-			this.conf = new CharpGtk.GConfConfig (base_url);
+			conf = new CharpGtk.GConfConfig (base_url);
 			#endif
 		}
 
