@@ -14,17 +14,23 @@ namespace monoCharp
 		private CharpGtk.Config conf;
 		public Gtk.Window parent;
 
+		public CharpGtk (string base_url, Gtk.Window parent = null)
+		{
+			this.parent = parent;
+			BaseUrl = base_url;
+		}
+
 		public CharpGtk (Gtk.Window parent = null)
 		{
 			this.parent = parent;
 			InitConf (BaseUrl);
 		}
 
-		private void InitConf (string baseUrl) {
+		private void InitConf (string base_url) {
 			#if CHARP_WINDOWS
-			this.conf = new CharpGtk.MSConfig (baseUrl);
+			this.conf = new CharpGtk.MSConfig (base_url);
 			#else
-			this.conf = new CharpGtk.GConfConfig (baseUrl);
+			this.conf = new CharpGtk.GConfConfig (base_url);
 			#endif
 		}
 

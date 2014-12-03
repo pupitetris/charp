@@ -174,20 +174,20 @@ namespace monoCharp
 			return ERR_SEV_MSG[(int) sev];
 		}
 
-		public Charp ()
+		public Charp (string base_url = null)
 		{
-			init ();
+			init (base_url);
 		}
 
-		public Charp (string login, string passwdHash)
+		public Charp (string login, string passwdHash, string base_url = null)
 		{
-			init ();
+			init (base_url);
 			credentialsSet (login, passwdHash);
 		}
 
-		private void init ()
+		private void init (string base_url)
 		{
-			baseUrl = BASE_URL;
+			baseUrl = (base_url == null)? BASE_URL : base_url;
 			privateCache = new Dictionary<string, object> ();
 		}
 
