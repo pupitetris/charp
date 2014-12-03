@@ -1,13 +1,16 @@
-﻿using System;
+﻿#if CHARP_LINUX
 
-#if CHARP_LINUX
+using System;
+
 namespace monoCharp.CharpGtk
 {
 	public partial class CharpGtk
 	{
 		public class GConfConfig : Charp.Config
 		{
+			private static string CHARP_APP_NAME = "CHARP";
 			private GConf.Client gconf;
+			private string appName;
 			private string baseUrl;
 			private string baseHash;
 
@@ -17,6 +20,8 @@ namespace monoCharp.CharpGtk
 				this.baseUrl = baseUrl;
 				if (baseUrl != null)
 					baseHash = Charp.GetMD5HexHash (baseUrl);
+
+				appName = CHARP_APP_NAME;
 			}
 
 			private void Init ()
@@ -26,9 +31,14 @@ namespace monoCharp.CharpGtk
 				}
 			}
 
+			public override void SetApp (string app_name)
+			{
+				appName = app_name;
+			}			
+
 			public string GetPath (string key = null)
 			{
-				string path = "/apps/CHARP";
+				string path = "/apps/" + appName;
 				if (baseUrl != null) { path += "/" + baseHash; }
 				if (key != null) { path += "/" + key; }
 				return path;
@@ -59,4 +69,5 @@ namespace monoCharp.CharpGtk
 		}
 	}
 }
+
 #endif

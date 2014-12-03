@@ -263,6 +263,7 @@ namespace monoCharp
 		}
 
 		public abstract class Config {
+			public abstract void SetApp (string appName);
 			public abstract string GetPath (string key = null);
 			public abstract string Get (string path);
 			public abstract void Set (string path, string value);
