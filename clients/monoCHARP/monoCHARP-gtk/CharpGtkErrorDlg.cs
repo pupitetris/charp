@@ -19,6 +19,7 @@ namespace monoCharp
 
 			if ((int) err.sev >= 3) {
 				imageIcon.Pixbuf = Gdk.Pixbuf.LoadFromResource ("monoCharp.warning.png");
+				Icon = Gdk.Pixbuf.LoadFromResource ("monoCharp.warning.png");
 			}
 
 			labelDesc.Text = err.desc;

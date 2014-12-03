@@ -10,6 +10,7 @@
   <widget class="Gtk.Dialog" id="monoCharp.CharpGtkErrorDlg" design-size="692 215">
     <property name="MemberName" />
     <property name="Title">CHARP Error</property>
+    <property name="Icon">resource:monoCharp.error.png</property>
     <property name="TypeHint">Dialog</property>
     <property name="WindowPosition">CenterOnParent</property>
     <property name="Modal">True</property>
