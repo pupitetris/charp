@@ -9,7 +9,7 @@
     <widget-library name="../../monoCHARP-gtk/bin/Debug/monoCHARP-gtk.dll" />
     <widget-library name="../bin/Debug/test.exe" internal="true" />
   </import>
-  <widget class="Gtk.Window" id="MainWindow" design-size="400 124">
+  <widget class="Gtk.Window" id="MainWindow" design-size="180 113">
     <property name="MemberName" />
     <property name="Title" translatable="yes">CHARP test</property>
     <property name="Icon">stock:gtk-about Menu</property>
@@ -17,41 +17,48 @@
     <property name="BorderWidth">6</property>
     <signal name="DeleteEvent" handler="OnDeleteEvent" />
     <child>
-      <widget class="Gtk.VBox" id="vbox1">
+      <widget class="Gtk.Alignment" id="alignment2">
         <property name="MemberName" />
-        <property name="Spacing">6</property>
-        <property name="BorderWidth">3</property>
+        <property name="Yscale">0</property>
+        <property name="Yalign">1</property>
         <child>
-          <widget class="Gtk.Entry" id="entryResource">
-            <property name="MemberName">entryResource</property>
-            <property name="CanFocus">True</property>
-            <property name="IsEditable">True</property>
-            <property name="InvisibleChar">•</property>
-          </widget>
-          <packing>
-            <property name="Position">0</property>
-            <property name="AutoSize">True</property>
-            <property name="Expand">False</property>
-            <property name="Fill">False</property>
-          </packing>
-        </child>
-        <child>
-          <widget class="Gtk.Button" id="testy">
+          <widget class="Gtk.VBox" id="vbox1">
             <property name="MemberName" />
-            <property name="CanDefault">True</property>
-            <property name="HasDefault">True</property>
-            <property name="CanFocus">True</property>
-            <property name="Type">TextOnly</property>
-            <property name="Label" translatable="yes">Login</property>
-            <property name="UseUnderline">True</property>
-            <signal name="Clicked" handler="testyClick" />
+            <property name="Spacing">6</property>
+            <property name="BorderWidth">3</property>
+            <child>
+              <widget class="Gtk.Entry" id="entryResource">
+                <property name="MemberName">entryResource</property>
+                <property name="CanFocus">True</property>
+                <property name="IsEditable">True</property>
+                <property name="InvisibleChar">•</property>
+              </widget>
+              <packing>
+                <property name="Position">0</property>
+                <property name="AutoSize">True</property>
+                <property name="Expand">False</property>
+                <property name="Fill">False</property>
+              </packing>
+            </child>
+            <child>
+              <widget class="Gtk.Button" id="testy">
+                <property name="MemberName" />
+                <property name="CanDefault">True</property>
+                <property name="HasDefault">True</property>
+                <property name="CanFocus">True</property>
+                <property name="Type">TextOnly</property>
+                <property name="Label" translatable="yes">Send</property>
+                <property name="UseUnderline">True</property>
+                <signal name="Clicked" handler="testyClick" />
+              </widget>
+              <packing>
+                <property name="Position">1</property>
+                <property name="AutoSize">True</property>
+                <property name="Expand">False</property>
+                <property name="Fill">False</property>
+              </packing>
+            </child>
           </widget>
-          <packing>
-            <property name="Position">1</property>
-            <property name="AutoSize">True</property>
-            <property name="Expand">False</property>
-            <property name="Fill">False</property>
-          </packing>
         </child>
       </widget>
     </child>
