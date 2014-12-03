@@ -50,7 +50,7 @@ namespace monoCharp
 			public override void SetApp (string app_name)
 			{
 				appName = app_name;
-				ChangeSection (app_name);
+				Init ();
 			}
 				
 			public override string GetPath (string key = null)
