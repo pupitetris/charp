@@ -270,6 +270,14 @@ namespace monoCharp
 			public abstract void Delete (string path);
 			public abstract void SuggestSync ();
 
+			public void Set (string path, int value) {
+				Set (path, value.ToString ());
+			}
+
+			public int GetInt (string path) {
+				return Int32.Parse (Get (path));
+			}
+
 			public class NoSuchKeyException : Exception {};
 		}
 
