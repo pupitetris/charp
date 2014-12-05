@@ -6,6 +6,7 @@ using System.Collections.Generic; // for Dictionary
 using System.Collections.Specialized; // for NameValueCollection and StringDictionary
 using System.Security.Cryptography; // for SHA256Managed
 using Mono.Unix; // for Catalog
+using Newtonsoft.Json.Linq;
 
 namespace monoCharp
 {
@@ -193,16 +194,16 @@ namespace monoCharp
 
 		public abstract void handleError (CharpError err, CharpCtx ctx = null);
 
-		public void handleError (Dictionary<string, object> err, CharpCtx ctx = null)
+		public void handleError (JToken err, CharpCtx ctx = null)
 		{
 			CharpError cerr = new CharpError {
-				code = Int32.Parse ((string) err["code"]),
-				sev = (ERR_SEV) Int32.Parse ((string) err["sev"]),
+				code = (int) err["code"],
+				sev = (ERR_SEV) ((int) err["sev"]),
 				desc = (string) err["desc"],
 				msg = (string) err["msg"],
-				lvl = (ERR_LEVEL) Int32.Parse ((string) err["level"]),
+				lvl = (ERR_LEVEL) ((int) err["level"]),
 				key = (string) err["key"],
-				state = err.ContainsKey ("state")? (string) err["state"]: "",
+				state = err["state"] != null? (string) err["state"]: "",
 				statestr = (string) err["statestr"]
 			};
 
@@ -231,7 +232,7 @@ namespace monoCharp
 			return true;
 		}
 
-		private Dictionary<string, object> handleResult (UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		private JObject handleResult (UploadValuesCompletedEventArgs status, CharpCtx ctx)
 		{
 			if (!resultHandleErrors (status, ctx))
 				return null;
@@ -243,9 +244,9 @@ namespace monoCharp
 				return null;
 			}
 
-			Dictionary<string, object> data;
+			JObject data;
 			try {
-				data = (Dictionary<string, object>) JSON.decode (status.Result);
+				data = JSON.decode (status.Result);
 			} catch (Exception e) {
 				CharpError err = ERRORS [(int) ERR.AJAX_JSON];
 				err.msg = String.Format (Catalog.GetString ("Error: {0}, Data: {1}"), 
@@ -254,8 +255,8 @@ namespace monoCharp
 				return null;
 			}
 			
-			if (data.ContainsKey ("error")) {
-				handleError ((Dictionary<string, object>) data ["error"], ctx);
+			if (data["error"] != null) {
+				handleError (data ["error"], ctx);
 				return null;
 			}
 
@@ -351,28 +352,28 @@ namespace monoCharp
 				cache[area] = null;
 		}
 
-		private void replySuccess (Dictionary<string, object> data, UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		private void replySuccess (JObject data, UploadValuesCompletedEventArgs status, CharpCtx ctx)
 		{
-			if (!data.ContainsKey ("fields") || !data.ContainsKey ("data")) {
+			if (data["fields"] == null || data["data"] == null) {
 				handleError (ERRORS [(int) ERR.DATA_BADMSG], ctx);
 			}
 
 			object res;
-			ArrayList fields = (ArrayList) data["fields"];
-			ArrayList dat = (ArrayList) data["data"];
+			JArray fields = (JArray) data["fields"];
+			JArray dat = (JArray) data["data"];
 
 			if (fields.Count == 1 && (string) fields[0] == "rp_" + ctx.reqData["res"]) {
-				res = ((ArrayList) dat[0])[0];
+				res = dat[0][0];
 			} else if (!ctx.asArray) {
-				ArrayList arr = new ArrayList ();
-				ArrayList d;
+				JArray arr = new JArray ();
+				JArray d;
 				for (int i = 0; i < dat.Count; i++) {
-					d = (ArrayList) dat[i];
+					d = (JArray) dat[i];
 
-					Dictionary<string, object> so = null;
+					JObject so = null;
 					StringDictionary ss = null;
 					if (ctx.valuesAsObjects) { 
-						so = new Dictionary<string, object> ();
+						so = new JObject ();
 					} else {
 						ss = new StringDictionary ();
 					}
@@ -409,7 +410,7 @@ namespace monoCharp
 		{
 			CharpCtx ctx = (CharpCtx) status.UserState;
 			Charp charp = ctx.charp;
-			Dictionary<string, object> data = charp.handleResult (status, ctx);
+			JObject data = charp.handleResult (status, ctx);
 
 			if (data != null) {
 				charp.replySuccess (data, status, ctx);
@@ -455,14 +456,14 @@ namespace monoCharp
 			ctx.wc.UploadValuesAsync (uri, "POST", data, ctx);
 		}
 
-		private void requestSuccess (Dictionary<string, object> data, UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		private void requestSuccess (JObject data, UploadValuesCompletedEventArgs status, CharpCtx ctx)
 		{
 			if (ctx.asAnon) {
 				replySuccess (data, status, ctx);
 				return;
 			}
 
-			if (data.ContainsKey ("chal")) {
+			if (data["chal"] != null) {
 				reply ((string) data ["chal"], ctx);
 				return;
 			}
@@ -474,7 +475,7 @@ namespace monoCharp
 		{
 			CharpCtx ctx = (CharpCtx) status.UserState;
 			Charp charp = ctx.charp;
-			Dictionary<string, object> data = charp.handleResult (status, ctx);
+			JObject data = charp.handleResult (status, ctx);
 			
 			if (data != null) {
 				charp.requestSuccess (data, status, ctx);

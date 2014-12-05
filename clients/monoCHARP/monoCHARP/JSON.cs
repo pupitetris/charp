@@ -1,5 +1,7 @@
 using System;
 using System.Text; // for Encoding.UTF8
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace monoCharp
 {
@@ -16,15 +18,15 @@ namespace monoCharp
 		
 		static public string encode (object obj)
 		{
-			return fastJSON.JSON.Instance.ToJSON (obj);
+			return JsonConvert.SerializeObject (obj);
 		}
 
-		static public object decode (string jsonstr)
+		static public JObject decode (string jsonstr)
 		{
-			return fastJSON.JSON.Instance.Parse (jsonstr);
+			return JObject.Parse (jsonstr);
 		}
 
-		static public object decode (byte[] result)
+		static public JObject decode (byte[] result)
 		{
 			return decode (Encoding.UTF8.GetString (result));
 		}
