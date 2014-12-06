@@ -86,7 +86,6 @@ namespace monoCharp
 			                                         // default JSON parser (good for RP's returning file data).
 			public bool asAnon;          // avoid a full HTTP roundtrip by using a non-authenticated remote procedure.
 			public bool asArray;         // saves time for large datasets by returning the original array of arrays.
-			public bool valuesAsObjects; // if your remote procedure returns non-scalar values, you may want this.
 			public bool useCache;        // cache the reply?
 			public bool cacheRefresh;    // force the cache to re-get data from server and store again.
 			public bool cacheIsPrivate;  // privately store data in the object, not to be shared across CHARP objects.
@@ -101,7 +100,6 @@ namespace monoCharp
 			public CharpCtx () {
 				asAnon = false;
 				asArray = false;
-				valuesAsObjects = false;
 				useCache = false;
 				cacheRefresh = false;
 				cacheIsPrivate = false;
@@ -366,33 +364,18 @@ namespace monoCharp
 				res = dat[0][0];
 			} else if (!ctx.asArray) {
 				JArray arr = new JArray ();
-				JArray d;
+				JArray row;
 				for (int i = 0; i < dat.Count; i++) {
-					d = (JArray) dat[i];
+					row = (JArray) dat[i];
 
-					JObject so = null;
-					StringDictionary ss = null;
-					if (ctx.valuesAsObjects) { 
-						so = new JObject ();
-					} else {
-						ss = new StringDictionary ();
-					}
-
-					string f;
+					JObject so = new JObject ();
+					string fieldName;
 					for (int j = 0; j < fields.Count; j++) {
-						f = (string) fields[j];
-						if (ctx.valuesAsObjects) {
-							so[f] = d[j];
-						} else {
-							ss[f] = (string) d[j];
-						}
+						fieldName = (string) fields[j];
+						so[fieldName] = row[j];
 					}
 
-					if (ctx.valuesAsObjects) {
-						arr.Add (so);
-					} else {
-						arr.Add (ss);
-					}
+					arr.Add (so);
 				}
 				res = arr;
 			} else {
