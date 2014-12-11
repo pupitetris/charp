@@ -1,4 +1,5 @@
 using System;
+using System.IO; // for Stream
 using System.Net; // for WebClient
 using System.Text; // for Encoding.UTF8
 using System.Collections; // for ArrayList
@@ -89,6 +90,7 @@ namespace monoCharp
 			public bool useCache;        // cache the reply?
 			public bool cacheRefresh;    // force the cache to re-get data from server and store again.
 			public bool cacheIsPrivate;  // privately store data in the object, not to be shared across CHARP objects.
+			public string fileName;      // Optional path of a file to be sent with the reply.
 			public string cacheArea;     // cache area to use. Areas can be deleted completly using cacheDeleteArea.
 			public object obj;           // your stuff here.
 
@@ -424,19 +426,112 @@ namespace monoCharp
 			Uri uri = new Uri (baseUrl + "reply");
 			string hash = GetHexHash (sha, login + chal + passwd);
 
-			NameValueCollection data = new NameValueCollection ();
-			data["login"] = login;
-			data["chal"] = chal;
-			data["hash"] = hash;
+			NameValueCollection data = new NameValueCollection () {
+				{ "login", login },
+				{ "chal", chal },
+				{ "hash", hash }
+			};
 
 			if (ctx.reply_handler != null) {
 				ctx.reply_handler (uri, data, ctx);
 				return;
 			}
 
+			if (ctx.fileName != null) {
+				HttpUploadFileAsync (uri, data, ctx);
+				return;
+			}
+
 			ctx.wc = new WebClient ();
 			ctx.wc.UploadValuesCompleted += new UploadValuesCompletedEventHandler (replyCompleteH);
 			ctx.wc.UploadValuesAsync (uri, "POST", data, ctx);
+		}
+
+		private static void HttpUploadFileResponseH (IAsyncResult res) {
+			Dictionary<string,object> state = (Dictionary<string,object>) res.AsyncState;
+
+			HttpWebRequest wr = (HttpWebRequest) state["wr"];
+			CharpCtx ctx = (CharpCtx) state["ctx"];
+
+			WebResponse wresp = null;
+
+			try {
+				wresp = wr.EndGetResponse(res);
+				Stream stream2 = wresp.GetResponseStream();
+				StreamReader reader2 = new StreamReader(stream2);
+				// JSON
+			} catch(Exception ex) {
+				// TODO: Handle error
+				if(wresp != null) {
+					wresp.Close();
+					wresp = null;
+				}
+			}
+		}
+
+		private static void HttpUploadFileRequestStreamH (IAsyncResult res) {
+			Dictionary<string,object> state = (Dictionary<string,object>) res.AsyncState;
+
+			HttpWebRequest wr = (HttpWebRequest) state["wr"];
+			string boundary = (string) state["boundary"];
+			NameValueCollection data = (NameValueCollection) state["data"];
+			CharpCtx ctx = (CharpCtx) state["ctx"];
+
+			byte[] boundarybytes = System.Text.Encoding.ASCII.GetBytes("\r\n--" + boundary + "\r\n");
+
+			Stream rs = wr.EndGetRequestStream (res);
+
+			string formdataTemplate = "Content-Disposition: form-data; name=\"{0}\"\r\n\r\n{1}";
+			foreach (string key in data.Keys)
+			{
+				rs.Write(boundarybytes, 0, boundarybytes.Length);
+				string formitem = string.Format(formdataTemplate, key, data[key]);
+				byte[] formitembytes = System.Text.Encoding.UTF8.GetBytes(formitem);
+				rs.Write(formitembytes, 0, formitembytes.Length);
+			}
+			rs.Write(boundarybytes, 0, boundarybytes.Length);
+
+			string header = "Content-Disposition: form-data; name=\"file\"; filename=\"fname\"\r\nContent-Type: application/octet-stream\r\n\r\n";
+			byte[] headerbytes = System.Text.Encoding.UTF8.GetBytes(header);
+			rs.Write(headerbytes, 0, headerbytes.Length);
+
+			FileStream fileStream = new FileStream(ctx.fileName, FileMode.Open, FileAccess.Read);
+			byte[] buffer = new byte[4096];
+			int bytesRead = 0;
+			while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) != 0) {
+				rs.Write(buffer, 0, bytesRead);
+			}
+			fileStream.Close();
+
+			byte[] trailer = System.Text.Encoding.ASCII.GetBytes("\r\n--" + boundary + "--\r\n");
+			rs.Write(trailer, 0, trailer.Length);
+			rs.Close();
+
+			Dictionary<string,object> state2 = new Dictionary<string,object>() {
+				{"ctx", ctx},
+				{"wr", wr}
+			};
+
+			wr.BeginGetResponse (new AsyncCallback (HttpUploadFileResponseH), state2);
+		}
+
+		private void HttpUploadFileAsync (Uri uri, NameValueCollection data, CharpCtx ctx) {
+			string boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x");
+
+			HttpWebRequest wr = (HttpWebRequest)WebRequest.Create (uri);
+			wr.ContentType = "multipart/form-data; boundary=" + boundary;
+			wr.Method = "POST";
+			wr.KeepAlive = true;
+			wr.Credentials = System.Net.CredentialCache.DefaultCredentials;
+
+			Dictionary<string,object> state = new Dictionary<string,object>() {
+				{"data", data},
+				{"ctx", ctx},
+				{"boundary", boundary},
+				{"wr", wr},
+			};
+
+			wr.BeginGetRequestStream (new AsyncCallback (HttpUploadFileRequestStreamH), state);
 		}
 
 		private void requestSuccess (JObject data, UploadValuesCompletedEventArgs status, CharpCtx ctx)
@@ -482,11 +577,13 @@ namespace monoCharp
 				ctx.asAnon = true;
 			}
 
-			NameValueCollection data = new NameValueCollection ();
-			data["login"] = (login == null)? "!anonymous": login;
-			data["res"] = resource;
-			if (ctx.asAnon) { data["anon"] = "1"; }
-			data["params"] = JSON.encode (parms);
+			NameValueCollection data = new NameValueCollection () {
+				{ "login", (login == null)? "!anonymous" : login },
+				{ "res", resource },
+				{ "params", JSON.encode (parms) }
+			};
+			if (ctx.asAnon)
+				data["anon"] = "1";
 
 			ctx.reqData = data;
 
