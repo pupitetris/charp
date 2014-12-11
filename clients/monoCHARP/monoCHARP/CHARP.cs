@@ -1,6 +1,7 @@
 using System;
 using System.IO; // for Stream
 using System.Net; // for WebClient
+using System.ComponentModel; // for AsyncCompletedEventArgs
 using System.Text; // for Encoding.UTF8
 using System.Collections; // for ArrayList
 using System.Collections.Generic; // for Dictionary
@@ -71,8 +72,8 @@ namespace monoCharp
 			DATA_BADMSG
 		}
 
-		public delegate void SuccessDelegate (object data, UploadValuesCompletedEventArgs status, CharpCtx ctx);
-		public delegate void CompleteDelegate (UploadValuesCompletedEventArgs status, CharpCtx ctx);
+		public delegate void SuccessDelegate (object data, CharpCtx ctx);
+		public delegate void CompleteDelegate (CharpCtx ctx);
 		public delegate bool ErrorDelegate (CharpError err, CharpCtx ctx);
 		public delegate void ReplyHandlerDelegate (Uri base_uri, NameValueCollection parms, CharpCtx ctx);
 
@@ -98,6 +99,7 @@ namespace monoCharp
 			public NameValueCollection reqData;
 			public Charp charp;
 			public WebClient wc;
+			public AsyncCompletedEventArgs status;
 
 			public CharpCtx () {
 				asAnon = false;
@@ -210,47 +212,55 @@ namespace monoCharp
 			handleError (cerr, ctx);
 		}
 
-		public bool resultHandleErrors (UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		public bool resultHandleErrors (CharpCtx ctx)
 		{
-			if (status.Cancelled) {
+			if (ctx.status.Cancelled) {
 				handleError (ERRORS [(int) ERR.HTTP_CANCEL], ctx);
 				return false;
 			} 
 			
-			if (status.Error != null) {
+			if (ctx.status.Error != null) {
 				CharpError err = ERRORS [(int) ERR.HTTP_SRVERR];
-				err.msg = String.Format (Catalog.GetString ("HTTP WebClient error: {0}"), status.Error.ToString ());
+				err.msg = String.Format (Catalog.GetString ("HTTP WebClient error: {0}"), ctx.status.Error.ToString ());
 				handleError (err, ctx);
 				return false;
 			}
-			
-			if (status.Result == null || status.Result.Length == 0) {
-				handleError (ERRORS [(int) ERR.HTTP_CONNECT], ctx);
+
+			byte[] result = (ctx.fileName == null)?
+				((UploadValuesCompletedEventArgs) ctx.status).Result :
+				((UploadDataCompletedEventArgs) ctx.status).Result;
+
+			if (result == null || result.Length == 0) {
+				handleError (ERRORS[(int) ERR.HTTP_CONNECT], ctx);
 				return false;
 			}
 
 			return true;
 		}
 
-		private JObject handleResult (UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		private JObject handleResult (CharpCtx ctx)
 		{
-			if (!resultHandleErrors (status, ctx))
+			if (!resultHandleErrors (ctx))
 				return null;
 
 			if (ctx.success_handler != null) {
 				if (ctx.useCache)
-					cacheSet (ctx, status);
-				ctx.success_handler (status, ctx);
+					cacheSet (ctx, ctx.status);
+				ctx.success_handler (ctx);
 				return null;
 			}
 
+			byte[] result = (ctx.fileName == null)?
+				((UploadValuesCompletedEventArgs) ctx.status).Result :
+				((UploadDataCompletedEventArgs) ctx.status).Result;
+
 			JObject data;
 			try {
-				data = JSON.decode (status.Result);
+				data = JSON.decode (result);
 			} catch (Exception e) {
 				CharpError err = ERRORS [(int) ERR.AJAX_JSON];
 				err.msg = String.Format (Catalog.GetString ("Error: {0}, Data: {1}"), 
-				                         e.Message, Encoding.UTF8.GetString (status.Result));
+				                         e.Message, Encoding.UTF8.GetString (result));
 				handleError (err, ctx);
 				return null;
 			}
@@ -352,7 +362,7 @@ namespace monoCharp
 				cache[area] = null;
 		}
 
-		private void replySuccess (JObject data, UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		private void replySuccess (JObject data, CharpCtx ctx)
 		{
 			if (data["fields"] == null || data["data"] == null) {
 				handleError (ERRORS [(int) ERR.DATA_BADMSG], ctx);
@@ -388,21 +398,59 @@ namespace monoCharp
 				cacheSet (ctx, res);
 
 			if (ctx.success != null)
-				ctx.success (res, status, ctx);
+				ctx.success (res, ctx);
 		}
 
-		private static void replyCompleteH (object sender, UploadValuesCompletedEventArgs status)
+		private static void replyCompleteH (object sender, AsyncCompletedEventArgs status)
 		{
 			CharpCtx ctx = (CharpCtx) status.UserState;
+			ctx.status = status;
+
 			Charp charp = ctx.charp;
-			JObject data = charp.handleResult (status, ctx);
+			JObject data = charp.handleResult (ctx);
 
 			if (data != null) {
-				charp.replySuccess (data, status, ctx);
+				charp.replySuccess (data, ctx);
 			}
 
 			if (ctx.complete != null)
-				ctx.complete (status, ctx);
+				ctx.complete (ctx);
+		}
+
+		private void UploadFileAsync (Uri uri, NameValueCollection data, CharpCtx ctx) {
+			string boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x");
+			byte[] boundarybytes = System.Text.Encoding.ASCII.GetBytes("\r\n--" + boundary + "\r\n");
+
+			MemoryStream rs = new MemoryStream ();
+
+			string formdataTemplate = "Content-Disposition: form-data; name=\"{0}\"\r\n\r\n{1}";
+			foreach (string key in data.Keys)
+			{
+				rs.Write(boundarybytes, 0, boundarybytes.Length);
+				string formitem = string.Format(formdataTemplate, key, data[key]);
+				byte[] formitembytes = System.Text.Encoding.UTF8.GetBytes(formitem);
+				rs.Write(formitembytes, 0, formitembytes.Length);
+			}
+			rs.Write(boundarybytes, 0, boundarybytes.Length);
+
+			string header = "Content-Disposition: form-data; name=\"file\"; filename=\"fname\"\r\nContent-Type: application/octet-stream\r\n\r\n";
+			byte[] headerbytes = System.Text.Encoding.UTF8.GetBytes(header);
+			rs.Write(headerbytes, 0, headerbytes.Length);
+
+			FileStream fileStream = new FileStream(ctx.fileName, FileMode.Open, FileAccess.Read);
+			byte[] buffer = new byte[4096];
+			int bytesRead = 0;
+			while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) != 0) {
+				rs.Write(buffer, 0, bytesRead);
+			}
+			fileStream.Close();
+
+			byte[] trailer = System.Text.Encoding.ASCII.GetBytes("\r\n--" + boundary + "--\r\n");
+			rs.Write(trailer, 0, trailer.Length);
+			rs.Close();
+
+			ctx.wc.Headers.Set ("Content-Type", "multipart/form-data; boundary=" + boundary);
+			ctx.wc.UploadDataAsync (uri, "POST", rs.ToArray ()); 
 		}
 
 		public static string GetMD5HexHash (string input)
@@ -437,107 +485,22 @@ namespace monoCharp
 				return;
 			}
 
+			ctx.wc = new WebClient ();
+
 			if (ctx.fileName != null) {
-				HttpUploadFileAsync (uri, data, ctx);
+				ctx.wc.UploadDataCompleted += new UploadDataCompletedEventHandler (replyCompleteH);
+				UploadFileAsync (uri, data, ctx);
 				return;
 			}
 
-			ctx.wc = new WebClient ();
 			ctx.wc.UploadValuesCompleted += new UploadValuesCompletedEventHandler (replyCompleteH);
 			ctx.wc.UploadValuesAsync (uri, "POST", data, ctx);
 		}
 
-		private static void HttpUploadFileResponseH (IAsyncResult res) {
-			Dictionary<string,object> state = (Dictionary<string,object>) res.AsyncState;
-
-			HttpWebRequest wr = (HttpWebRequest) state["wr"];
-			CharpCtx ctx = (CharpCtx) state["ctx"];
-
-			WebResponse wresp = null;
-
-			try {
-				wresp = wr.EndGetResponse(res);
-				Stream stream2 = wresp.GetResponseStream();
-				StreamReader reader2 = new StreamReader(stream2);
-				// JSON
-			} catch(Exception ex) {
-				// TODO: Handle error
-				if(wresp != null) {
-					wresp.Close();
-					wresp = null;
-				}
-			}
-		}
-
-		private static void HttpUploadFileRequestStreamH (IAsyncResult res) {
-			Dictionary<string,object> state = (Dictionary<string,object>) res.AsyncState;
-
-			HttpWebRequest wr = (HttpWebRequest) state["wr"];
-			string boundary = (string) state["boundary"];
-			NameValueCollection data = (NameValueCollection) state["data"];
-			CharpCtx ctx = (CharpCtx) state["ctx"];
-
-			byte[] boundarybytes = System.Text.Encoding.ASCII.GetBytes("\r\n--" + boundary + "\r\n");
-
-			Stream rs = wr.EndGetRequestStream (res);
-
-			string formdataTemplate = "Content-Disposition: form-data; name=\"{0}\"\r\n\r\n{1}";
-			foreach (string key in data.Keys)
-			{
-				rs.Write(boundarybytes, 0, boundarybytes.Length);
-				string formitem = string.Format(formdataTemplate, key, data[key]);
-				byte[] formitembytes = System.Text.Encoding.UTF8.GetBytes(formitem);
-				rs.Write(formitembytes, 0, formitembytes.Length);
-			}
-			rs.Write(boundarybytes, 0, boundarybytes.Length);
-
-			string header = "Content-Disposition: form-data; name=\"file\"; filename=\"fname\"\r\nContent-Type: application/octet-stream\r\n\r\n";
-			byte[] headerbytes = System.Text.Encoding.UTF8.GetBytes(header);
-			rs.Write(headerbytes, 0, headerbytes.Length);
-
-			FileStream fileStream = new FileStream(ctx.fileName, FileMode.Open, FileAccess.Read);
-			byte[] buffer = new byte[4096];
-			int bytesRead = 0;
-			while ((bytesRead = fileStream.Read(buffer, 0, buffer.Length)) != 0) {
-				rs.Write(buffer, 0, bytesRead);
-			}
-			fileStream.Close();
-
-			byte[] trailer = System.Text.Encoding.ASCII.GetBytes("\r\n--" + boundary + "--\r\n");
-			rs.Write(trailer, 0, trailer.Length);
-			rs.Close();
-
-			Dictionary<string,object> state2 = new Dictionary<string,object>() {
-				{"ctx", ctx},
-				{"wr", wr}
-			};
-
-			wr.BeginGetResponse (new AsyncCallback (HttpUploadFileResponseH), state2);
-		}
-
-		private void HttpUploadFileAsync (Uri uri, NameValueCollection data, CharpCtx ctx) {
-			string boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x");
-
-			HttpWebRequest wr = (HttpWebRequest)WebRequest.Create (uri);
-			wr.ContentType = "multipart/form-data; boundary=" + boundary;
-			wr.Method = "POST";
-			wr.KeepAlive = true;
-			wr.Credentials = System.Net.CredentialCache.DefaultCredentials;
-
-			Dictionary<string,object> state = new Dictionary<string,object>() {
-				{"data", data},
-				{"ctx", ctx},
-				{"boundary", boundary},
-				{"wr", wr},
-			};
-
-			wr.BeginGetRequestStream (new AsyncCallback (HttpUploadFileRequestStreamH), state);
-		}
-
-		private void requestSuccess (JObject data, UploadValuesCompletedEventArgs status, CharpCtx ctx)
+		private void requestSuccess (JObject data, CharpCtx ctx)
 		{
 			if (ctx.asAnon) {
-				replySuccess (data, status, ctx);
+				replySuccess (data, ctx);
 				return;
 			}
 
@@ -549,22 +512,26 @@ namespace monoCharp
 			handleError (ERRORS [(int) ERR.DATA_BADMSG], ctx);
 		}
 
-		private static void requestCompleteH (object sender, UploadValuesCompletedEventArgs status)
+		private static void requestCompleteH (object sender, AsyncCompletedEventArgs status)
 		{
 			CharpCtx ctx = (CharpCtx) status.UserState;
+			ctx.status = status;
+
 			Charp charp = ctx.charp;
-			JObject data = charp.handleResult (status, ctx);
+			JObject data = charp.handleResult (ctx);
 			
 			if (data != null) {
-				charp.requestSuccess (data, status, ctx);
+				charp.requestSuccess (data, ctx);
 			}
 
 			if (ctx.req_complete != null)
-				ctx.req_complete (status, ctx);
+				ctx.req_complete (ctx);
 		}
 
 		public void request (string resource, object[] parms = null, CharpCtx ctx = null)
 		{
+			Uri uri = new Uri (baseUrl + "request");
+
 			if (ctx == null) {
 				ctx = new CharpCtx ();
 			}
@@ -591,23 +558,32 @@ namespace monoCharp
 				object res = cacheGet (ctx);
 				if (res != null) {
 					if (ctx.req_complete != null)
-						ctx.req_complete (null, ctx);
+						ctx.req_complete (ctx);
 					if (ctx.success_handler != null) {
-						ctx.success_handler ((UploadValuesCompletedEventArgs) res, ctx);
+						ctx.status = (AsyncCompletedEventArgs) res;
+						ctx.success_handler (ctx);
 					} else {
 						if (ctx.success != null)
-							ctx.success (res, null, ctx);
+							ctx.success (res, ctx);
 					}
 					if (ctx.complete != null)
-						ctx.complete (null, ctx);
+						ctx.complete (ctx);
 					return;
 				}
 			}
 
 			ctx.charp = this;
+
 			ctx.wc = new WebClient ();
+
+			if (ctx.asAnon && ctx.fileName != null) {
+				ctx.wc.UploadDataCompleted += new UploadDataCompletedEventHandler (requestCompleteH);
+				UploadFileAsync (uri, data, ctx);
+				return;
+			}
+
 			ctx.wc.UploadValuesCompleted += new UploadValuesCompletedEventHandler (requestCompleteH);
-			ctx.wc.UploadValuesAsync (new Uri (baseUrl + "request"), "POST", data, ctx);
+			ctx.wc.UploadValuesAsync (uri, "POST", data, ctx);
 		}
 
 		public void credentialsSet (string login, string passwd_hash) {
