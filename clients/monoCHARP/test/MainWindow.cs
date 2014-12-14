@@ -1,7 +1,6 @@
 using System;
 using Gtk;
 using monoCharp;
-using System.Net;
 
 public partial class MainWindow: Gtk.Window
 {	
@@ -19,7 +18,7 @@ public partial class MainWindow: Gtk.Window
 		a.RetVal = true;
 	}
 
-	protected void testySuccess (object data, UploadValuesCompletedEventArgs status, Charp.CharpCtx ctx)
+	protected void testySuccess (object data, Charp.CharpCtx ctx)
 	{
 		Console.WriteLine ("success " + entryResource.Text);
 	}
@@ -27,5 +26,10 @@ public partial class MainWindow: Gtk.Window
 	protected void testyClick (object sender, EventArgs e)
 	{
 		charp.request (entryResource.Text, null, new Charp.CharpCtx () { success = testySuccess });
+	}
+
+	protected void testyFileClick (object sender, EventArgs e)
+	{
+		charp.request (entryResource.Text, null, new Charp.CharpCtx () { success = testySuccess, asAnon = true, fileName = "C:\\opt\\test.png" });
 	}
 }
