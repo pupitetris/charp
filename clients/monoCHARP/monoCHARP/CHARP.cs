@@ -226,9 +226,9 @@ namespace monoCharp
 				return false;
 			}
 
-			byte[] result = (ctx.fileName == null)?
-				((UploadValuesCompletedEventArgs) ctx.status).Result :
-				((UploadDataCompletedEventArgs) ctx.status).Result;
+			byte[] result = (ctx.status as UploadDataCompletedEventArgs != null)?
+				((UploadDataCompletedEventArgs) ctx.status).Result :
+				((UploadValuesCompletedEventArgs) ctx.status).Result;
 
 			if (result == null || result.Length == 0) {
 				handleError (ERRORS[(int) ERR.HTTP_CONNECT], ctx);
@@ -250,9 +250,9 @@ namespace monoCharp
 				return null;
 			}
 
-			byte[] result = (ctx.fileName == null)?
-				((UploadValuesCompletedEventArgs) ctx.status).Result :
-				((UploadDataCompletedEventArgs) ctx.status).Result;
+			byte[] result = (ctx.status as UploadDataCompletedEventArgs != null)?
+				((UploadDataCompletedEventArgs) ctx.status).Result :
+				((UploadValuesCompletedEventArgs) ctx.status).Result;
 
 			JObject data;
 			try {
@@ -450,7 +450,7 @@ namespace monoCharp
 			rs.Close();
 
 			ctx.wc.Headers.Set ("Content-Type", "multipart/form-data; boundary=" + boundary);
-			ctx.wc.UploadDataAsync (uri, "POST", rs.ToArray ()); 
+			ctx.wc.UploadDataAsync (uri, "POST", rs.ToArray (), ctx);
 		}
 
 		public static string GetMD5HexHash (string input)
