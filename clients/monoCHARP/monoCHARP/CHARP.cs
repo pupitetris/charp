@@ -431,9 +431,10 @@ namespace monoCharp
 				byte[] formitembytes = System.Text.Encoding.UTF8.GetBytes(formitem);
 				rs.Write(formitembytes, 0, formitembytes.Length);
 			}
+
 			rs.Write(boundarybytes, 0, boundarybytes.Length);
 
-			string header = "Content-Disposition: form-data; name=\"file\"; filename=\"fname\"\r\nContent-Type: application/octet-stream\r\n\r\n";
+			string header = "Content-Disposition: form-data; name=\"file\"\r\nContent-Type: application/octet-stream\r\n\r\n";
 			byte[] headerbytes = System.Text.Encoding.UTF8.GetBytes(header);
 			rs.Write(headerbytes, 0, headerbytes.Length);
 
