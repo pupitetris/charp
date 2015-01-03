@@ -18,6 +18,8 @@ while (my $l = <$efd>) {
 sub connect_attrs_add {
     my $attr_hash = shift;
     $attr_hash->{'pg_enable_utf8'} = 1;
+    $attr_hash->{'pg_placeholder_nocolons'} = 1;
+    $attr_hash->{'pg_prepare_now'} = 1;
 }
 
 sub dsn_add {
