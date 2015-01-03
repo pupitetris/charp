@@ -13,6 +13,9 @@ use utf8;
     'CGI:NUMPARAM'	=> '%s: %s required parameters, %s delivered.',
     'CGI:BINDPARAM'	=> '%s: Parameter %s (`%s`) of `%s` could not be bound.',
     'CGI:FILESEND'	=> 'Error while sending file.',
+    'CGI:CMDUNK'	=> 'CGI command `%s` unknown.',
+    'CGI:CMDNUMPARAM'	=> 'CGI command %s: %s required parameters, %s delivered.',
+    'CGI:CMDERR'	=> 'CGI command %s: execution error.',
     'SQL:USERUNK'	=> 'User `%s` with status `%s` not found.',
     'SQL:PROCUNK'	=> 'Function `%s` not found.',
     'SQL:REQUNK'	=> 'Request not found.',
@@ -29,6 +32,8 @@ use utf8;
 %STRS = (
     'CGI:FILESEND:MISSING:MSG' => '%s: Missing `filename` parameter.',
     'CGI:FILESEND:OPENFAIL:MSG' => '%s: Error opening `%s` (%s).',
+    'CGI:CMDERR:BADPATH' => 'Invalid path `%s`.',
+    'CGI:CMDERR:PATHNOTFOUND' => 'Path `%s` not found.'
 );    
 
 1;

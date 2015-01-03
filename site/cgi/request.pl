@@ -170,32 +170,32 @@ sub request_reply_do {
     my $req_login = shift;
     my $req = shift;
 
-    my $fname = $req->{'fname'};
-    my $fparams = $req->{'fparams'};
+    my $func_name = $req->{'fname'};
+    my $func_params = $req->{'fparams'};
     my $req_params = $req->{'req_params'};
     my $req_user_id = $req->{'user_id'};
 
     my $ip_addr = $fcgi->remote_addr ();
 
-    my @fparams_arr = split (',', substr ($fparams, 1, -1));
-    my $num_fparams = scalar (@fparams_arr);
+    my @func_params_arr = split (',', substr ($func_params, 1, -1));
+    my $num_fparams = scalar (@func_params_arr);
 
     my $req_params_arr = eval { CHARP::json_decode ($req_params); };
     if ($@ ne '') {
-	CHARP::error_send ($fcgi, { 'err' => 'CGI:BADPARAM', 'msg' => $@, 'parms' => [ $fname, $req_params ]});
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:BADPARAM', 'msg' => $@, 'parms' => [ $func_name, $req_params ]});
 	return;
     }
 
     my $placeholders = '?,' x $num_fparams;
     chop $placeholders;
 
-    $num_fparams-- if $fparams_arr[0] eq 'UID';
+    $num_fparams-- if $func_params_arr[0] eq 'UID';
     if (scalar (@$req_params_arr) != $num_fparams) {
-	CHARP::error_send ($fcgi, { 'err' => 'CGI:NUMPARAM', 'parms' => [ $fname, scalar (@fparams_arr), scalar (@$req_params_arr) ]});
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:NUMPARAM', 'parms' => [ $func_name, scalar (@func_params_arr), scalar (@$req_params_arr) ]});
 	return;
     }
 
-    my $sth = $ctx->{'dbh'}->prepare_cached (CHARP::call_procedure_query ("rp_$fname ($placeholders)"), CHARP::prepare_attrs ());
+    my $sth = $ctx->{'dbh'}->prepare_cached (CHARP::call_procedure_query ("rp_$func_name ($placeholders)"), CHARP::prepare_attrs ());
     if (!defined $sth) {
 	CHARP::dispatch_error ({ 'err' => 'ERROR_DBI:PREPARE', 'msg' => $DBI::errstr });
 	return;
@@ -203,7 +203,7 @@ sub request_reply_do {
 
     my $i = 1;
     my $count = 0;
-    foreach my $type (@fparams_arr) {
+    foreach my $type (@func_params_arr) {
 	my $val;
 	if ($type eq 'UID') {
 	    $val = $req_user_id;
@@ -220,21 +220,33 @@ sub request_reply_do {
 
 	eval { $sth->bind_param ($i, $val, $TYPES{$type}); };
 	if ($@ ne '') {
-	    CHARP::error_send ($fcgi, { 'err' => 'CGI:BINDPARAM', 'msg' => $@, 'parms' => [ $fname, $count, $val, $req_params ]});
+	    CHARP::error_send ($fcgi, { 'err' => 'CGI:BINDPARAM', 'msg' => $@, 'parms' => [ $func_name, $count, $val, $req_params ]});
 	    return;
 	}
 	$i++;
     }
 
+    my $info_error;
+    $CHARP::INFO_HANDLER = sub {
+	my $raise = shift;
+	$info_error = CHARP::info_handler ($fcgi, $raise);
+    }
+
     my $rv = $sth->execute ();
 
+    $CHARP::INFO_HANDLER = undef;
+    if ($info_error) {
+	CHARP::error_send ($fcgi, $info_error);
+	return;
+    }
+    
     if (!defined $rv) {
-	CHARP::error_execute_send ($fcgi, $sth, $req_login, $ip_addr, $fname);
+	CHARP::error_execute_send ($fcgi, $sth, $req_login, $ip_addr, $func_name);
 	return;
     }
 
-    if ($fname =~ /^file_/ || $fname =~ /^anon_file_/) {
-	return request_reply_file ($fcgi, $fname, $sth);
+    if ($func_name =~ /^file_/ || $func_name =~ /^anon_file_/) {
+	return request_reply_file ($fcgi, $func_name, $sth);
     }
 
     my @fields;

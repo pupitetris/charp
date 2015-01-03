@@ -37,6 +37,13 @@ CREATE TYPE charp_error_code AS ENUM (
 	'EXIT'
 );
 
+CREATE TYPE charp_cmd_code AS ENUM (
+	'FILE_CREATE',
+	'FILE_DELETE',
+	'FILE_MOVE',
+	'FILE_COPY'
+);
+
 CREATE TYPE charp_account_status AS ENUM (
 	'ACTIVE',
 	'DISABLED',
@@ -90,6 +97,21 @@ BEGIN
 	       END;
 
 	RAISE EXCEPTION '|>%|{%}|', _code, array_to_string(_args, ',') USING ERRCODE = _sqlcode;
+END;»);
+
+
+M4_PROCEDURE( «charp_cmd(_cmd charp_cmd_code, VARIADIC _args text[] DEFAULT ARRAY[]::text[])»,
+	      void, VOLATILE, M4_DEFN(user), 'Send a command to the CHARP CGI layer.', «
+DECLARE
+	_i integer;
+BEGIN
+	IF array_length(_args, 1) IS NOT NULL THEN
+	   FOR _i IN 1 .. array_length(_args, 1) LOOP
+	       _args[_i] := quote_literal(_args[_i]);
+	   END LOOP;
+	END IF;
+
+	RAISE INFO '|>%|{%}|', _cmd::text, array_to_string(_args, ',');
 END;»);
 
 

@@ -15,6 +15,7 @@ use CGI::Fast qw(:cgi);
 use JSON::XS;
 use utf8;
 
+require "CHARP-cmd.pm";
 require "CHARP-config.pm";
 require "CHARP-strings-$CHARP_LANG.pm";
 require "CHARP-$DB_DRIVER.pm";
@@ -33,28 +34,32 @@ $ERROR_SEV_RETRY = 3;
 $ERROR_SEV_USER = 4;
 $ERROR_SEV_EXIT = 5;
 
+# Last error code is 24.
 %ERRORS = (
-    'DBI:CONNECT'	 => { 'code' => 	1, 'sev' => $ERROR_SEV_RETRY },
-    'DBI:PREPARE'	 => { 'code' => 	2, 'sev' => $ERROR_SEV_INTERNAL },
-    'DBI:EXECUTE'	 => { 'code' => 	3, 'sev' => $ERROR_SEV_INTERNAL },
-    'CGI:REQPARM'	 => { 'code' => 	4, 'sev' => $ERROR_SEV_INTERNAL },
-    'CGI:NOTPOST'	 => { 'code' => 	7, 'sev' => $ERROR_SEV_INTERNAL },
-    'CGI:PATHUNK'	 => { 'code' => 	8, 'sev' => $ERROR_SEV_INTERNAL },
-    'CGI:BADPARAM'	 => { 'code' =>	       11, 'sev' => $ERROR_SEV_INTERNAL },
-    'CGI:NUMPARAM'	 => { 'code' =>	       12, 'sev' => $ERROR_SEV_INTERNAL },
-    'CGI:BINDPARAM'	 => { 'code' =>	       16, 'sev' => $ERROR_SEV_INTERNAL },
-    'CGI:FILESEND'	 => { 'code' =>	       19, 'sev' => $ERROR_SEV_INTERNAL },
-    'SQL:USERUNK'	 => { 'code' => 	5, 'sev' => $ERROR_SEV_USER },
-    'SQL:PROCUNK'	 => { 'code' => 	6, 'sev' => $ERROR_SEV_INTERNAL },
-    'SQL:REQUNK'	 => { 'code' => 	9, 'sev' => $ERROR_SEV_INTERNAL },
-    'SQL:REPFAIL'	 => { 'code' =>        10, 'sev' => $ERROR_SEV_USER },
-    'SQL:ASSERT'	 => { 'code' =>	       13, 'sev' => $ERROR_SEV_INTERNAL },
-    'SQL:USERPARAMPERM'	 => { 'code' =>	       14, 'sev' => $ERROR_SEV_PERM },
-    'SQL:USERPERM'	 => { 'code' =>	       15, 'sev' => $ERROR_SEV_PERM },
-    'SQL:MAILFAIL'	 => { 'code' =>	       17, 'sev' => $ERROR_SEV_USER },
-    'SQL:DATADUP'	 => { 'code' =>        20, 'sev' => $ERROR_SEV_USER },
-    'SQL:NOTFOUND'	 => { 'code' =>        21, 'sev' => $ERROR_SEV_USER },
-    'SQL:EXIT'		 => { 'code' =>        18, 'sev' => $ERROR_SEV_EXIT }
+    'DBI:CONNECT'	=> { 'code' =>  1, 'sev' => $ERROR_SEV_RETRY	},
+    'DBI:PREPARE'	=> { 'code' =>  2, 'sev' => $ERROR_SEV_INTERNAL },
+    'DBI:EXECUTE'	=> { 'code' =>  3, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:REQPARM'	=> { 'code' =>  4, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:NOTPOST'	=> { 'code' =>  7, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:PATHUNK'	=> { 'code' =>  8, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:BADPARAM'	=> { 'code' => 11, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:NUMPARAM'	=> { 'code' => 12, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:BINDPARAM'	=> { 'code' => 16, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:FILESEND'	=> { 'code' => 19, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:CMDUNK'	=> { 'code' => 22, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:CMDNUMPARAM'	=> { 'code' => 23, 'sev' => $ERROR_SEV_INTERNAL },
+    'CGI:CMDERR'	=> { 'code' => 24, 'sev' => $ERROR_SEV_INTERNAL },
+    'SQL:USERUNK'	=> { 'code' =>  5, 'sev' => $ERROR_SEV_USER	},
+    'SQL:PROCUNK'	=> { 'code' =>  6, 'sev' => $ERROR_SEV_INTERNAL },
+    'SQL:REQUNK'	=> { 'code' =>  9, 'sev' => $ERROR_SEV_INTERNAL },
+    'SQL:REPFAIL'	=> { 'code' => 10, 'sev' => $ERROR_SEV_USER	},
+    'SQL:ASSERT'	=> { 'code' => 13, 'sev' => $ERROR_SEV_INTERNAL },
+    'SQL:USERPARAMPERM'	=> { 'code' => 14, 'sev' => $ERROR_SEV_PERM	},
+    'SQL:USERPERM'	=> { 'code' => 15, 'sev' => $ERROR_SEV_PERM	},
+    'SQL:MAILFAIL'	=> { 'code' => 17, 'sev' => $ERROR_SEV_USER	},
+    'SQL:DATADUP'	=> { 'code' => 20, 'sev' => $ERROR_SEV_USER	},
+    'SQL:NOTFOUND'	=> { 'code' => 21, 'sev' => $ERROR_SEV_USER	},
+    'SQL:EXIT'		=> { 'code' => 18, 'sev' => $ERROR_SEV_EXIT	}
 );
 
 foreach my $key (keys %ERRORS) {
@@ -202,47 +207,63 @@ sub parse_csv {
     return @new;
 }
 
+sub raise_parse {
+    my $raisestr = shift;
+
+    my $raise = {};
+
+    my @fields = split ('\|', $raisestr, 3);
+
+    if (substr ($fields[1], 1, 1) eq '-') {
+	$raise->{'type'} = substr ($fields[1], 2);
+    } else {
+	$raise->{'dolog'} = 1;
+	$raise->{'type'} = substr ($fields[1], 1);
+    }
+
+    $fields[2] =~ /^({('.*[^\\]\')})\|/;
+    $raise->{'parms_str'} = $1;
+    $raise->{'parms_str'} = "''" if $raise->{'parms_str'} eq '';
+
+    my @parms = parse_csv (substr ($parms_str, 1, -1));
+    $raise->{'parms'} = \@parms;
+
+    $raise->{'code'} = 'SQL:' . $raise->{'type'};
+    $raise->{'msg'} = substr ($fields[2], length ($raise->{'parms_str'}) + 2);
+    $raise->{'objs'} = [$raise->{'msg'} =~ /'([^']+)'/g];
+
+    return $raise;
+}
+
 sub error_execute_send {
     my ($fcgi, $sth, $login, $ip_addr, $res) = @_;
 
-    my ($dolog, $err_type, $code, $msg, @parms, $parms_str, $objs);
-    my @fields = split ('\|', $sth->errstr, 3);
-    if (substr ($fields[1], 0, 1) eq '>') { # Probablemente una excepción levantada por nosotros (charp_raise).
-	if (substr ($fields[1], 1, 1) eq '-') {
-	    $err_type = substr ($fields[1], 2);
-	} else {
-	    $dolog = 1;
-	    $err_type = substr ($fields[1], 1);
-	}
-	$fields[2] =~ /^({('.*[^\\]\')})\|/;
-	$parms_str = $1;
-
-	$parms_str = "''" if $parms_str eq '';
-	@parms = parse_csv (substr ($parms_str, 1, -1));
-	$code = 'SQL:' . $err_type;
-	$msg = substr ($fields[2], length ($parms_str) + 2);
-	$objs = [$msg =~ /'([^']+)'/g];
+    my $err;
+    if (substr ($sth->errstr, 0, 2) eq '|>') { # Probablemente una excepción levantada por nosotros (charp_raise).
+	$err = raise_parse ($sth->errstr);
     } else { # Error en el execute, no es una excepción nuestra.
-	$err_type = 'EXECUTE';
-	$code = 'DBI:' . $err_type;
-	$msg = $sth->errstr;
-	$parms_str = '';
+	$err = {
+	    'type' => 'EXECUTE',
+	    'code' => 'DBI:EXECUTE',
+	    'msg' => $sth->errstr,
+	    'parms_str' => ''
+	};
 
-	$msg =~ /^([^\n]+)/;
-	my $errstr = $1;
-	$objs = [$errstr =~ /"([^"]+)"/g];
+	$err->{'msg'} =~ /^([^\n]+)/;
+	my $objstr = $1;
+	$err->{'objs'} = [$objstr =~ /"([^"]+)"/g];
     }
 
-    if ($dolog) {
-	$CHARP::ctx->{'err_sth'}->execute ($err_type, $login, $ip_addr, $res, $msg, $parms_str);
+    if (err->{'dolog'}) {
+	$CHARP::ctx->{'err_sth'}->execute ($err->{'type'}, $login, $ip_addr, $res, $err->{'msg'}, $err->{'parms_str'});
     }
 
-    error_send ($fcgi, { 'err' => $code, 
-			 'msg' => $msg, 
-			 'parms' => \@parms, 
+    error_send ($fcgi, { 'err' => $err->{'code'}, 
+			 'msg' => $err->{'msg'}, 
+			 'parms' => $err->{'parms'}, 
 			 'state' => state_num ($sth, $dbh), 
 			 'statestr' => state_str ($sth, $dbh),
-			 'objs' => $objs 
+			 'objs' => $err->{'objs'}
 		});
 }
 

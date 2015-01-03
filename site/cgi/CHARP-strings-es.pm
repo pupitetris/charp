@@ -13,8 +13,11 @@ use utf8;
     'CGI:NUMPARAM'	=> '%s: %s parámetros requeridos, se entregaron %s.',
     'CGI:BINDPARAM'	=> '%s: No se pudo asociar el parámetro %s (`%s`) de `%s`.',
     'CGI:FILESEND'	=> 'Error al enviar archivo.',
+    'CGI:CMDUNK'	=> 'Comando CGI `%s` desconocido.',
+    'CGI:CMDNUMPARAM'	=> 'Comando CGI %s: %s parámetros requeridos, se entregaron %s.',
+    'CGI:CMDERR'	=> 'Comando CGI falló al ser ejecutado.',
     'SQL:USERUNK'	=> 'Usuario `%s` con status `%s` no encontrado.',
-    'SQL:PROCUNK'	=> 'Función `%s` no encontrada.',
+    'SQL:PROCUNK'	=> 'Función `%s` desconocida.',
     'SQL:REQUNK'	=> 'Petición no encontrada.',
     'SQL:REPFAIL'	=> 'Firma errónea. Verifique nombre de usuario y contraseña.',
     'SQL:ASSERT'	=> 'Parámetros erróneos (`%s`).',
@@ -29,6 +32,8 @@ use utf8;
 %STRS = (
     'CGI:FILESEND:MISSING:MSG' => '%s: Parámetro `filename` faltante.',
     'CGI:FILESEND:OPENFAIL:MSG' => '%s: Error al abrir `%s` (%s).',
+    'CGI:CMDERR:BADPATH' => 'Ruta `%s` inválida.',
+    'CGI:CMDERR:PATHNOTFOUND' => 'Ruta `%s` no encontrada.'
 );    
 
 1;
