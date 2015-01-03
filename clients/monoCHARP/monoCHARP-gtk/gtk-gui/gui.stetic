@@ -7,14 +7,14 @@
   <import>
     <widget-library name="../bin/Debug/monoCHARP-gtk.dll" internal="true" />
   </import>
-  <widget class="Gtk.Dialog" id="monoCharp.CharpGtkErrorDlg" design-size="692 215">
+  <widget class="Gtk.Dialog" id="monoCharp.CharpGtkErrorDlg" design-size="851 215">
     <property name="MemberName" />
     <property name="Title">CHARP Error</property>
     <property name="Icon">resource:monoCharp.error.png</property>
     <property name="TypeHint">Dialog</property>
     <property name="WindowPosition">CenterOnParent</property>
     <property name="Modal">True</property>
-    <property name="DefaultWidth">416</property>
+    <property name="DefaultWidth">600</property>
     <property name="DefaultHeight">214</property>
     <property name="SkipTaskbarHint">True</property>
     <property name="Buttons">1</property>
@@ -106,17 +106,13 @@
                       </widget>
                       <packing>
                         <property name="Position">1</property>
-                        <property name="AutoSize">True</property>
-                        <property name="Expand">False</property>
-                        <property name="Fill">False</property>
+                        <property name="AutoSize">False</property>
                       </packing>
                     </child>
                   </widget>
                   <packing>
                     <property name="Position">0</property>
-                    <property name="AutoSize">True</property>
-                    <property name="Expand">False</property>
-                    <property name="Fill">False</property>
+                    <property name="AutoSize">False</property>
                   </packing>
                 </child>
                 <child>
@@ -128,6 +124,7 @@
                     <child>
                       <widget class="Gtk.Label" id="labelMsg">
                         <property name="MemberName" />
+                        <property name="WidthRequest">600</property>
                         <property name="Xalign">0</property>
                         <property name="Yalign">0</property>
                         <property name="LabelProp">&lt;i&gt;&lt;tt&gt;&lt;small&gt;Message&lt;/small&gt;&lt;/tt&gt;&lt;/i&gt;</property>
