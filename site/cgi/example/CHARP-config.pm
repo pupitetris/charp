@@ -1,5 +1,11 @@
 package CHARP;
 
+# Set limits on the amount of information a message can contain.
+$CGI::POST_MAX = 1024 * 1024 * 5;
+# This keeps uploaded requests in memory, may not be desirable for big deploys handling lots of file uploads:
+$CGI::DISABLE_UPLOADS = 1;
+# FIXME: if we enable uploads, we have to use different calls to deal with uploaded files.
+
 $DB_NAME = 'myproject';
 $DB_HOST = 'localhost';
 $DB_PORT = '5432';

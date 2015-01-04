@@ -225,7 +225,7 @@ sub raise_parse {
     $raise->{'parms_str'} = $1;
     $raise->{'parms_str'} = "''" if $raise->{'parms_str'} eq '';
 
-    my @parms = parse_csv (substr ($parms_str, 1, -1));
+    my @parms = parse_csv (substr ($raise->{'parms_str'}, 1, -1));
     $raise->{'parms'} = \@parms;
 
     $raise->{'code'} = 'SQL:' . $raise->{'type'};

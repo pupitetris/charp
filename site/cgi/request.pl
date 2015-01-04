@@ -10,10 +10,6 @@
 
 use CHARP;
 
-# FIXME: ver si estas cosas jalan:
-$CGI::POST_MAX = 4096;
-$CGI::DISABLE_UPLOADS = 1;
-
 sub request_challenge {
     my $fcgi = shift;
     my $ctx = shift;
@@ -230,7 +226,7 @@ sub request_reply_do {
     $CHARP::INFO_HANDLER = sub {
 	my $raise = shift;
 	$info_error = CHARP::info_handler ($fcgi, $raise);
-    }
+    };
 
     my $rv = $sth->execute ();
 

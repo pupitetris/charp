@@ -25,12 +25,14 @@ sub cmderr {
     my $cmd = shift;
     my $msg = shift;
     $msg =~ s/$FILE_DIR/FILE_DIR/g;
-    return { 'err' => 'CGI:CMDERR', 'parms' => [ $cmd ], 'msg' => $msg };
+    return { 'err' => 'CGI:CMDERR', 'msg' => "$cmd: $msg" };
 }
 
 # find a file relative to FILE_DIR, handle error conditions by returning an error hashref.
 sub file_find {
     my $path = shift;
+    my $cmd = shift;
+
     my ($fname, $dirname) = File::Basename::fileparse ($path);
     my $abs = File::Spec->canonpath (File::Spec->catdir ($FILE_DIR, $dirname));
     if (substr ($abs, 0, length ($FILE_DIR)) ne $FILE_DIR) {
@@ -48,21 +50,34 @@ sub cmd_file_create {
 	return { 'err' => 'CGI:CMDNUMPARAM', 'parms' => [ $cmd, 1, $num_parms ] };
     }
 
-    my $path = file_find ($parms->[0]);
+    my $path = file_find ($parms->[0], $cmd);
     return $path if $path->{'err'};
 
     if (! -d $path->{'dirname'}) {
 	eval { File::Path::make_path ($path->{'dirname'}, { mode => 0711 }) };
 	if ($@ ne '') {
-	    return cmderr ($cmd, $@);
+	    return cmderr ($cmd, 'make_path: ' . $@);
 	}
     }
-    if (open my $fd, ">$path->{'fname'}" &&
-	print $fd $fcgi->param ('file') &&
-	close $fd) {
-	return undef;
+
+    my $fd;
+    if (!open $fd, '>', $path->{'fname'}) {
+	return cmderr ($cmd, 'open: ' . $path->{'fname'} . ' ' . $!);
     }
-    return cmderr ($cmd, $!);
+
+    # FIXME: if we enable uploads, we have to use different calls to deal with uploaded files.
+    if (!$CGI::DISABLE_UPLOADS) {
+	# http://perldoc.perl.org/CGI.html#PROCESSING-A-FILE-UPLOAD-FIELD
+	die "TODO: code routine that handles file-based uploads.";
+    }
+
+    if (!print $fd (scalar $fcgi->param ('file'))) {
+	return cmderr ($cmd, 'print: ' . $path->{'fname'} . ' ' . $!);
+    }
+    if (!close $fd) {
+	return cmderr ($cmd, 'close: ' . $path->{'fname'} . ' ' . $!);
+    }
+    return undef;
 }
 
 sub cmd_file_delete {
@@ -72,7 +87,7 @@ sub cmd_file_delete {
 	return { 'err' => 'CGI:CMDNUMPARAM', 'parms' => [ $cmd, '1 or 2', $num_parms ] };
     }
 
-    my $path = file_find ($parms->[0]);
+    my $path = file_find ($parms->[0], $cmd);
     return $path if $path->{'err'};
 
     my $ignore_notfound = ($parms->[1])? 1: 0;
@@ -81,10 +96,10 @@ sub cmd_file_delete {
 	return cmderr ($cmd, sprintf ($STRS{'CGI:CMDERR:PATHNOTFOUND'}, $path));
     }
     
-    if (unlink ($absfile)) {
+    if (unlink ($path->{'fname'})) {
 	return undef;
     }
-    return cmderr ($cmd, $!);
+    return cmderr ($cmd, 'unlink: ' . $path->{'fname'} . ' ' . $!);
 }
 
 sub cmd_file_move {
@@ -94,10 +109,10 @@ sub cmd_file_move {
 	return { 'err' => 'CGI:CMDNUMPARAM', 'parms' => [ $cmd, 2, $num_parms ] };
     }
 
-    my $src = file_find ($parms->[0]);
+    my $src = file_find ($parms->[0], $cmd);
     return $src if $src->{'err'};
 
-    my $dest = file_find ($parms->[1]);
+    my $dest = file_find ($parms->[1], $cmd);
     return $dest if $dest->{'err'};
 
     # Ignore if both src and dest are equal.
@@ -113,7 +128,7 @@ sub cmd_file_move {
     if (File::Copy::move ($src->{'fname'}, $dest->{'fname'})) {
 	return undef;
     }
-    return cmderr ($cmd, $!);
+    return cmderr ($cmd, 'move: ' . $src->{'fname'} . ' ' . $dest->{'fname'} . ' ' . $!);
 }
 
 sub cmd_file_copy {
@@ -123,10 +138,10 @@ sub cmd_file_copy {
 	return { 'err' => 'CGI:CMDNUMPARAM', 'parms' => [ $cmd, 2, $num_parms ] };
     }
 
-    my $src = file_find ($parms->[0]);
+    my $src = file_find ($parms->[0], $cmd);
     return $src if $src->{'err'};
 
-    my $dest = file_find ($parms->[1]);
+    my $dest = file_find ($parms->[1], $cmd);
     return $dest if $dest->{'err'};
 
     # Ignore if both src and dest are equal.
@@ -142,7 +157,7 @@ sub cmd_file_copy {
     if (File::Copy::copy ($src->{'fname'}, $dest->{'fname'})) {
 	return undef;
     }
-    return cmderr ($cmd, $!);
+    return cmderr ($cmd, 'copy: ' . $src->{'fname'} . ' ' . $dest->{'fname'} . ' ' . $!);
 }
 
 my %CMD_PROC = 
