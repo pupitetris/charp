@@ -50,6 +50,10 @@ sub cmd_file_create {
 	return { 'err' => 'CGI:CMDNUMPARAM', 'parms' => [ $cmd, 1, $num_parms ] };
     }
 
+    if ($fcgi->param ('file') eq undef) {
+	return cmderr ($cmd, 'Missing file data.');
+    }
+
     my $path = file_find ($parms->[0], $cmd);
     return $path if $path->{'err'};
 
