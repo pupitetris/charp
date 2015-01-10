@@ -238,12 +238,12 @@ namespace monoCharp
 			return true;
 		}
 
-		private JObject handleResult (CharpCtx ctx)
+		private JObject handleResult (CharpCtx ctx, bool isReply)
 		{
 			if (!resultHandleErrors (ctx))
 				return null;
 
-			if (ctx.success_handler != null) {
+			if ((isReply || ctx.asAnon) && ctx.success_handler != null) {
 				if (ctx.useCache)
 					cacheSet (ctx, ctx.status);
 				ctx.success_handler (ctx);
@@ -407,7 +407,7 @@ namespace monoCharp
 			ctx.status = status;
 
 			Charp charp = ctx.charp;
-			JObject data = charp.handleResult (ctx);
+			JObject data = charp.handleResult (ctx, true);
 
 			if (data != null) {
 				charp.replySuccess (data, ctx);
@@ -519,7 +519,7 @@ namespace monoCharp
 			ctx.status = status;
 
 			Charp charp = ctx.charp;
-			JObject data = charp.handleResult (ctx);
+			JObject data = charp.handleResult (ctx, false);
 			
 			if (data != null) {
 				charp.requestSuccess (data, ctx);
