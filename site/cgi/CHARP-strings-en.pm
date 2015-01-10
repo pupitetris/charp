@@ -32,6 +32,7 @@ use utf8;
 %STRS = (
     'CGI:FILESEND:MISSING:MSG' => '%s: Missing `filename` parameter.',
     'CGI:FILESEND:OPENFAIL:MSG' => '%s: Error opening `%s` (%s).',
+    'CGI:FILESEND:NOTFOUND:MSG' => '%s: File `%s` not found.',
     'CGI:CMDERR:BADPATH' => 'Invalid path `%s`.',
     'CGI:CMDERR:PATHNOTFOUND' => 'Path `%s` not found.'
 );    

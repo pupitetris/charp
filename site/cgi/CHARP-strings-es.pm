@@ -32,6 +32,7 @@ use utf8;
 %STRS = (
     'CGI:FILESEND:MISSING:MSG' => '%s: Parámetro `filename` faltante.',
     'CGI:FILESEND:OPENFAIL:MSG' => '%s: Error al abrir `%s` (%s).',
+    'CGI:FILESEND:NOTFOUND:MSG' => '%s: Archivo `%s` no encontrado.',
     'CGI:CMDERR:BADPATH' => 'Ruta `%s` inválida.',
     'CGI:CMDERR:PATHNOTFOUND' => 'Ruta `%s` no encontrada.'
 );    

@@ -78,7 +78,7 @@ sub request_challenge {
 
 sub request_reply_file {
     my $fcgi = shift;
-    my $fname = shift; # function name
+    my $func_name = shift;
     my $sth = shift;
     my $fd;
 
@@ -86,48 +86,35 @@ sub request_reply_file {
     $sth->fetchrow_hashref (NAME_lc); # Avoid 'still Active' warning, exhaust response buffer.
 
     if (! exists $res->{'filename'}) {
-	CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => sprintf ($CHARP::STRS{'CGI:FILESEND:MISSING:MSG'}, $fname) });
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => sprintf ($CHARP::STRS{'CGI:FILESEND:MISSING:MSG'}, $func_name) });
 	return;
     }
     if (! exists $res->{'mimetype'}) {
-	CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => sprintf ($CHARP::STRS{'CGI:FILESEND:MISSING:MSG'}, $fname) });
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => sprintf ($CHARP::STRS{'CGI:FILESEND:MISSING:MSG'}, $func_name) });
 	return;
     }
 
-    my %headers = (-type => $res->{'mimetype'});
-
-    if (-e $res->{'filename'}) {
-	if (! sysopen ($fd, $res->{'filename'}, 0)) {
-	    CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => sprintf ($CHARP::STRS{'CGI:FILESEND:OPENFAIL:MSG'}, $fname, $res->{'filename'}, $!) });
-	    return;
-	}
-
-	my @stat = stat ($fd);
-	$headers{'-Content_Length'} = $stat[7];
-	print $fcgi->header (%headers);
-
-	my $buf;
-	while (sysread ($fd, $buf, 4000)) {
-	    print $buf;
-	}
-
-	close ($fd);
-    } else {
-	if (! open ($fd, $res->{'filename'})) {
-	    CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => sprintf ($CHARP::STRS{'CGI:FILESEND:OPENFAIL:MSG'}, $fname, $res->{'filename'}, $!) });
-	    return;
-	}
-	
-	print $fcgi->header (%headers);
-
-	# Slurp!
-	my $tmp = $/;
-	undef $/;
-	print <$fd>;
-	$/ = $tmp;
-	
-	close ($fd);
+    if (! -e $res->{'filename'}) {
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => sprintf ($CHARP::STRS{'CGI:FILESEND:NOTFOUND:MSG'}, $func_name, $res->{'filename'}) });
+	return;
     }
+
+    if (! sysopen ($fd, $res->{'filename'}, 0)) {
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:FILESEND', 'msg' => sprintf ($CHARP::STRS{'CGI:FILESEND:OPENFAIL:MSG'}, $func_name, $res->{'filename'}, $!) });
+	return;
+    }
+
+    my @stat = stat ($fd);
+
+    print $fcgi->header (-type => $res->{'mimetype'},
+			 -Content_Length => $stat[7]);
+    
+    my $buf;
+    while (sysread ($fd, $buf, 4000)) {
+	print $buf;
+    }
+
+    close ($fd);
 
     return;
 }
