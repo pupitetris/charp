@@ -174,7 +174,7 @@ sub request_reply_do {
 
     $num_fparams-- if $func_params_arr[0] eq 'UID';
     if (scalar (@$req_params_arr) != $num_fparams) {
-	CHARP::error_send ($fcgi, { 'err' => 'CGI:NUMPARAM', 'parms' => [ $func_name, scalar (@func_params_arr), scalar (@$req_params_arr) ]});
+	CHARP::error_send ($fcgi, { 'err' => 'CGI:NUMPARAM', 'parms' => [ $func_name, $num_fparams, scalar (@$req_params_arr) ]});
 	return;
     }
 
