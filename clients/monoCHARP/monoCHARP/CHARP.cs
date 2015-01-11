@@ -73,7 +73,7 @@ namespace monoCharp
 		}
 
 		public delegate void SuccessDelegate (object data, CharpCtx ctx);
-		public delegate void CompleteDelegate (CharpCtx ctx);
+		public delegate bool CompleteDelegate (CharpCtx ctx);
 		public delegate bool ErrorDelegate (CharpError err, CharpCtx ctx);
 		public delegate void ReplyHandlerDelegate (Uri base_uri, NameValueCollection parms, CharpCtx ctx);
 
@@ -84,7 +84,7 @@ namespace monoCharp
 			public CompleteDelegate req_complete; // Called when the challenge request (1st HTTP roundtrip) is completed.
 			public CompleteDelegate complete; // Called when the operation is finished, regardless of success.
 			public ReplyHandlerDelegate reply_handler; // You get the URI and deal with the 2nd HTTP roundtrip yourself.
-			public CompleteDelegate success_handler; // Handle the processing of the reply, instead of using the 
+			public CompleteDelegate reply_complete_handler; // Handle the processing of the reply, instead of using the 
 			                                         // default JSON parser (good for RP's returning file data).
 			public bool asAnon;          // avoid a full HTTP roundtrip by using a non-authenticated remote procedure.
 			public bool asArray;         // saves time for large datasets by returning the original array of arrays.
@@ -108,6 +108,17 @@ namespace monoCharp
 				cacheRefresh = false;
 				cacheIsPrivate = false;
 				cacheArea = "default";
+			}
+
+			public byte[] Result {
+				get {
+					if (status != null) {
+						return (status as UploadDataCompletedEventArgs != null)?
+							((UploadDataCompletedEventArgs) status).Result :
+							((UploadValuesCompletedEventArgs) status).Result;
+					}
+					return null;
+				}
 			}
 		}
 
@@ -212,7 +223,7 @@ namespace monoCharp
 			handleError (cerr, ctx);
 		}
 
-		public bool resultHandleErrors (CharpCtx ctx)
+		public bool resultHandleHttpErrors (CharpCtx ctx)
 		{
 			if (ctx.status.Cancelled) {
 				handleError (ERRORS [(int) ERR.HTTP_CANCEL], ctx);
@@ -226,9 +237,7 @@ namespace monoCharp
 				return false;
 			}
 
-			byte[] result = (ctx.status as UploadDataCompletedEventArgs != null)?
-				((UploadDataCompletedEventArgs) ctx.status).Result :
-				((UploadValuesCompletedEventArgs) ctx.status).Result;
+			byte[] result = ctx.Result;
 
 			if (result == null || result.Length == 0) {
 				handleError (ERRORS[(int) ERR.HTTP_CONNECT], ctx);
@@ -240,19 +249,17 @@ namespace monoCharp
 
 		private JObject handleResult (CharpCtx ctx, bool isReply)
 		{
-			if (!resultHandleErrors (ctx))
+			if (!resultHandleHttpErrors (ctx))
 				return null;
 
-			if ((isReply || ctx.asAnon) && ctx.success_handler != null) {
+			if ((isReply || ctx.asAnon) && ctx.reply_complete_handler != null) {
 				if (ctx.useCache)
 					cacheSet (ctx, ctx.status);
-				ctx.success_handler (ctx);
-				return null;
+				if (ctx.reply_complete_handler (ctx))
+					return null;
 			}
 
-			byte[] result = (ctx.status as UploadDataCompletedEventArgs != null)?
-				((UploadDataCompletedEventArgs) ctx.status).Result :
-				((UploadValuesCompletedEventArgs) ctx.status).Result;
+			byte[] result = ctx.Result;
 
 			JObject data;
 			try {
@@ -560,9 +567,9 @@ namespace monoCharp
 				if (res != null) {
 					if (ctx.req_complete != null)
 						ctx.req_complete (ctx);
-					if (ctx.success_handler != null) {
+					if (ctx.reply_complete_handler != null) {
 						ctx.status = (AsyncCompletedEventArgs) res;
-						ctx.success_handler (ctx);
+						ctx.reply_complete_handler (ctx);
 					} else {
 						if (ctx.success != null)
 							ctx.success (res, ctx);
