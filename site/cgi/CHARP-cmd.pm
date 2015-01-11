@@ -43,6 +43,19 @@ sub file_find {
     return { 'dirname' => $abs, 'fname' => File::Spec->catfile ($abs, $fname) };
 }
 
+sub dir_create {
+    my ($cmd, $path) = @_;
+
+    if (! -d $path->{'dirname'}) {
+	eval { File::Path::make_path ($path->{'dirname'}, { mode => 0711 }) };
+	if ($@ ne '') {
+	    return cmderr ($cmd, 'make_path: ' . $@);
+	}
+    }
+
+    return undef;
+}
+
 sub cmd_file_create {
     my ($cmd, $num_parms, $parms, $fcgi) = @_;
 
@@ -57,12 +70,8 @@ sub cmd_file_create {
     my $path = file_find ($parms->[0], $cmd);
     return $path if $path->{'err'};
 
-    if (! -d $path->{'dirname'}) {
-	eval { File::Path::make_path ($path->{'dirname'}, { mode => 0711 }) };
-	if ($@ ne '') {
-	    return cmderr ($cmd, 'make_path: ' . $@);
-	}
-    }
+    my $err = dir_create ($cmd, $path);
+    return $err if $err;
 
     my $fd;
     if (!open $fd, '>', $path->{'fname'}) {
@@ -122,12 +131,8 @@ sub cmd_file_move {
     # Ignore if both src and dest are equal.
     return undef if $src->{'fname'} eq $dest->{'fname'};
 
-    if (! -d $dest->{'dirname'}) {
-	eval { File::Path::make_path ($dest->{'dirname'}, { mode => 0711 }) };
-	if ($@ ne '') {
-	    return cmderr ($cmd, $@);
-	}
-    }
+    my $err = dir_create ($cmd, $dest);
+    return $err if $err;
 
     if (File::Copy::move ($src->{'fname'}, $dest->{'fname'})) {
 	return undef;
@@ -151,12 +156,8 @@ sub cmd_file_copy {
     # Ignore if both src and dest are equal.
     return undef if $src->{'fname'} eq $dest->{'fname'};
 
-    if (! -d $dest->{'dirname'}) {
-	eval { File::Path::make_path ($dest->{'dirname'}, { mode => 0711 }) };
-	if ($@ ne '') {
-	    return cmderr ($cmd, $@);
-	}
-    }
+    my $err = dir_create ($cmd, $dest);
+    return $err if $err;
 
     if (File::Copy::copy ($src->{'fname'}, $dest->{'fname'})) {
 	return undef;
@@ -164,12 +165,27 @@ sub cmd_file_copy {
     return cmderr ($cmd, 'copy: ' . $src->{'fname'} . ' ' . $dest->{'fname'} . ' ' . $!);
 }
 
+sub cmd_other {
+    my ($cmd, $num_parms, $parms, $fcgi) = @_;
+    my $other_cmd = shift @$parms;
+    $num_parms --;
+
+    my ($pkg, $proc) = split ('-', $other_cmd);
+    if ($proc eq '') {
+	$proc = $pkg;
+    }
+    require "cmd-${pkg}.pm";
+    my $fullname = "Cmd::${pkg}::$proc";
+    return &$fullname ("OTHER-$other_cmd", $num_parms, $parms, $fcgi);
+}
+
 my %CMD_PROC = 
     (
      'FILE_CREATE' => \&cmd_file_create,
      'FILE_DELETE' => \&cmd_file_delete,
      'FILE_MOVE' => \&cmd_file_move,
-     'FILE_COPY' => \&cmd_file_copy
+     'FILE_COPY' => \&cmd_file_copy,
+     'OTHER' => \&cmd_other
     );
 
 # returns undef if success, or an error hashref to be sent to error_send.
@@ -187,3 +203,5 @@ sub info_handler {
 
     return &$proc ($cmd, scalar @$parms, $parms, $fcgi);
 }
+
+1;

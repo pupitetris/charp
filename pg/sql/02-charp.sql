@@ -41,7 +41,8 @@ CREATE TYPE charp_cmd_code AS ENUM (
 	'FILE_CREATE',
 	'FILE_DELETE',
 	'FILE_MOVE',
-	'FILE_COPY'
+	'FILE_COPY',
+	'OTHER'
 );
 
 CREATE TYPE charp_account_status AS ENUM (

@@ -313,3 +313,5 @@ sub connect {
 
     return $dbh;
 }
+
+1;
