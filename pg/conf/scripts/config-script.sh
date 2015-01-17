@@ -24,7 +24,7 @@ function db_client {
 		dbopts="-d postgres"
 	fi
 
-	PGOPTIONS='-c client_min_messages=WARNING' psql -q -f "$sql_file" $suopts $dbopts "$@"
+	PGOPTIONS='-c client_min_messages=WARNING' psql --set ON_ERROR_STOP=1 -q -f "$sql_file" $suopts $dbopts "$@"
 }
 
 function db_initialize {
