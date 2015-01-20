@@ -1,0 +1,5 @@
+* Bug: Empty string values from the DB are being transformed to null.
+* Feature: monoCHARP - async Task API.
+* Feature: multi-request.
+* Feature: encryption.
+
