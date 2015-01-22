@@ -88,6 +88,7 @@ namespace monoCharp
 			                                         // default JSON parser (good for RP's returning file data).
 			public bool asAnon;          // avoid a full HTTP roundtrip by using a non-authenticated remote procedure.
 			public bool asArray;         // saves time for large datasets by returning the original array of arrays.
+			public bool asSingle;        // assume the resulting dataset will be a single row, return it as an object.
 			public bool useCache;        // cache the reply?
 			public bool cacheRefresh;    // force the cache to re-get data from server and store again.
 			public bool cacheIsPrivate;  // privately store data in the object, not to be shared across CHARP objects.
@@ -104,6 +105,7 @@ namespace monoCharp
 			public CharpCtx () {
 				asAnon = false;
 				asArray = false;
+				asSingle = false;
 				useCache = false;
 				cacheRefresh = false;
 				cacheIsPrivate = false;
@@ -369,36 +371,46 @@ namespace monoCharp
 				cache[area] = null;
 		}
 
+		private JObject buildObject (JArray fields, JArray row)
+		{
+			JObject o = new JObject ();
+			string fieldName;
+			for (int i = 0; i < fields.Count; i++) {
+				fieldName = (string) fields[i];
+				o[fieldName] = row[i];
+			}
+
+			return o;
+		}
+
 		private void replySuccess (JObject data, CharpCtx ctx)
 		{
-			if (data["fields"] == null || data["data"] == null) {
+			if (data["fields"] == null || data["data"] == null)
 				handleError (ERRORS [(int) ERR.DATA_BADMSG], ctx);
-			}
 
 			object res;
 			JArray fields = (JArray) data["fields"];
 			JArray dat = (JArray) data["data"];
 
 			if (fields.Count == 1 && (string) fields[0] == "rp_" + ctx.reqData["res"]) {
+				// Remote procedure returning a single row with a single value.
 				res = dat[0][0];
-			} else if (!ctx.asArray) {
+			} else if (ctx.asArray) {
+				// Just return the resulting array of arrays as requested.
+				res = dat;
+			} else if (ctx.asSingle) {
+				// Assume only one row is returned, return its transformation into object.
+				res = buildObject (fields, (JArray) dat[0]);
+			} else {
+				// Transform array of arrays into an array of objects.
 				JArray arr = new JArray ();
 				JArray row;
 				for (int i = 0; i < dat.Count; i++) {
 					row = (JArray) dat[i];
-
-					JObject so = new JObject ();
-					string fieldName;
-					for (int j = 0; j < fields.Count; j++) {
-						fieldName = (string) fields[j];
-						so[fieldName] = row[j];
-					}
-
+					JObject so = buildObject (fields, row);
 					arr.Add (so);
 				}
 				res = arr;
-			} else {
-				res = dat;
 			}
 
 			if (ctx.useCache)
